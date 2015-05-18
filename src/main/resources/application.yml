@@ -1,0 +1,28 @@
+oanda:
+ fetchInterval: 10000
+ restApiUrl: https://api-fxpractice.oanda.com/v1
+ streamingApiUrl: https://stream-fxpractice.oanda.com
+ apiKey: 79b0b12c42a35eb355facf5ccd5bc202-3e3820c588ef1cb6345a68d5cb683b37
+ mainAccountId: 9678914
+ resources:
+  accounts: ${oanda.restApiUrl}/accounts/{id}
+  instruments: ${oanda.restApiUrl}/instruments
+  candles: ${oanda.restApiUrl}/candles
+  prices: ${oanda.restApiUrl}/prices
+  orders: ${oanda.resources.accounts}/orders
+  
+ig:
+ restApiUrl: https://demo-api.ig.com/gateway/deal/
+ apiKey: 2e5a0721e014a2683d68cf466311695c2a128d6
+ username: perosvantestyskkonto
+ password: Maeklarbricka0
+ resources:
+  session: ${ig.restApiUrl}session
+  
+robots:
+  - test_robot
+  
+  
+logging:
+ level: 
+  org: INFO
