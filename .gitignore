@@ -24,3 +24,4 @@ target/classes/application.yml
 target/classes/logback.xml
 
 target/fx2-0.0.1-SNAPSHOT.jar.original
+/target/
