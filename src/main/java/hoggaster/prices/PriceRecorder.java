@@ -29,7 +29,7 @@ public class PriceRecorder {
 		this.priceRepo = priceRepo;
 	}
 	
-	@Selector(value="price.*",type=SelectorType.REGEX, eventBus="@priceEventBus")
+	@Selector(value="price.([a-z0-9]+)",type=SelectorType.REGEX, eventBus="@priceEventBus")
 	public void handleNewPrice(Event<OandaPrice> evt) {
 		counter.increment();
 		LOG.info("Count: " + counter.longValue());

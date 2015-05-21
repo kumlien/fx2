@@ -1,6 +1,5 @@
 package hoggaster.robot.web;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import hoggaster.domain.Instrument;
@@ -16,20 +15,14 @@ public class ConditionRequest {
 	@NotEmpty
 	public final String name;
 	
-	@NotEmpty
-	public final Instrument instrument;
-	
 	@NotNull
-	@Min(1)
-	public final Long depotId;
+	public final Instrument instrument;
 	
 	@JsonCreator
 	public ConditionRequest(
 			@JsonProperty(value="name") String name, 
-			@JsonProperty(value="instrument") Instrument instrument, 
-			@JsonProperty(value="depotId") Long depotId) {
+			@JsonProperty(value="instrument") Instrument instrument) {
 		this.name = name;
 		this.instrument = instrument;
-		this.depotId = depotId;
 	}
 }

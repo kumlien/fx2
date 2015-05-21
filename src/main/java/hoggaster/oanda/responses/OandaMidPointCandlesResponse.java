@@ -5,15 +5,18 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class InstrumentHistory {
+/**
+ * Oanda representation of a json response containing a candle.
+ */
+public class OandaMidPointCandlesResponse {
 	
 	public final String instrument;
 	public final String granularity;
-	public final List<OandaCandle> candles;
+	public final List<OandaMidPointCandle> candles;
 	
 	@JsonCreator
-	public InstrumentHistory(@JsonProperty(value="instrument") String instrument, @JsonProperty(value="granularity")String granularity,
-			@JsonProperty(value="candles")List<OandaCandle> candles) {
+	public OandaMidPointCandlesResponse(@JsonProperty(value="instrument") String instrument, @JsonProperty(value="granularity")String granularity,
+			@JsonProperty(value="candles")List<OandaMidPointCandle> candles) {
 		this.instrument = instrument;
 		this.granularity = granularity;
 		this.candles = candles;

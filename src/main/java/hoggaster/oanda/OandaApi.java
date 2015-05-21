@@ -2,21 +2,24 @@ package hoggaster.oanda;
 
 import hoggaster.BrokerID;
 import hoggaster.domain.Broker;
+import hoggaster.domain.Instrument;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.Accounts;
-import hoggaster.oanda.responses.InstrumentHistory;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaAccount;
+import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.oanda.responses.OandaInstrument;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.oanda.responses.Prices;
+import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
-
-import javax.sound.midi.Instrument;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +46,7 @@ public class OandaApi implements Broker {
 	
 	private final RestTemplate restTemplate;
 	
-	private final HttpEntity<String> defaultStringEntity;
+	private final HttpEntity<String> defaultHttpEntity;
 	
 	private final HttpHeaders defaultHeaders;
 	
@@ -52,11 +55,11 @@ public class OandaApi implements Broker {
 		this.restTemplate = restTemplate;
 		this.resources = resources;
 		defaultHeaders = new HttpHeaders();
-		defaultHeaders.set("Accept-Encoding", "gzip, deflate");
-		defaultHeaders.set("Connection", "Keep-Alive");
+		defaultHeaders.set(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate");
+		defaultHeaders.set(HttpHeaders.CONNECTION, "Keep-Alive");
 		defaultHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
 		defaultHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    	defaultStringEntity = new HttpEntity<String>(defaultHeaders);
+    	defaultHttpEntity = new HttpEntity<String>(defaultHeaders);
 	}
 
 	/**
@@ -66,7 +69,7 @@ public class OandaApi implements Broker {
 	public Accounts getAccounts() {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
 		String uri = builder.buildAndExpand("").toUriString();
-		ResponseEntity<Accounts> accounts = restTemplate.exchange(uri, HttpMethod.GET, defaultStringEntity, Accounts.class);
+		ResponseEntity<Accounts> accounts = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Accounts.class);
 		LOG.info("Found {} accounts", accounts.getBody().getAccounts().size());
 		accounts.getBody().getAccounts().forEach(a -> LOG.info("Account: {}", a));
 		return accounts.getBody();
@@ -85,21 +88,43 @@ public class OandaApi implements Broker {
 				.build(true)
 				.toUri();
 		LOG.debug("uri: {}", uri);
-		ResponseEntity<Instruments> instruments = restTemplate.exchange(uri, HttpMethod.GET, defaultStringEntity, Instruments.class);
+		ResponseEntity<Instruments> instruments = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Instruments.class);
 		LOG.debug("Got {}", instruments.getBody().getInstruments());
 		return instruments.getBody();
 	}
 	
 
 	/**
-	 * Fetch candles for all known instruments.
+	 * Fetch candles for the specified instrument.
+	 * 
+	 * count: Optional The number of candles to return in the response. This parameter may be ignored by the server depending on the time range provided. If not specified, count will default to 500. The maximum acceptable value for count is 5000.
+	 * 		count should not be specified if both the start and end parameters are also specified.
+	 * start2: Optional The start timestamp for the range of candles requested. The value specified must be in a valid datetime format.
+	 * end2: Optional The end timestamp for the range of candles requested. The value specified must be in a valid datetime format.
 	 */
+	@Override
 	@Timed
-	public InstrumentHistory getCandles(Integer accountId) throws UnsupportedEncodingException {
+	public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end) throws UnsupportedEncodingException {
 		
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles());
-		String uri = builder.queryParam("instrument", getInstrumentsForAccount(accountId).getInstruments().get(0).instrument).toUriString();
-		ResponseEntity<InstrumentHistory> candles = restTemplate.exchange(uri, HttpMethod.GET, defaultStringEntity, InstrumentHistory.class);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles())
+				.queryParam("instrument", instrument)
+				.queryParam("granularity", granularity.oandaStyle);
+		
+		if(start != null) {
+			String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(),"utf-8");
+			builder.queryParam("start", encoded);	
+		}
+		if(end != null) {
+			String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
+			builder.queryParam("end", encoded);			
+		}
+		if(periods != null) {
+			builder.queryParam("count", periods);			
+		}
+		String uri = builder.build(true).toUriString();
+		LOG.info("Using uriString {}", uri);
+
+		ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(builder.build(true).toUri(), HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
 		LOG.info(candles.getBody() + "");
 		return candles.getBody();
 	}
@@ -110,7 +135,7 @@ public class OandaApi implements Broker {
 		StringBuilder sb = new StringBuilder();
 		instruments.forEach(instrument -> sb.append(instrument.instrument).append("%2C"));
 		URI uri = builder.queryParam("instruments", sb.toString()).build(true).toUri();
-		ResponseEntity<Prices> prices = restTemplate.exchange(uri, HttpMethod.GET, defaultStringEntity, Prices.class);
+		ResponseEntity<Prices> prices = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Prices.class);
 		LOG.debug("Got {}", prices.getBody().prices);
 		return prices.getBody();
 	}
@@ -135,7 +160,7 @@ public class OandaApi implements Broker {
 		String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
 		LOG.info("Sending order to oanda: {}", uri);
 
-		HttpEntity<MultiValueMap> httpEntity = new HttpEntity<MultiValueMap>(oandaRequest, defaultHeaders);
+		HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
 		ResponseEntity<OandaOrderResponse> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaOrderResponse.class);
 		return responseEntity.getBody();
 	}

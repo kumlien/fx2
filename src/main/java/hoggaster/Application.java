@@ -1,5 +1,6 @@
 package hoggaster;
 
+import hoggaster.domain.Broker;
 import hoggaster.oanda.OandaApi;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.OandaResourcesProperties;
@@ -71,7 +72,7 @@ public class Application {
     }
     
     @Bean
-    public OandaApi oandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
+    public Broker oandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
     	return new OandaApi(oandaProps, restTemplate, resources);
     }
 }

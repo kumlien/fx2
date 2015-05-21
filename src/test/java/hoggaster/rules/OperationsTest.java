@@ -32,4 +32,5 @@ public class OperationsTest {
 		Assert.assertTrue(Operator.LESS_OR_EQUAL_THAN.apply(1.0, 1.0));
 		Assert.assertTrue(Operator.LESS_OR_EQUAL_THAN.apply(0.1, 1.0));
 	}
+	
 }

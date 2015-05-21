@@ -11,7 +11,7 @@ import hoggaster.rules.indicators.CurrentAskIndicator;
 import hoggaster.rules.indicators.SimpleValueIndicator;
 import hoggaster.user.Depot;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.easyrules.core.AnnotatedRulesEngine;
 import org.junit.Assert;
@@ -23,7 +23,7 @@ public class TwoIndicatorConditionTest {
 	@Test
 	public void basicTest() {
 		Instrument instrument = Instrument.AUD_USD;
-		Price price = new Price(instrument, 2.0, 2.1, new Date(), BrokerID.OANDA);
+		Price price = new Price(instrument, 2.0, 2.1, Instant.now(), BrokerID.OANDA);
 		Depot depot = new Depot(BrokerID.OANDA, "13123");
 		MovingAverageService maService = Mockito.mock(MovingAverageService.class);
 		

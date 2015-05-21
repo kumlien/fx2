@@ -23,56 +23,73 @@ import reactor.bus.EventBus;
 
 @Component
 public class OandaScheduledTask {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(OandaScheduledTask.class);
-	
+
+	private static final Logger LOG = LoggerFactory
+			.getLogger(OandaScheduledTask.class);
+
 	private final Broker oanda;
-	
+
 	private final EventBus priceEventBus;
-	
+
 	private final OandaProperties oandaProps;
-	
+
 	private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
-	
+
 	@Autowired
-	public OandaScheduledTask(@Qualifier("oandaApi")Broker oandaApi, @Qualifier("priceEventBus") EventBus priceReactor, OandaProperties oandaProps) {
+	public OandaScheduledTask(@Qualifier("oandaApi") Broker oandaApi,
+			@Qualifier("priceEventBus") EventBus priceReactor,
+			OandaProperties oandaProps) {
 		this.oanda = oandaApi;
 		this.priceEventBus = priceReactor;
 		this.oandaProps = oandaProps;
 	}
 
-	@Scheduled(fixedRate=60000, initialDelay = 5000)
+	@Scheduled(fixedRate = 60000, initialDelay = 5000)
 	public void fetchInstruments() {
-//		StringBuilder sb = new StringBuilder();
+		// StringBuilder sb = new StringBuilder();
 		try {
-			Instruments availableInstruments = oanda.getInstrumentsForAccount(oandaProps.getMainAccountId());
-			//Only add the ones we have support for
-			availableInstruments.getInstruments().forEach(i -> {
-				if(Instrument.valueOf(i.instrument) != null) {
-					instrumentsForMainAccount.add(i);
-				} else {
-					LOG.warn("Missing Instrument enum for instrument {}", i.instrument);
-					instrumentsForMainAccount.remove(i.instrument);
-				}
-			});
+			Instruments availableInstruments = oanda
+					.getInstrumentsForAccount(oandaProps.getMainAccountId());
+			// Only add the ones we have support for
+			availableInstruments
+					.getInstruments()
+					.forEach(
+							i -> {
+								if (Instrument.valueOf(i.instrument) != null) {
+									instrumentsForMainAccount.add(i);
+								} else {
+									LOG.warn(
+											"Missing Instrument enum for instrument {}",
+											i.instrument);
+									instrumentsForMainAccount
+											.remove(i.instrument);
+								}
+							});
 		} catch (UnsupportedEncodingException e) {
 			LOG.error("Unable to access oanda", e);
 		}
 	}
-	
+
 	public void logAccounts() {
 		oanda.getAccounts().getAccounts().forEach(a -> {
 			LOG.info("Account: {}", a);
 		});
 	}
-	
-	@Scheduled(cron="*/10 * * * * *")
+
+	@Scheduled(cron = "*/10 * * * * *")
 	public void fetchPrices() throws UnsupportedEncodingException {
-		if(instrumentsForMainAccount == null) {
-			fetchInstruments();
+		try {
+			if (instrumentsForMainAccount == null) {
+				fetchInstruments();
+			}
+			Prices allPrices = oanda.getAllPrices(instrumentsForMainAccount);
+			LOG.info("Got {} prices, send them to priceEventBus",
+					allPrices.prices.size());
+			allPrices.prices.parallelStream().forEach(
+					p -> priceEventBus.notify("prices." + p.instrument,
+							Event.wrap(new Price(p))));
+		} catch (Exception e) {
+			LOG.error("Unhandled error in scheduled fetchPrices method", e);
 		}
-		Prices allPrices = oanda.getAllPrices(instrumentsForMainAccount);
-		LOG.info("Got {} prices, send them to priceEventBus", allPrices.prices.size());
-		allPrices.prices.parallelStream().forEach(p -> priceEventBus.notify("prices." + p.instrument, Event.wrap(new Price(p))));
 	}
 }

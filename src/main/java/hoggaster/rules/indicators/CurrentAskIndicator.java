@@ -9,6 +9,10 @@ public class CurrentAskIndicator implements Indicator {
 	public Double value(RobotExecutionContext ctx) {
 		return ctx.price.ask;
 	}
+	
+	public String getName() {
+		return this.getClass().getSimpleName();
+	}
 
 	@Override
 	public String toString() {

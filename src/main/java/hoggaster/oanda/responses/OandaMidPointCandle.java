@@ -5,9 +5,9 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OandaCandle {
+public class OandaMidPointCandle {
 	
-	public final Date time;
+	public final Date time;//Start timestamp of the candlestick
 	public final Double openMid;
 	public final Double highMid;
 	public final Double closeMid;
@@ -15,7 +15,7 @@ public class OandaCandle {
 	public final Boolean complete;
 	
 	@JsonCreator
-	public OandaCandle(
+	public OandaMidPointCandle(
 			@JsonProperty(value="time") Date time, 
 			@JsonProperty(value="openMid") Double openMid, 
 			@JsonProperty(value="highMid") Double highMid, 

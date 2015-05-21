@@ -23,12 +23,12 @@ public class TwoIndicatorCondition implements Condition {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TwoIndicatorCondition.class);
 	
-	private final String name;
-	private final Indicator firstIndicator;
-	private final Indicator secondIndicator;
-	private final Operator operator;
-	private final Integer priority;
-	private final ConditionType type;
+	public final String name;
+	public final Indicator firstIndicator;
+	public final Indicator secondIndicator;
+	public final Operator operator;
+	public final Integer priority;
+	public final ConditionType type;
 	private transient RobotExecutionContext ctx;
 	
 	public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, ConditionType type) {
@@ -66,5 +66,17 @@ public class TwoIndicatorCondition implements Condition {
 
 	public void setContext(RobotExecutionContext ctx) {
 		this.ctx = ctx;
+	}
+
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("TwoIndicatorCondition [name=").append(name)
+				.append(", firstIndicator=").append(firstIndicator)
+				.append(", secondIndicator=").append(secondIndicator)
+				.append(", operator=").append(operator).append(", priority=")
+				.append(priority).append(", type=").append(type).append("]");
+		return builder.toString();
 	}
 }

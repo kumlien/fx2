@@ -54,8 +54,8 @@ public class RobotExecutionContext {
 		positiveSellConditions.add(condition);
 	}
 
-	public Double getMovingAverage(CandleStickGranularity granularity) {
-		return maService.getMovingAverage(granularity);
+	public Double getMovingAverage(CandleStickGranularity granularity, int numberOfDataPoints) {
+		return maService.getMovingAverage(instrument, granularity, numberOfDataPoints);
 	}
 
 	public List<Condition> getPositiveBuyConditions() {

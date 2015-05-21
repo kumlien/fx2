@@ -4,6 +4,7 @@ import hoggaster.BrokerID;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.OandaPrice;
 
+import java.time.Instant;
 import java.util.Date;
 
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -16,11 +17,11 @@ public class Price {
 	public final Instrument instrument;
 	public final Double bid;
 	public final Double ask;
-	public final Date time;
+	public final Instant time;
 	public final BrokerID broker;
 	
 	@PersistenceConstructor
-	public Price(Long id, Instrument instrument, Double bid, Double ask, Date time, BrokerID broker) {
+	public Price(Long id, Instrument instrument, Double bid, Double ask, Instant time, BrokerID broker) {
 		this.id = id;
 		this.instrument = instrument;
 		this.bid = bid;
@@ -29,8 +30,7 @@ public class Price {
 		this.broker = broker;
 	}
 
-	public Price(Instrument instrument, Double bid, Double ask, Date time,
-			BrokerID broker) {
+	public Price(Instrument instrument, Double bid, Double ask, Instant time, BrokerID broker) {
 		this.instrument = instrument;
 		this.bid = bid;
 		this.ask = ask;
@@ -42,7 +42,7 @@ public class Price {
 		this.instrument = Instrument.valueOf(p.instrument);
 		this.bid = p.bid;
 		this.ask = p.ask;
-		this.time = p.time;
+		this.time = p.time.toInstant();
 		this.broker = BrokerID.OANDA;
 	}
 

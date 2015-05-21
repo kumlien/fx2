@@ -59,4 +59,14 @@ public class RobotDefinition {
 	public Set<Condition> getSellConditions() {
 		return sellConditions;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("RobotDefinition [id=").append(id).append(", name=")
+				.append(name).append(", instrument=").append(instrument)
+				.append(", buyConditions=").append(buyConditions)
+				.append(", sellConditions=").append(sellConditions).append("]");
+		return builder.toString();
+	}
 }
