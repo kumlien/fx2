@@ -1,15 +1,19 @@
 package hoggaster.oanda;
 
+import java.net.URL;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "oanda")
+@ConfigurationProperties(prefix = "oanda", exceptionIfInvalid=true)
 public class OandaProperties {
 
-	private Long fetchInterval;
+	private String fetchPricesRegex;
+	
+	private String fetchCandlesRegex;
 
-	private String restApiUrl;
+	private URL restApiUrl;
 
 	private String streamingApiUrl;
 
@@ -17,16 +21,14 @@ public class OandaProperties {
 	
 	private Integer mainAccountId;
 
-	public Long getFetchInterval() {
-		return fetchInterval;
+	public String getFetchPricesRegex() {
+		return fetchPricesRegex;
 	}
 
 
-	public String getRestApiUrl() {
+	public URL getRestApiUrl() {
 		return restApiUrl;
 	}
-
-	
 
 	public String getStreamingApiUrl() {
 		return streamingApiUrl;
@@ -44,12 +46,12 @@ public class OandaProperties {
 	}
 
 
-	public void setFetchInterval(Long fetchInterval) {
-		this.fetchInterval = fetchInterval;
+	public void setFetchPricesRegex(String fetchPricesRegex) {
+		this.fetchPricesRegex = fetchPricesRegex;
 	}
 
 
-	public void setRestApiUrl(String restApiUrl) {
+	public void setRestApiUrl(URL restApiUrl) {
 		this.restApiUrl = restApiUrl;
 	}
 
@@ -66,6 +68,16 @@ public class OandaProperties {
 
 	public void setMainAccountId(Integer mainAccountId) {
 		this.mainAccountId = mainAccountId;
+	}
+
+
+	public String getFetchCandlesRegex() {
+		return fetchCandlesRegex;
+	}
+
+
+	public void setFetchCandlesRegex(String fetchCandlesRegex) {
+		this.fetchCandlesRegex = fetchCandlesRegex;
 	}
 
 

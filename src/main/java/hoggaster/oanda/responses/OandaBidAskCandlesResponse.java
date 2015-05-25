@@ -26,7 +26,7 @@ public class OandaBidAskCandlesResponse {
 	private String granularity;
 	@JsonProperty("candles")
 	@Valid
-	private List<BidAskCandle> candles = new ArrayList<BidAskCandle>();
+	private List<OandaBidAskCandle> candles = new ArrayList<OandaBidAskCandle>();
 	@JsonIgnore
 	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -73,7 +73,7 @@ public class OandaBidAskCandlesResponse {
 	 * @return The candles
 	 */
 	@JsonProperty("candles")
-	public List<BidAskCandle> getCandles() {
+	public List<OandaBidAskCandle> getCandles() {
 		return candles;
 	}
 
@@ -83,7 +83,7 @@ public class OandaBidAskCandlesResponse {
 	 *            The candles
 	 */
 	@JsonProperty("candles")
-	public void setCandles(List<BidAskCandle> candles) {
+	public void setCandles(List<OandaBidAskCandle> candles) {
 		this.candles = candles;
 	}
 

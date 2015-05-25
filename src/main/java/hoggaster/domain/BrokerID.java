@@ -1,4 +1,4 @@
-package hoggaster;
+package hoggaster.domain;
 
 public enum BrokerID {
 	

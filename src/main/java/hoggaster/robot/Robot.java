@@ -1,6 +1,7 @@
 package hoggaster.robot;
 
 import static hoggaster.robot.RobotStatus.RUNNING;
+import static reactor.bus.selector.Selectors.R;
 import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.orders.OrderRequest;
@@ -134,10 +135,8 @@ public class Robot implements Consumer<Event<?>> {
 		Preconditions.checkState(priceEventBus != null,
 				"The priceEventBus is null");
 		Preconditions.checkState(instrument != null, "The instrument is null");
-		eventBusRegistrations
-				.put("priceRegistration",
-						priceEventBus.on(Selectors.R("prices."
-								+ instrument.name() + "*"), this));
+		eventBusRegistrations.put("priceRegistration",
+				priceEventBus.on(R("prices." + instrument.name() + "*"), this));
 		this.status = RobotStatus.RUNNING;
 		LOG.info("Robot {} has started.", name);
 	}
@@ -227,7 +226,9 @@ public class Robot implements Consumer<Event<?>> {
 	@Override
 	public void accept(Event<?> t) {
 		synchronized (this) {
-			LOG.info("Robot {} dealing with instrument {} received a new event: {}",name, instrument, t.getData());
+			LOG.info(
+					"Robot {} dealing with instrument {} received a new event: {}",
+					name, instrument, t.getData());
 			if (t.getData() instanceof Price) {
 				onNewPrice((Price) t.getData());
 			} else if (t.getData() instanceof OandaMidPointCandle) {
@@ -235,11 +236,11 @@ public class Robot implements Consumer<Event<?>> {
 			}
 		}
 	}
-	
+
 	public Depot getDepot() {
 		return depot;
 	}
-	
+
 	public RobotStatus getStatus() {
 		return status;
 	}

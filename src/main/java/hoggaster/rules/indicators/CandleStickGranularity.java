@@ -1,5 +1,8 @@
 package hoggaster.rules.indicators;
 
+/**
+ * Available granularities for candlesticks.
+ */
 public enum CandleStickGranularity {
 	
 	DAY("D");

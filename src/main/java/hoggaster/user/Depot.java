@@ -1,6 +1,6 @@
 package hoggaster.user;
 
-import hoggaster.BrokerID;
+import hoggaster.domain.BrokerID;
 import hoggaster.domain.Instrument;
 
 import java.util.Set;

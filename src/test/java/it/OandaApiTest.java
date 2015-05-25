@@ -36,9 +36,10 @@ public class OandaApiTest {
 	Broker oanda;
 	
 	@Test
-	public void testGetMidPointCandles() throws InterruptedException, UnsupportedEncodingException {
+	public void testGetBidAskCandles() throws InterruptedException, UnsupportedEncodingException {
 		Instant end = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 		OandaBidAskCandlesResponse midPointCandles = oanda.getBidAskCandles(Instrument.EUR_USD, CandleStickGranularity.DAY, new Integer(10), null, end);
+		LOG.info("Got a few candles: {}", midPointCandles);
 	}
 	
 }

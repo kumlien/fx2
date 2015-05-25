@@ -1,6 +1,6 @@
 package hoggaster.prices;
 
-import hoggaster.BrokerID;
+import hoggaster.domain.BrokerID;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.OandaPrice;
 

@@ -1,7 +1,7 @@
 package hoggaster.oanda;
 
-import hoggaster.BrokerID;
 import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerID;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.requests.OandaOrderRequest;
@@ -30,10 +30,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Preconditions;
 
 /**
  * Access point to oanda
@@ -135,8 +139,16 @@ public class OandaApi implements Broker {
 		StringBuilder sb = new StringBuilder();
 		instruments.forEach(instrument -> sb.append(instrument.instrument).append("%2C"));
 		URI uri = builder.queryParam("instruments", sb.toString()).build(true).toUri();
-		ResponseEntity<Prices> prices = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Prices.class);
-		LOG.debug("Got {}", prices.getBody().prices);
+		ResponseEntity<Prices> prices = null;
+		try {
+			prices = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Prices.class);
+			LOG.debug("Got {}", prices.getBody().prices);
+		} catch (HttpClientErrorException e) {
+			LOG.error("Client Error with the following body: {}", e.getResponseBodyAsString(), e);
+			return null;
+		} catch (HttpServerErrorException e) {
+			LOG.warn("Server (Oanda) Error with the following body: {}", e.getResponseBodyAsString(), e); 
+		}
 		return prices.getBody();
 	}
 	

@@ -1,7 +1,7 @@
 package hoggaster.robot.web;
 
-import hoggaster.BrokerID;
 import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerID;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.responses.OandaOrderResponse;

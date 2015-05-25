@@ -1,6 +1,6 @@
 package hoggaster.rules.conditions;
 
-import hoggaster.BrokerID;
+import hoggaster.domain.BrokerID;
 import hoggaster.domain.Instrument;
 import hoggaster.prices.Price;
 import hoggaster.robot.MovingAverageService;

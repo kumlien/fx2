@@ -1,6 +1,5 @@
 package hoggaster.domain;
 
-import hoggaster.BrokerID;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.Accounts;
 import hoggaster.oanda.responses.Instruments;
