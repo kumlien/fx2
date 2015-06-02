@@ -120,13 +120,23 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!--  dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-integration</artifactId>
-		</dependency>
+		</dependency-->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-integration</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>reactor-core</artifactId>
+					<groupId>org.projectreactor</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 

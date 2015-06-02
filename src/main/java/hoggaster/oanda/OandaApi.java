@@ -32,12 +32,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Preconditions;
 
 /**
  * Access point to oanda
@@ -69,6 +67,7 @@ public class OandaApi implements Broker {
 	/**
 	 * Get all {@link OandaAccount}s connected to the configured api-key
 	 */
+	@Override
 	@Timed
 	public Accounts getAccounts() {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
@@ -83,6 +82,7 @@ public class OandaApi implements Broker {
 	 * Get all available {@link Instrument}s for the first account we find.
 	 * @throws UnsupportedEncodingException 
 	 */
+	@Override
 	@Timed
 	public Instruments getInstrumentsForAccount(Integer accountId) throws UnsupportedEncodingException {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getInstruments());
@@ -126,13 +126,14 @@ public class OandaApi implements Broker {
 			builder.queryParam("count", periods);			
 		}
 		String uri = builder.build(true).toUriString();
-		LOG.info("Using uriString {}", uri);
+		LOG.debug("Using uriString {}", uri);
 
 		ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(builder.build(true).toUri(), HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
-		LOG.info(candles.getBody() + "");
+		LOG.debug(candles.getBody() + "");
 		return candles.getBody();
 	}
 	
+	@Override
 	@Timed
 	public Prices getAllPrices(Set<OandaInstrument> instruments) throws UnsupportedEncodingException {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPrices());
@@ -154,6 +155,7 @@ public class OandaApi implements Broker {
 	
 
 	
+	@Override
 	@Timed
 	public OandaOrderResponse sendOrderToBroker(OrderRequest request) {
 		LOG.info("Sendning order to oanda: {}", request);
