@@ -5,7 +5,7 @@ import hoggaster.domain.BrokerID;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.responses.OandaOrderResponse;
-import hoggaster.robot.MovingAverageService;
+import hoggaster.robot.MovingAverageServiceImpl;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
@@ -40,7 +40,7 @@ public class RobotController {
 	
 	private final RobotDefinitionRepo robotRepo;
 	
-	private final MovingAverageService maService;
+	private final MovingAverageServiceImpl maService;
 	
 	private final EventBus priceEventBus;
 	
@@ -51,7 +51,7 @@ public class RobotController {
 	
 	
 	@Autowired
-	public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageService maService, EventBus priceEventBus, Broker oandaApi) {
+	public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageServiceImpl maService, EventBus priceEventBus, Broker oandaApi) {
 		this.robotRegistry = robotRegistry;
 		this.robotRepo = robotRepo;
 		this.maService = maService;

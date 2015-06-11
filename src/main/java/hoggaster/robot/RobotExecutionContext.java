@@ -33,9 +33,9 @@ public class RobotExecutionContext {
 	
 	private final List<Condition> positiveSellConditions = new ArrayList<Condition>();
 	
-	private final MovingAverageService maService;
+	private final MovingAverageServiceImpl maService;
 	
-	public RobotExecutionContext(Price price, Depot depot, Instrument instrument, MovingAverageService maService) {
+	public RobotExecutionContext(Price price, Depot depot, Instrument instrument, MovingAverageServiceImpl maService) {
 		Preconditions.checkNotNull(price);
 		Preconditions.checkNotNull(depot);
 		Preconditions.checkNotNull(instrument);

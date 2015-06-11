@@ -5,7 +5,7 @@ package hoggaster.rules.indicators;
  */
 public enum CandleStickGranularity {
 	
-	DAY("D");
+	DAY("D"), MINUTE("M1");
 	
 	public final String oandaStyle;
 	

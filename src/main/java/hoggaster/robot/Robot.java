@@ -76,7 +76,7 @@ public class Robot implements Consumer<Event<?>> {
 
 	private final Set<Condition> sellConditions;
 
-	private final MovingAverageService maService;
+	private final MovingAverageServiceImpl maService;
 
 	private final Depot depot;
 
@@ -95,7 +95,7 @@ public class Robot implements Consumer<Event<?>> {
 
 	@Autowired
 	public Robot(Depot depot, RobotDefinition definition,
-			MovingAverageService maService,
+			MovingAverageServiceImpl maService,
 			@Qualifier("priceEventBus") EventBus priceEventBus, Broker broker) {
 		Preconditions.checkArgument(priceEventBus != null,
 				"The priceEventBus is null");
