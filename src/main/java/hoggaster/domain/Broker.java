@@ -1,33 +1,34 @@
 package hoggaster.domain;
 
-import hoggaster.domain.orders.OrderRequest;
-import hoggaster.oanda.responses.Accounts;
-import hoggaster.oanda.responses.Instruments;
-import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaOrderResponse;
-import hoggaster.oanda.responses.Prices;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
-import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.util.Set;
-
-
-public interface Broker {
+public enum Broker {
+    
+    
+	
+	OANDA (null, null);
+	
+//	IG (
+//		OffsetTime.of(17, 0, 0, 0, ZoneOffset.of("America/New_York")), 
+//		OffsetTime.of(16, 59, 59, 0, ZoneOffset.of("America/New_York"));
 	
 	
-	OandaOrderResponse sendOrderToBroker(OrderRequest request);
-
-	Instruments getInstrumentsForAccount(Integer mainAccountId) throws UnsupportedEncodingException;
-
-	Accounts getAccounts();
-
-	Prices getAllPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
+	public final OffsetTime opensAt;
+	public final OffsetTime closesAt;
 	
-	BrokerID getBrokerID();
+	
+	private Broker(OffsetTime opensAt, OffsetTime closesAt) {
+	    ZoneId NEW_YORK_TIME_ZONE_ID = ZoneId.of("America/New_York");
+	    LocalTime opening = LocalTime.of(17, 00, 00);
+	    ZoneOffset offset = NEW_YORK_TIME_ZONE_ID.getRules().getOffset(LocalDateTime.now());
+	    OffsetTime ot = OffsetTime.of(opening, offset);
+	    
+	    this.opensAt = opensAt;
+	    this.closesAt = closesAt;
+	}
 
-	public abstract OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity,
-			Integer periods, Instant start, Instant end)
-			throws UnsupportedEncodingException;
 }

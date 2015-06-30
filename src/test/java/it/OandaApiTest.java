@@ -1,7 +1,7 @@
 package it;
 
 import hoggaster.Application;
-import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
@@ -40,7 +40,7 @@ public class OandaApiTest {
     int port;
 
     @Autowired
-    Broker oanda;
+    BrokerConnection oanda;
 
     @Test
     public void testGetBidAskCandles() throws InterruptedException, UnsupportedEncodingException {

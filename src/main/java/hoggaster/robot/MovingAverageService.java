@@ -5,5 +5,9 @@ import hoggaster.rules.indicators.CandleStickGranularity;
 
 public interface MovingAverageService {
     
-    Double getMovingAverage(Instrument instrument, CandleStickGranularity granularity, Integer numberOfDataPoints);
+    Double getMA(Instrument instrument, CandleStickGranularity granularity, Integer numberOfDataPoints);
+
+    void fetchMinuteCandles();
+
+    void getDayCandles();
 }

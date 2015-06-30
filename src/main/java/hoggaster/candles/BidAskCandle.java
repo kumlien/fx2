@@ -1,6 +1,6 @@
 package hoggaster.candles;
 
-import hoggaster.domain.BrokerID;
+import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
@@ -22,7 +22,7 @@ public class BidAskCandle {
 	private String id;
 	
 	public final Instrument instrument;
-	public final BrokerID brokerId;
+	public final Broker brokerId;
 	public final CandleStickGranularity granularity;
 	
 	public final Instant time;
@@ -38,7 +38,7 @@ public class BidAskCandle {
 	public final Boolean complete;
 	
 	@PersistenceConstructor
-	BidAskCandle(String id, Instrument instrument, BrokerID brokerId,
+	BidAskCandle(String id, Instrument instrument, Broker brokerId,
 			CandleStickGranularity granularity, Instant time, Double openBid,
 			Double openAsk, Double highBid, Double highAsk, Double lowBid,
 			Double lowAsk, Double closeBid, Double closeAsk, Integer volume,
@@ -60,7 +60,7 @@ public class BidAskCandle {
 		this.complete = complete;
 	}
 
-	public BidAskCandle(Instrument instrument, BrokerID brokerId,
+	public BidAskCandle(Instrument instrument, Broker brokerId,
 			CandleStickGranularity granularity, Instant time, Double openBid,
 			Double openAsk, Double highBid, Double highAsk, Double lowBid,
 			Double lowAsk, Double closeBid, Double closeAsk, Integer volume,

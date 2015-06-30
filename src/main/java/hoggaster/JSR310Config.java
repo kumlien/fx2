@@ -1,19 +1,17 @@
 package hoggaster;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
+
 
 @Configuration
 public class JSR310Config {
     
 
-
-    /**
-     * @return override for Spring Web's default JAXB2 converter using safe deserialization (not relying on XmlRootElement annotation on target class)
-     */
-    @Bean
-    @Primary
-    public Jaxb2RootElementHttpMessageConverter jaxb2RootElementHttpMessageConverter() {
-        return new SafeJaxb2RootElementHttpMessageConverter();
-    }
 
     @Bean
     public ObjectMapper jacksonObjectMapper() {

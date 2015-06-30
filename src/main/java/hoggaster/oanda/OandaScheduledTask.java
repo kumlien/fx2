@@ -1,11 +1,12 @@
 package hoggaster.oanda;
 
-import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.Prices;
+import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.prices.Price;
+import hoggaster.robot.MovingAverageServiceImpl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
@@ -22,12 +23,16 @@ import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 //TODO Split
+/**
+ * 
+ * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link MovingAverageServiceImpl}
+ */
 @Component
 public class OandaScheduledTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaScheduledTask.class);
 
-    private final Broker oanda;
+    private final BrokerConnection oanda;
 
     private final EventBus priceEventBus;
 
@@ -44,7 +49,7 @@ public class OandaScheduledTask {
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
     @Autowired
-    public OandaScheduledTask(@Qualifier("oandaApi") Broker oanda, @Qualifier("priceEventBus") EventBus priceReactor, OandaProperties oandaProps) {
+    public OandaScheduledTask(@Qualifier("oandaApi") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceReactor, OandaProperties oandaProps) {
 	this.oanda = oanda;
 	this.priceEventBus = priceReactor;
 	this.oandaProps = oandaProps;
@@ -57,7 +62,7 @@ public class OandaScheduledTask {
      * Fetch all instruments available for the main account.
      */
     @Scheduled(fixedRate = 60000, initialDelay = 5000)
-    public void fetchInstruments() {
+    void fetchInstruments() {
 	try {
 	    Instruments availableInstruments = oanda.getInstrumentsForAccount(oandaProps.getMainAccountId());
 	    // Only add the ones we have support for
@@ -80,8 +85,8 @@ public class OandaScheduledTask {
 	});
     }
 
-    // @Scheduled(cron = "*/2 * * * * *")
-    public void fetchPrices() throws UnsupportedEncodingException {
+    @Scheduled(cron = "*/2 * * * * *")
+    void fetchPrices() throws UnsupportedEncodingException {
 	try {
 	    if (instrumentsForMainAccount == null) {
 		fetchInstruments();
@@ -91,11 +96,12 @@ public class OandaScheduledTask {
 		return;
 	    }
 
-	    Prices allPrices = oanda.getAllPrices(instrumentsForMainAccount);
+	    OandaPrices allPrices = oanda.getAllPrices(instrumentsForMainAccount);
 	    LOG.info("Got {} prices, send them to priceEventBus", allPrices.prices.size());
 	    allPrices.prices.parallelStream().forEach(p -> priceEventBus.notify("prices." + p.instrument, Event.wrap(new Price(p))));
 	} catch (Exception e) {
 	    LOG.error("Unhandled error in scheduled fetchPrices method", e);
 	}
     }
+    
 }

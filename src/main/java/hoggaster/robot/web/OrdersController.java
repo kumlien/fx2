@@ -1,6 +1,6 @@
 package hoggaster.robot.web;
 
-import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.OandaOrderResponse;
 
@@ -18,18 +18,18 @@ public class OrdersController {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(OrdersController.class);
 	
-	private final Broker oandaApi;
+	private final BrokerConnection oandaApi;
 	
 
 	@Autowired
-	public OrdersController(Broker oandaApi) {
+	public OrdersController(BrokerConnection oandaApi) {
 		this.oandaApi = oandaApi;
 	}
 	
 	@RequestMapping(method=RequestMethod.POST)
 	public OandaOrderResponse placeOrder(@RequestBody OrderRequest request) {
 		LOG.info("Sending order to broker: {}", request);
-		OandaOrderResponse result = oandaApi.sendOrderToBroker(request);
+		OandaOrderResponse result = oandaApi.sendOrder(request);
 		LOG.info("Got response: {}", result);
 		return result;
 	}

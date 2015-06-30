@@ -1,6 +1,6 @@
 package hoggaster.user;
 
-import hoggaster.domain.BrokerID;
+import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 
 import java.util.Set;
@@ -17,7 +17,7 @@ public class Depot {
 	@Id
 	private String id;
 	
-	private final BrokerID broker;
+	private final Broker broker;
 	
 	/*
 	 * The id in the broker system for this depot.
@@ -28,7 +28,7 @@ public class Depot {
 	
 
 	@PersistenceConstructor
-	public Depot(String id, BrokerID broker,Set<InstrumentOwnership> ownerships, String brokerId) {
+	public Depot(String id, Broker broker,Set<InstrumentOwnership> ownerships, String brokerId) {
 		this.id = id;
 		this.broker = broker;
 		this.ownerships = ownerships;
@@ -40,7 +40,7 @@ public class Depot {
 	 * 
 	 * @param broker The broker to which this depot is connected.
 	 */
-	public Depot(BrokerID broker, String brokerId) {
+	public Depot(Broker broker, String brokerId) {
 		this.broker = broker;
 		this.brokerId = brokerId;
 	}
@@ -49,7 +49,7 @@ public class Depot {
 		return ownerships.stream().filter(io -> io.getInstrument() == instrument).findFirst().orElse(null) != null;
 	}
 
-	public BrokerID getBroker() {
+	public Broker getBroker() {
 		return broker;
 	}
 

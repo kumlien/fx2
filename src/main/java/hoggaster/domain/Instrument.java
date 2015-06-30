@@ -1,5 +1,6 @@
 package hoggaster.domain;
 
+
 public enum Instrument {
 	AU200_AUD,
 	AUD_CAD,
@@ -125,6 +126,6 @@ public enum Instrument {
 	XPD_USD,
 	XPT_USD,
 	ZAR_JPY;
-	
+
 	
 }

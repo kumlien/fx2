@@ -1,6 +1,6 @@
 package hoggaster.prices;
 
-import hoggaster.domain.BrokerID;
+import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.OandaPrice;
 
@@ -18,10 +18,10 @@ public class Price {
 	public final Double bid;
 	public final Double ask;
 	public final Instant time;
-	public final BrokerID broker;
+	public final Broker broker;
 	
 	@PersistenceConstructor
-	public Price(Long id, Instrument instrument, Double bid, Double ask, Instant time, BrokerID broker) {
+	public Price(Long id, Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
 		this.id = id;
 		this.instrument = instrument;
 		this.bid = bid;
@@ -30,7 +30,7 @@ public class Price {
 		this.broker = broker;
 	}
 
-	public Price(Instrument instrument, Double bid, Double ask, Instant time, BrokerID broker) {
+	public Price(Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
 		this.instrument = instrument;
 		this.bid = bid;
 		this.ask = ask;
@@ -43,7 +43,7 @@ public class Price {
 		this.bid = p.bid;
 		this.ask = p.ask;
 		this.time = p.time.toInstant();
-		this.broker = BrokerID.OANDA;
+		this.broker = Broker.OANDA;
 	}
 
 	@Override

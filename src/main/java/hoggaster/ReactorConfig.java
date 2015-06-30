@@ -15,4 +15,9 @@ public class ReactorConfig {
     EventBus createPriceEventBus(Environment environment) {
 	return EventBus.create(environment, Environment.THREAD_POOL);
     }
+    
+    @Bean(name = "candleEventBus")
+    EventBus createCandleEventBus(Environment environment) {
+	return EventBus.create(environment, Environment.THREAD_POOL);
+    }
 }

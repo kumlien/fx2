@@ -54,4 +54,23 @@ public class RobotDefintionCRUDTest {
 
 	robotRepo.delete(rd.getId());
     }
+    
+    
+    @Test
+    public void testCRUDRobotDefinition2() throws InterruptedException {
+	RobotDefinition rd = new RobotDefinition("Robot2", Instrument.EUR_USD);
+	TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), Operator.GREATER_OR_EQUAL_THAN, 1, ConditionType.BUY);
+	rd.addBuyCondition(buyCondition);
+	rd = robotRepo.save(rd);
+	Assert.assertNotNull(rd.getId());
+	LOG.info("RobotDefinition saved to db with id {}", rd.getId());
+
+	TwoIndicatorCondition stopLoss = new TwoIndicatorCondition("Sell when ask is <= 140", new CurrentAskIndicator(), new SimpleValueIndicator(140.0), Operator.LESS_OR_EQUAL_THAN, 1, ConditionType.BUY);
+	TwoIndicatorCondition takeProfit = new TwoIndicatorCondition("Sell when bid is >= 160", new CurrentBidIndicator(), new SimpleValueIndicator(160.0), Operator.GREATER_OR_EQUAL_THAN, 2, ConditionType.BUY);
+	rd.addSellCondition(stopLoss);
+	rd.addSellCondition(takeProfit);
+	rd = robotRepo.save(rd);
+
+	robotRepo.delete(rd.getId());
+    }
 }

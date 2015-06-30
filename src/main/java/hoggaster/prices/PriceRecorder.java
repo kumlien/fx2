@@ -1,10 +1,9 @@
 package hoggaster.prices;
 
 import static reactor.spring.context.annotation.SelectorType.REGEX;
+import hoggaster.oanda.responses.OandaPrice;
 
 import java.util.concurrent.atomic.LongAdder;
-
-import hoggaster.oanda.responses.OandaPrice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,6 @@ import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.spring.context.annotation.Consumer;
 import reactor.spring.context.annotation.Selector;
-import reactor.spring.context.annotation.SelectorType;
 
 /**
  * Consumes events with new {@link OandaPrice} info and stores them in the db.
@@ -36,8 +34,7 @@ public class PriceRecorder {
 	
 	@Selector(value="prices.(.+)",type=REGEX, eventBus="@priceEventBus")
 	public void handleNewPrice(Event<OandaPrice> evt) {
-		counter.increment();
-		LOG.info("Count: " + counter.longValue());
+	    LOG.info("Got a price event: {}", evt.getData());
 	}
 
 }

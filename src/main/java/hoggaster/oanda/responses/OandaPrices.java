@@ -5,12 +5,12 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Prices {
+public class OandaPrices {
 	
 	public final List<OandaPrice> prices;
 
 	@JsonCreator
-	public Prices(@JsonProperty(value="prices")List<OandaPrice> prices) {
+	public OandaPrices(@JsonProperty(value="prices")List<OandaPrice> prices) {
 		this.prices = prices;
 	}
 

@@ -33,9 +33,9 @@ public class RobotExecutionContext {
 	
 	private final List<Condition> positiveSellConditions = new ArrayList<Condition>();
 	
-	private final MovingAverageServiceImpl maService;
+	private final MovingAverageService maService;
 	
-	public RobotExecutionContext(Price price, Depot depot, Instrument instrument, MovingAverageServiceImpl maService) {
+	public RobotExecutionContext(Price price, Depot depot, Instrument instrument, MovingAverageService maService) {
 		Preconditions.checkNotNull(price);
 		Preconditions.checkNotNull(depot);
 		Preconditions.checkNotNull(instrument);
@@ -55,7 +55,7 @@ public class RobotExecutionContext {
 	}
 
 	public Double getMovingAverage(CandleStickGranularity granularity, int numberOfDataPoints) {
-		return maService.getMovingAverage(instrument, granularity, numberOfDataPoints);
+		return maService.getMA(instrument, granularity, numberOfDataPoints);
 	}
 
 	public List<Condition> getPositiveBuyConditions() {

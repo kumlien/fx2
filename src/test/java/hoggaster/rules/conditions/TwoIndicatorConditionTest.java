@@ -1,6 +1,6 @@
 package hoggaster.rules.conditions;
 
-import hoggaster.domain.BrokerID;
+import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 import hoggaster.prices.Price;
 import hoggaster.robot.MovingAverageServiceImpl;
@@ -23,8 +23,8 @@ public class TwoIndicatorConditionTest {
 	@Test
 	public void basicTest() {
 		Instrument instrument = Instrument.AUD_USD;
-		Price price = new Price(instrument, 2.0, 2.1, Instant.now(), BrokerID.OANDA);
-		Depot depot = new Depot(BrokerID.OANDA, "13123");
+		Price price = new Price(instrument, 2.0, 2.1, Instant.now(), Broker.OANDA);
+		Depot depot = new Depot(Broker.OANDA, "13123");
 		MovingAverageServiceImpl maService = Mockito.mock(MovingAverageServiceImpl.class);
 		
 		Indicator firstIndicator = new CurrentAskIndicator();

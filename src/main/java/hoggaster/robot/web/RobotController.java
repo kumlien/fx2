@@ -1,11 +1,9 @@
 package hoggaster.robot.web;
 
+import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerID;
-import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.OandaProperties;
-import hoggaster.oanda.responses.OandaOrderResponse;
-import hoggaster.robot.MovingAverageServiceImpl;
+import hoggaster.robot.MovingAverageService;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
@@ -40,18 +38,18 @@ public class RobotController {
 	
 	private final RobotDefinitionRepo robotRepo;
 	
-	private final MovingAverageServiceImpl maService;
+	private final MovingAverageService maService;
 	
 	private final EventBus priceEventBus;
 	
-	private final Broker oanda;
+	private final BrokerConnection oanda;
 	
 	@Autowired //TODO Only for testing!! Used to set up a depot. 
 	private OandaProperties oandaProps;
 	
 	
 	@Autowired
-	public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageServiceImpl maService, EventBus priceEventBus, Broker oandaApi) {
+	public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageService maService, EventBus priceEventBus, BrokerConnection oandaApi) {
 		this.robotRegistry = robotRegistry;
 		this.robotRepo = robotRepo;
 		this.maService = maService;
@@ -77,7 +75,7 @@ public class RobotController {
 			}
 			
 			//TODO For now hardwired to oanda and main account
-			Depot depot = new Depot(BrokerID.OANDA, String.valueOf(oandaProps.getMainAccountId()));
+			Depot depot = new Depot(Broker.OANDA, String.valueOf(oandaProps.getMainAccountId()));
 			robot = new Robot(depot, definition, maService, priceEventBus, oanda);
 			robotRegistry.add(robot);
 		}
