@@ -9,7 +9,6 @@ import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +32,8 @@ import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.fn.Consumer;
 import reactor.rx.Stream;
 import reactor.rx.Streams;
+
+import com.codahale.metrics.annotation.Timed;
 
 
 @Service
@@ -73,6 +74,13 @@ public class MovingAverageServiceImpl implements MovingAverageService {
 	Pageable pageable = new PageRequest(0, numberOfDataPoints);
 	List<BidAskCandle> candles = bidAskCandleRepo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, pageable );
 	LOG.info("Got a list: {}", candles.size());
+	if(candles.size() < numberOfDataPoints) {
+	    try {
+		candles = getStoreAndNotifyCandlesForAllInstruments(granularity, Instant.now(), numberOfDataPoints, true, false);
+	    } catch (UnsupportedEncodingException e) {
+		LOG.error("Error fetching candles",e);
+	    }
+	}
 	double average = candles.stream().mapToDouble(bid -> bid.closeBid).average().getAsDouble();
 	LOG.info("Average calculated to {}", average);
 	return average;
@@ -84,8 +92,9 @@ public class MovingAverageServiceImpl implements MovingAverageService {
      */
     @Override
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 5000)
+    @Timed
     public void fetchMinuteCandles() {
-	Instant start = Instant.now();
+	LOG.info("About to fetch one minute candles");
 	int numberOfCandles = 1;
 	try {
 	    if(!initializedMinuteCandles) {
@@ -93,9 +102,8 @@ public class MovingAverageServiceImpl implements MovingAverageService {
 		initializedMinuteCandles = true;
 	    }
 	    
-	    List<BidAskCandle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, null, start, numberOfCandles);
-	    Duration duration = Duration.between(start, Instant.now());
-	    LOG.info("Got {} one minute candles and the duration was {}", candles.size(), duration );
+	    List<BidAskCandle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, Instant.now(), numberOfCandles, true, true);
+	    LOG.info("Got {} one minute candles", candles.size() );
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
 	}
@@ -109,14 +117,17 @@ public class MovingAverageServiceImpl implements MovingAverageService {
      */
     @Override
     @Scheduled(cron="0 0 17 * * MON-FRI")
-    public void getDayCandles() {
+    @Timed
+    public void fetchDayCandles() {
+	LOG.info("About to fetch one day candles");
 	try {
 	    int numberOfCandles = 1;
 	    if(!initializedDayCandles) {
 		numberOfCandles = 200;
 		initializedDayCandles = true;
 	    }
-	    List<BidAskCandle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.DAY, null, Instant.now(), numberOfCandles);
+	    List<BidAskCandle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.DAY, Instant.now(), numberOfCandles, true, true);
+	    LOG.info("Done fetching one day candles, got {} of them.", candles.size());
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
 	}
@@ -126,18 +137,23 @@ public class MovingAverageServiceImpl implements MovingAverageService {
     /*
      * Call the oanda api to get candles.
      */
-    private List<BidAskCandle> getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant start, Instant end, Integer number) throws UnsupportedEncodingException {
+    private List<BidAskCandle> getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant end, Integer number, boolean doSave, boolean doNotify) throws UnsupportedEncodingException {
 	RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
 	Stream<Instrument> instrumentStream = Streams.wrap(publisher);
 	final List<BidAskCandle> allCandles = new ArrayList<>();
 	
+	//Consumer used to handle one instrument
 	Consumer<Instrument> ic = instrument -> {
 	    try {
-		Set<BidAskCandle> candles = getCandlesForOneInstrument(instrument, granularity, start, end, number);
+		Set<BidAskCandle> candles = getCandlesForOneInstrument(instrument, granularity, end, number);
 		allCandles.addAll(candles);
 		candles.forEach(bac -> {
-		    bidAskCandleRepo.save(bac);
-		    candleEventBus.notify("candles." + instrument, Event.wrap(bac));
+		    if(doSave) {
+			bidAskCandleRepo.save(bac);
+		    }
+		    if(doNotify) {
+			candleEventBus.notify("candles." + instrument, Event.wrap(bac));
+		    }
 		    });
 		LOG.debug("{} {} candles saved and sent to event bus for instrument {} ({})",candles.size(), granularity, instrument, candles.isEmpty() ? null : candles.iterator().next());
 	    } catch (Exception e) {
@@ -145,11 +161,13 @@ public class MovingAverageServiceImpl implements MovingAverageService {
 	    }
 	};
 	
+	//Attach consumers
 	instrumentStream.consume(ic);
 	instrumentStream.consume(ic);
 	
 	Arrays.asList(Instrument.values()).forEach(i-> publisher.onNext(i));
 	publisher.onComplete();
+	//Sort them by time
 	Collections.sort(allCandles, new Comparator<BidAskCandle>() {
 	    @Override
 	    public int compare(BidAskCandle o1, BidAskCandle o2) {
@@ -165,8 +183,8 @@ public class MovingAverageServiceImpl implements MovingAverageService {
     }
 
 
-    private Set<BidAskCandle> getCandlesForOneInstrument(Instrument instrument, CandleStickGranularity granularity, Instant start, Instant end, Integer number) throws UnsupportedEncodingException {
-	OandaBidAskCandlesResponse bidAskCandles = oanda.getBidAskCandles(instrument, granularity, number, start, end);
+    private Set<BidAskCandle> getCandlesForOneInstrument(Instrument instrument, CandleStickGranularity granularity, Instant end, Integer number) throws UnsupportedEncodingException {
+	OandaBidAskCandlesResponse bidAskCandles = oanda.getBidAskCandles(instrument, granularity, number, null, end);
 	return bidAskCandles.getCandles().stream()
 		.map(bac -> new BidAskCandle(instrument, Broker.OANDA, granularity, Instant.parse(bac.getTime()), bac.getOpenBid(), bac.getOpenAsk(), bac.getHighBid(), bac.getHighAsk(), bac.getLowBid(), bac.getLowAsk(), bac.getCloseBid(), bac.getCloseAsk(), bac.getVolume(),bac.getComplete()))
 		.collect(Collectors.toSet());

@@ -4,6 +4,7 @@ import hoggaster.Application;
 import hoggaster.domain.Instrument;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
+import hoggaster.rules.EventType;
 import hoggaster.rules.Operator;
 import hoggaster.rules.conditions.ConditionType;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
@@ -40,7 +41,7 @@ public class RobotDefintionCRUDTest {
     @Test
     public void testCRUDRobotDefinition() throws InterruptedException {
 	RobotDefinition rd = new RobotDefinition("myRobotDefinition", Instrument.AUD_CAD);
-	TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), Operator.GREATER_OR_EQUAL_THAN, 1, ConditionType.BUY);
+	TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), Operator.GREATER_OR_EQUAL_THAN, 1, ConditionType.BUY, EventType.ONE_MINUTE_CANDLE);
 	rd.addBuyCondition(buyCondition);
 	rd = robotRepo.save(rd);
 	Assert.assertNotNull(rd.getId());

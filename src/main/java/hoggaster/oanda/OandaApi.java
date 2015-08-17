@@ -124,11 +124,9 @@ public class OandaApi implements BrokerConnection {
 	if (periods != null) {
 	    builder.queryParam("count", periods);
 	}
-	String uri = builder.build(true).toUriString();
-	LOG.info("Using uriString {}", uri);
+	//String uri = builder.build(true).toUriString();
 
 	ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(builder.build(true).toUri(), HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
-	LOG.debug(candles.getBody() + "");
 	return candles.getBody();
     }
 

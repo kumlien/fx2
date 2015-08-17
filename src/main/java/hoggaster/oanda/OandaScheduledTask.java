@@ -26,6 +26,7 @@ import reactor.bus.EventBus;
 /**
  * 
  * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link MovingAverageServiceImpl}
+ * TODO Fetches prices via pull, implement push from oanda instead.
  */
 @Component
 public class OandaScheduledTask {
@@ -64,6 +65,7 @@ public class OandaScheduledTask {
     @Scheduled(fixedRate = 60000, initialDelay = 5000)
     void fetchInstruments() {
 	try {
+	    LOG.info("Start fetching instrument definitions");
 	    Instruments availableInstruments = oanda.getInstrumentsForAccount(oandaProps.getMainAccountId());
 	    // Only add the ones we have support for
 	    availableInstruments.getInstruments().forEach(i -> {
@@ -85,14 +87,14 @@ public class OandaScheduledTask {
 	});
     }
 
-    @Scheduled(cron = "*/2 * * * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
 	try {
 	    if (instrumentsForMainAccount == null) {
 		fetchInstruments();
 	    }
 	    if (instrumentsForMainAccount == null || instrumentsForMainAccount.size() < 1) {
-		LOG.warn("No instrument known yet, skip call to fetch prices...");
+		LOG.warn("No instruments known yet, skip call to fetch prices...");
 		return;
 	    }
 

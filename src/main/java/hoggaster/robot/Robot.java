@@ -7,10 +7,11 @@ import hoggaster.domain.Instrument;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
-import hoggaster.oanda.responses.OandaMidPointCandle;
+import hoggaster.oanda.responses.OandaBidAskCandle;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
+import hoggaster.rules.EventType;
 import hoggaster.user.Depot;
 
 import java.util.Map;
@@ -20,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.easyrules.core.AnnotatedRulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import reactor.bus.Event;
@@ -70,6 +70,7 @@ public class Robot implements Consumer<Event<?>> {
 
     private final Instrument instrument;
 
+    //The buy conditions. Must be annotated with 
     private final Set<Condition> buyConditions;
 
     private final Set<Condition> sellConditions;
@@ -90,7 +91,6 @@ public class Robot implements Consumer<Event<?>> {
     // Map with key = type of registration (prices, candles...) and registration key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
-    @Autowired
     public Robot(Depot depot, RobotDefinition definition, MovingAverageService maService, @Qualifier("priceEventBus") EventBus priceEventBus, BrokerConnection broker) {
 	Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
 	Preconditions.checkArgument(maService != null, "The moving average service is null");
@@ -141,38 +141,40 @@ public class Robot implements Consumer<Event<?>> {
 
     @Timed
     public void onNewPrice(Price price) {
-	if (!isRunning()) {
-	    LOG.error("Ooops, not running but {}, bailing out", status);
-	    return;
+	synchronized (this) {
+	    if (!isRunning()) {
+		LOG.error("Ooops, not running but {}, bailing out", status);
+		return;
+	    }
+
+	    LOG.debug("New price received: {}", price);
+	    if (!(price.instrument == instrument)) {
+		LOG.debug("Not to consider for buy since it's not for this robot: {} ", price.instrument);
+		return;
+	    }
+	    LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
+	    RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService, EventType.PRICE);
+
+	    buyConditions.stream().forEach(c -> {
+		c.setContext(ctx);
+	    });
+	    sellConditions.stream().forEach(c -> {
+		c.setContext(ctx);
+	    });
+
+	    annotatedRulesEngine.fireRules();
+
+	    if (ctx.getPositiveBuyConditions().size() > 0) {
+		LOG.info("Maybe we should buy something!");
+		doBuy();
+	    } else if (ctx.getPositiveSellConditions().size() > 0) {
+		LOG.info("Maybe we should sell something!");
+		doSell();
+	    } else {
+		LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+	    }
+
 	}
-
-	LOG.debug("New price received: {}", price);
-	if (!(price.instrument == instrument)) {
-	    LOG.debug("Not to consider for buy since it's not for this robot: {} ", price.instrument);
-	    return;
-	}
-	LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService);
-
-	buyConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
-	sellConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
-
-	annotatedRulesEngine.fireRules();
-
-	if (ctx.getPositiveBuyConditions().size() > 0) {
-	    LOG.info("Maybe we should buy something!");
-	    doBuy();
-	} else if (ctx.getPositiveSellConditions().size() > 0) {
-	    LOG.info("Maybe we should sell something!");
-	    doSell();
-	} else {
-	    LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
-	}
-
     }
 
     private void doSell() {
@@ -197,7 +199,7 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     @Timed
-    public void onNewCandle(OandaMidPointCandle candle) {
+    public void onNewCandle(OandaBidAskCandle candle) {
 
     }
 
@@ -212,8 +214,8 @@ public class Robot implements Consumer<Event<?>> {
 	    LOG.info("Robot {} dealing with instrument {} received a new event: {}", name, instrument, t.getData());
 	    if (t.getData() instanceof Price) {
 		onNewPrice((Price) t.getData());
-	    } else if (t.getData() instanceof OandaMidPointCandle) {
-		onNewCandle((OandaMidPointCandle) t.getData());
+	    } else if (t.getData() instanceof OandaBidAskCandle) {
+		onNewCandle((OandaBidAskCandle) t.getData());
 	    }
 	}
     }

@@ -9,5 +9,5 @@ public interface MovingAverageService {
 
     void fetchMinuteCandles();
 
-    void getDayCandles();
+    void fetchDayCandles();
 }
