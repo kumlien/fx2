@@ -15,6 +15,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "time", "openBid", "openAsk", "highBid", "highAsk",
 		"lowBid", "lowAsk", "closeBid", "closeAsk", "volume", "complete" })
+/**
+ * 
+ * Representation of a bidask candle returned from Oanda. 
+ * 
+ * @see BidAskCandle
+ *  
+ */
 public class OandaBidAskCandle {
 
 	@JsonProperty("time")

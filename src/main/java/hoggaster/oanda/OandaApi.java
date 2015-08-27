@@ -3,6 +3,7 @@ package hoggaster.oanda;
 import hoggaster.domain.Broker;
 import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.OrderService;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.Accounts;
@@ -40,7 +41,7 @@ import com.codahale.metrics.annotation.Timed;
 /**
  * Access point to oanda
  */
-public class OandaApi implements BrokerConnection {
+public class OandaApi implements BrokerConnection, OrderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaApi.class);
 

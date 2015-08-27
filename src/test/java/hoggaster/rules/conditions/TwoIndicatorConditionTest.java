@@ -30,7 +30,7 @@ public class TwoIndicatorConditionTest {
 		
 		Indicator firstIndicator = new CurrentAskIndicator();
 		Indicator secondIndicator = new SimpleValueIndicator(2.0);
-		TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Operator.GREATER_THAN, 1, ConditionType.BUY, EventType.ONE_MINUTE_CANDLE);
+		TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Operator.GREATER_THAN, 1, BuyOrSell.BUY, EventType.ONE_MINUTE_CANDLE);
 		RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService, EventType.ONE_MINUTE_CANDLE);
 		tic.setContext(ctx);
 		

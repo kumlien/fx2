@@ -2,6 +2,7 @@ package hoggaster.candles;
 
 import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.time.Instant;
@@ -16,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndexes({
 	@CompoundIndex(name="instrument_granularity_time_idx", def="{'instrument':1, 'granularity':1, 'time': 1}", unique=true)
 })
-public class BidAskCandle {
+public class BidAskCandle extends MarketUpdate {
 	
 	@Id
 	private String id;

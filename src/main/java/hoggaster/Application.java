@@ -1,6 +1,7 @@
 package hoggaster;
 
 import hoggaster.domain.BrokerConnection;
+import hoggaster.domain.OrderService;
 import hoggaster.oanda.OandaApi;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.OandaResourcesProperties;
@@ -10,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -58,8 +60,13 @@ public class Application {
 		return factory;
     }
     
-    @Bean
+    @Bean(name="OandaBrokerConnection")
     public BrokerConnection oandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
     	return new OandaApi(oandaProps, restTemplate, resources);
+    }
+    
+    @Bean
+    public OrderService OandaOrderService(@Qualifier("OandaBrokerConnection") BrokerConnection oandaApi) {
+	return (OrderService) oandaApi;
     }
 }

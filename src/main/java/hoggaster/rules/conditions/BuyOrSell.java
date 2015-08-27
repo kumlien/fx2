@@ -1,5 +1,5 @@
 package hoggaster.rules.conditions;
 
-public enum ConditionType {
+public enum BuyOrSell {
 	BUY, SELL;
 }

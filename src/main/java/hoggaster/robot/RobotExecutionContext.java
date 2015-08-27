@@ -1,7 +1,7 @@
 package hoggaster.robot;
 
 import hoggaster.domain.Instrument;
-import hoggaster.prices.Price;
+import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
 import hoggaster.rules.EventType;
 import hoggaster.rules.indicators.CandleStickGranularity;
@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
  */
 public class RobotExecutionContext {
 
-    public final Price price;
+    public final MarketUpdate marketUpdate;
 
     public final Depot depot;
 
@@ -38,12 +38,12 @@ public class RobotExecutionContext {
 
     public final EventType eventType;
 
-    public RobotExecutionContext(Price price, Depot depot, Instrument instrument, MovingAverageService maService, EventType eventType) {
-	Preconditions.checkNotNull(price);
+    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, MovingAverageService maService, EventType eventType) {
+	Preconditions.checkNotNull(marketUpdate);
 	Preconditions.checkNotNull(depot);
 	Preconditions.checkNotNull(instrument);
 	Preconditions.checkNotNull(maService);
-	this.price = price;
+	this.marketUpdate = marketUpdate;
 	this.depot = depot;
 	this.instrument = instrument;
 	this.maService = maService;
@@ -69,7 +69,7 @@ public class RobotExecutionContext {
     @Override
     public String toString() {
 	StringBuilder builder = new StringBuilder();
-	builder.append("RobotExecutionContext [price=").append(price).append(", depot=").append(depot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+	builder.append("RobotExecutionContext [price=").append(marketUpdate).append(", depot=").append(depot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
 	return builder.toString();
     }
 

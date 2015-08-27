@@ -1,11 +1,9 @@
 package hoggaster.domain;
 
-import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.Accounts;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
@@ -17,17 +15,18 @@ import java.util.Set;
 public interface BrokerConnection {
 	
 	
-	OandaOrderResponse sendOrder(OrderRequest request);
 
-	Instruments getInstrumentsForAccount(Integer mainAccountId) throws UnsupportedEncodingException;
+	Instruments getInstrumentsForAccount(Integer accountId) throws UnsupportedEncodingException;
 
 	Accounts getAccounts();
 
+	//TODO remove Oanda x 2
 	OandaPrices getAllPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
 	
 	Broker getBrokerID();
 
-	public abstract OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity,
+	//TODO remove Oanda
+	OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity,
 			Integer periods, Instant start, Instant end)
 			throws UnsupportedEncodingException;
 }

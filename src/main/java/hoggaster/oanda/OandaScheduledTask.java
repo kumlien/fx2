@@ -50,7 +50,7 @@ public class OandaScheduledTask {
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
     @Autowired
-    public OandaScheduledTask(@Qualifier("oandaApi") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceReactor, OandaProperties oandaProps) {
+    public OandaScheduledTask(@Qualifier("OandaBrokerConnection") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceReactor, OandaProperties oandaProps) {
 	this.oanda = oanda;
 	this.priceEventBus = priceReactor;
 	this.oandaProps = oandaProps;

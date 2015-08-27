@@ -21,7 +21,7 @@ import com.google.common.collect.Sets;
  * Generic rule comparing two {@link Indicator}s with a given {@link Operator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()} 
  * method will get called and we add ourselves to the buy- or sell action depending
- * on our {@link ConditionType} 
+ * on our {@link BuyOrSell} 
  * 
  * @author svante
  */
@@ -35,19 +35,28 @@ public class TwoIndicatorCondition implements Condition {
     public final Indicator secondIndicator;
     public final Operator operator;
     public final Integer priority;
-    public final ConditionType type;
+    public final BuyOrSell buyOrSell;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
     private final Set<EventType> eventTypes;
 
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, ConditionType type, EventType... eventTypes) {
+    /**
+     * @param name
+     * @param firstIndicator
+     * @param secondIndicator
+     * @param operator
+     * @param priority
+     * @param buyOrSell
+     * @param eventTypes
+     */
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, BuyOrSell buyOrSell, EventType... eventTypes) {
 	this.name = name;
 	this.firstIndicator = firstIndicator;
 	this.secondIndicator = secondIndicator;
 	this.operator = operator;
 	this.priority = priority;
-	this.type = type;
+	this.buyOrSell = buyOrSell;
 	this.eventTypes = Sets.newHashSet(eventTypes);
     }
 
@@ -65,7 +74,7 @@ public class TwoIndicatorCondition implements Condition {
 
     @Action
     public void then() {
-	if (type == ConditionType.BUY) {
+	if (buyOrSell == BuyOrSell.BUY) {
 	    ctx.addBuyAction(this);
 	} else {
 	    ctx.addSellAction(this);
@@ -85,7 +94,7 @@ public class TwoIndicatorCondition implements Condition {
     @Override
     public String toString() {
 	StringBuilder builder = new StringBuilder();
-	builder.append("TwoIndicatorCondition [name=").append(name).append(", firstIndicator=").append(firstIndicator).append(", secondIndicator=").append(secondIndicator).append(", operator=").append(operator).append(", priority=").append(priority).append(", type=").append(type).append("]");
+	builder.append("TwoIndicatorCondition [name=").append(name).append(", firstIndicator=").append(firstIndicator).append(", secondIndicator=").append(secondIndicator).append(", operator=").append(operator).append(", priority=").append(priority).append(", type=").append(buyOrSell).append("]");
 	return builder.toString();
     }
 }

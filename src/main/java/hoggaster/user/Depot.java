@@ -2,7 +2,9 @@ package hoggaster.user;
 
 import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
+import hoggaster.transaction.Transaction;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -26,13 +28,16 @@ public class Depot {
 	
 	private Set<InstrumentOwnership> ownerships = Sets.newHashSet();
 	
+	private Set<Transaction> transactions = Sets.newHashSet();
+	
 
 	@PersistenceConstructor
-	public Depot(String id, Broker broker,Set<InstrumentOwnership> ownerships, String brokerId) {
+	public Depot(String id, Broker broker,Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId) {
 		this.id = id;
 		this.broker = broker;
 		this.ownerships = ownerships;
 		this.brokerId = brokerId;
+		this.setTransactions(transactions);
 	}
 
 	/**
@@ -46,7 +51,11 @@ public class Depot {
 	}
 
 	public boolean ownThisInstrument(Instrument instrument) {
-		return ownerships.stream().filter(io -> io.getInstrument() == instrument).findFirst().orElse(null) != null;
+		return findByInstrument(instrument) != null;
+	}
+	
+	private InstrumentOwnership findByInstrument(Instrument instrument) {
+	    return ownerships.stream().filter(io -> io.getInstrument() == instrument).findFirst().orElse(null);
 	}
 
 	public Broker getBroker() {
@@ -56,6 +65,36 @@ public class Depot {
 
 	public String getBrokerId() {
 		return brokerId;
+	}
+
+	/**
+	 * Signal a that we bought something
+	 * Add to set of {@link InstrumentOwnership} if not already present
+	 * @param instrument
+	 * @param quantity
+	 * @param totalPrice
+	 */
+	public void bought(Instrument instrument, BigDecimal quantity, BigDecimal pricePerShare) {
+	    synchronized (ownerships) {
+		InstrumentOwnership io = findByInstrument(instrument);
+		if(io == null) {
+		    io = new InstrumentOwnership(instrument);
+		}
+		io.add(quantity, pricePerShare);
+	    }
+	}
+
+	public void sold() {
+	    // TODO Auto-generated method stub
+	    
+	}
+
+	public Set<Transaction> getTransactions() {
+	    return transactions;
+	}
+
+	public void setTransactions(Set<Transaction> transactions) {
+	    this.transactions = transactions;
 	}
 
 

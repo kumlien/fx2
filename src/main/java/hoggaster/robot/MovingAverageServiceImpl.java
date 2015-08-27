@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -59,7 +60,7 @@ public class MovingAverageServiceImpl implements MovingAverageService {
 
 
     @Autowired
-    public MovingAverageServiceImpl(BidAskCandleRepo bidAskCandleRepo, BrokerConnection oanda, EventBus candleEventBus) {
+    public MovingAverageServiceImpl(BidAskCandleRepo bidAskCandleRepo,@Qualifier("OandaBrokerConnection") BrokerConnection oanda, EventBus candleEventBus) {
 	this.bidAskCandleRepo = bidAskCandleRepo;
 	this.oanda = oanda;
 	this.candleEventBus = candleEventBus;

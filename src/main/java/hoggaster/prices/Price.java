@@ -2,16 +2,16 @@ package hoggaster.prices;
 
 import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.MarketUpdate;
 import hoggaster.oanda.responses.OandaPrice;
 
 import java.time.Instant;
-import java.util.Date;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Price {
+public class Price extends MarketUpdate {
 	
 	private Long id;
 	public final Instrument instrument;
