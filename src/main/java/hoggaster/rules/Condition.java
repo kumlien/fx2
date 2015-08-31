@@ -8,7 +8,7 @@ import hoggaster.rules.conditions.BuyOrSell;
  * order to work with our rule engine.
  * 
  * Each condition is of a {@link BuyOrSell}
- * Each condition react to one or more {@link EventType}s TODO how to enforce that on the interface level
+ * Each condition react to one or more {@link MarketUpdateType}s TODO how to enforce that on the interface level
  */
 public interface Condition {
 

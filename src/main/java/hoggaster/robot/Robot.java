@@ -11,7 +11,6 @@ import hoggaster.domain.orders.OrderType;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
-import hoggaster.rules.EventType;
 import hoggaster.user.Depot;
 
 import java.util.Map;
@@ -146,7 +145,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     public void onNewPrice(Price price) {
 	LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService, EventType.PRICE);
+	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService);
 
 	buyConditions.stream().forEach(c -> {
 	    c.setContext(ctx);
@@ -172,7 +171,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     public void onNewCandle(BidAskCandle candle) {
 	LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, maService, EventType.ONE_MINUTE_CANDLE);
+	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, maService);
 	buyConditions.stream().forEach(c -> {
 	    c.setContext(ctx);
 	});

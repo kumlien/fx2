@@ -3,7 +3,6 @@ package hoggaster.robot;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
-import hoggaster.rules.EventType;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import hoggaster.user.Depot;
 
@@ -36,9 +35,7 @@ public class RobotExecutionContext {
 
     private final MovingAverageService maService;
 
-    public final EventType eventType;
-
-    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, MovingAverageService maService, EventType eventType) {
+    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, MovingAverageService maService) {
 	Preconditions.checkNotNull(marketUpdate);
 	Preconditions.checkNotNull(depot);
 	Preconditions.checkNotNull(instrument);
@@ -47,7 +44,6 @@ public class RobotExecutionContext {
 	this.depot = depot;
 	this.instrument = instrument;
 	this.maService = maService;
-	this.eventType = eventType;
     }
 
     public void addBuyAction(Condition condition) {

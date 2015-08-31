@@ -2,10 +2,15 @@ package hoggaster.rules.indicators;
 
 import hoggaster.prices.Price;
 import hoggaster.robot.RobotExecutionContext;
-import hoggaster.rules.Indicator;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Indicator used to get the current bid value.
+ * Works on a {@link Price} update
+ * 
+ * @author svante2
+ */
 public class CurrentBidIndicator implements Indicator {
 
 	@Override

@@ -1,4 +1,4 @@
-package hoggaster.rules;
+package hoggaster.rules.indicators;
 
 import hoggaster.robot.RobotExecutionContext;
 

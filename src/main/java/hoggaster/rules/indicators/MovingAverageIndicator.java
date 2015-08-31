@@ -1,7 +1,6 @@
 package hoggaster.rules.indicators;
 
 import hoggaster.robot.RobotExecutionContext;
-import hoggaster.rules.Indicator;
 
 public class MovingAverageIndicator implements Indicator {
 	

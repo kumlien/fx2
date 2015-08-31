@@ -2,9 +2,9 @@ package hoggaster.rules.conditions;
 
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Condition;
-import hoggaster.rules.EventType;
-import hoggaster.rules.Indicator;
+import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.Operator;
+import hoggaster.rules.indicators.Indicator;
 
 import java.util.Set;
 
@@ -39,7 +39,7 @@ public class TwoIndicatorCondition implements Condition {
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
-    private final Set<EventType> eventTypes;
+    private final Set<MarketUpdateType> eventTypes;
 
     /**
      * @param name
@@ -50,7 +50,7 @@ public class TwoIndicatorCondition implements Condition {
      * @param buyOrSell
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, BuyOrSell buyOrSell, EventType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, BuyOrSell buyOrSell, MarketUpdateType... eventTypes) {
 	this.name = name;
 	this.firstIndicator = firstIndicator;
 	this.secondIndicator = secondIndicator;
@@ -63,8 +63,8 @@ public class TwoIndicatorCondition implements Condition {
     @org.easyrules.annotation.Condition
     public boolean when() {
 	Preconditions.checkState(ctx != null, "The RobotExecutionContext must be set before evaluating this rule");
-	if(!eventTypes.contains(ctx.eventType)) {
-	    LOG.info("Return false since we only react on {} but this event was of type {}", eventTypes, ctx.eventType);
+	if(!eventTypes.contains(ctx.marketUpdate.getType())) {
+	    LOG.info("Return false since we only react on {} but this update was of type {}", eventTypes, ctx.marketUpdate.getType());
 	    return false;
 	}
 	Boolean result = operator.apply(firstIndicator.value(ctx), secondIndicator.value(ctx));

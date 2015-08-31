@@ -26,7 +26,7 @@ public class OrdersController {
 	
 
 	@Autowired
-	public OrdersController(@Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, OrderService oandaOrderService) {
+	public OrdersController(@Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, @Qualifier("OandaOrderService") OrderService oandaOrderService) {
 		this.oandaApi = oandaApi;
 		this.oandaOrderService = oandaOrderService;
 	}

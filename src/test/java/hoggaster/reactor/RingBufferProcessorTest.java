@@ -5,6 +5,7 @@ import hoggaster.domain.Instrument;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
@@ -20,6 +21,7 @@ import reactor.rx.Stream;
 import reactor.rx.Streams;
 import reactor.rx.broadcast.Broadcaster;
 
+@Ignore
 public class RingBufferProcessorTest {
     
     private static final Logger LOG = LoggerFactory.getLogger(RingBufferProcessorTest.class);

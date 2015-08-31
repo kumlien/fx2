@@ -6,7 +6,7 @@ import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.prices.Price;
-import hoggaster.rules.EventType;
+import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.Operator;
 import hoggaster.rules.conditions.BuyOrSell;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
@@ -63,7 +63,7 @@ public class BasicRobotTest {
 	SimpleValueIndicator svi = new SimpleValueIndicator(2.0); //First indicator
 	CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
 	//Let's compare them in a condition, putting an operator between them
-	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, EventType.PRICE);
+	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, MarketUpdateType.PRICE);
 	definition.addBuyCondition(condition);
 	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService);
 	robot.start(); 
@@ -77,7 +77,7 @@ public class BasicRobotTest {
 	SimpleValueIndicator svi = new SimpleValueIndicator(2.0); //First indicator
 	CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
 	//Let's compare them in a condition, putting an operator between them
-	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, EventType.PRICE);
+	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, MarketUpdateType.PRICE);
 	definition.addBuyCondition(condition);
 	depot.bought(Instrument.USD_SEK, new BigDecimal(100.0), new BigDecimal(100.0));
 	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService);

@@ -23,11 +23,9 @@ public class InstrumentOwnershipTest {
     
     @Test
     public void testAddOnce() {
-	BigDecimal qty = new BigDecimal(10.0);
-	BigDecimal pps = new BigDecimal(25.0);
-	ownership.add(qty, pps);
-	Assert.assertEquals(new BigDecimal(10.0), ownership.getQuantity());
-	Assert.assertEquals(new BigDecimal(25.0), ownership.getAveragePricePerShare());
+	ownership.add(new BigDecimal(10.0), new BigDecimal(25.0));
+	Assert.assertTrue(10.0 == ownership.getQuantity());
+	Assert.assertTrue(25.0 == ownership.getAveragePricePerShare());
     }
     
     @Test
@@ -35,16 +33,19 @@ public class InstrumentOwnershipTest {
 	ownership.add(new BigDecimal(10.0), new BigDecimal(25.0));
 	ownership.add(new BigDecimal(20.0), new BigDecimal(35.0));
 	BigDecimal average = new BigDecimal(950).divide(new BigDecimal(30), MathContext.DECIMAL64);
-	Assert.assertEquals(new BigDecimal(30.0), ownership.getQuantity());
-	Assert.assertEquals(average, ownership.getAveragePricePerShare());
+	Assert.assertTrue(30.0 == ownership.getQuantity());
+	Assert.assertTrue(average.doubleValue() == ownership.getAveragePricePerShare());
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testSubtractOnly() {
-	ownership.subtract(new BigDecimal(10));
+	ownership.subtract(new BigDecimal(10.0));
     }
     
+    @Test
     public void testAddThenSubtract() {
-	//todo
+	ownership.add(new BigDecimal(1.5), new BigDecimal(100.0));
+	ownership.subtract(new BigDecimal(1.2));
+	Assert.assertTrue(0.3 == ownership.getQuantity());
     }
 }

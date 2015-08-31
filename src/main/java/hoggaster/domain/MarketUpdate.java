@@ -1,5 +1,8 @@
 package hoggaster.domain;
 
-public abstract class MarketUpdate {
+import hoggaster.rules.MarketUpdateType;
 
+public abstract class MarketUpdate {
+    
+   public abstract MarketUpdateType getType();
 }
