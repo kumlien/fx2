@@ -30,14 +30,16 @@ public class Depot {
 	
 	private Set<Transaction> transactions = Sets.newHashSet();
 	
+	private BigDecimal balance;
+	
 
 	@PersistenceConstructor
-	public Depot(String id, Broker broker,Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId) {
+	public Depot(String id, Broker broker,Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance) {
 		this.id = id;
 		this.broker = broker;
 		this.ownerships = ownerships;
 		this.brokerId = brokerId;
-		this.setTransactions(transactions);
+		this.transactions = transactions;
 	}
 
 	/**
@@ -48,6 +50,7 @@ public class Depot {
 	public Depot(Broker broker, String brokerId) {
 		this.broker = broker;
 		this.brokerId = brokerId;
+		this.balance = new BigDecimal(0l);
 	}
 
 	public boolean ownThisInstrument(Instrument instrument) {

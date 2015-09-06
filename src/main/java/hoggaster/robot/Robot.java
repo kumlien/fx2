@@ -168,8 +168,11 @@ public class Robot implements Consumer<Event<?>> {
 
     }
 
+    /*
+     * Handle new incoming candle. Create new context
+     */
     @Timed
-    public void onNewCandle(BidAskCandle candle) {
+    private void onNewCandle(BidAskCandle candle) {
 	LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
 	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, maService);
 	buyConditions.stream().forEach(c -> {
@@ -178,6 +181,16 @@ public class Robot implements Consumer<Event<?>> {
 	sellConditions.stream().forEach(c -> {
 	    c.setContext(ctx);
 	});
+	
+	annotatedRulesEngine.fireRules();
+
+	if (ctx.getPositiveBuyConditions().size() > 0) {
+	    doBuy();
+	} else if (ctx.getPositiveSellConditions().size() > 0) {
+	    doSell();
+	} else {
+	    LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+	}
 
     }
 
@@ -199,7 +212,7 @@ public class Robot implements Consumer<Event<?>> {
 	LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
 	OrderRequest order = new OrderRequest(depot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
 	OandaOrderResponse response = orderService.sendOrder(order);
-	LOG.info("Order away! {}", response);
+	LOG.info("Order away and we got an response! {}", response);
     }
 
     /**
