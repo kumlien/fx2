@@ -39,6 +39,7 @@ import com.google.common.base.Preconditions;
  indicator2 = Average[200](close)
  c1 = (indicator1 >= indicator2)
 
+ Dagens rsi[2] + gårdagens ska vara mindre än 11.
  indicator3 = RSI[2](close) + RSI[2](close[1])
  c2 = (indicator3 <= 10)
 

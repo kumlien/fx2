@@ -23,7 +23,7 @@ public class TALibServiceImpl implements TALibService {
     }
     
     @Override
-    public double rsi(double[] values, int timePeriod) {
+    public RSIResult rsi(double[] values, int timePeriod) {
 	
 	LOG.info("About to calc rsi based on values: {}", Arrays.toString(values));
 	double[] out = new double[values.length];
@@ -49,6 +49,8 @@ public class TALibServiceImpl implements TALibService {
 	    sb.append("\n");
 	}
 	LOG.info(sb.toString());
-	return out[outNBElement.value -1];
+	double[] cleanOut = new double[outNBElement.value];
+	System.arraycopy(out, 0, cleanOut, 0, outNBElement.value);
+	return new RSIResult(returnCode, cleanOut, outBegIndex, outNBElement);
     }
 }
