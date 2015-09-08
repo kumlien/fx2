@@ -17,6 +17,8 @@ import hoggaster.user.Depot;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.easyrules.api.RulesEngine;
+import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +67,8 @@ public class BasicRobotTest {
 	//Let's compare them in a condition, putting an operator between them
 	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, MarketUpdateType.PRICE);
 	definition.addBuyCondition(condition);
-	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService);
+	RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
+	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService, rulesEngine);
 	robot.start(); 
 	Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
 	robot.accept(Event.wrap(price));
@@ -80,7 +83,8 @@ public class BasicRobotTest {
 	TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Operator.GREATER_THAN, 2, BuyOrSell.BUY, MarketUpdateType.PRICE);
 	definition.addBuyCondition(condition);
 	depot.bought(Instrument.USD_SEK, new BigDecimal(100.0), new BigDecimal(100.0));
-	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService);
+	RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
+	Robot robot = new Robot(depot, definition, maService, priceEventBus, orderService, rulesEngine);
 	robot.start(); 
 	Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
 	robot.accept(Event.wrap(price));

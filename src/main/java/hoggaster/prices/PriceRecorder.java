@@ -20,21 +20,20 @@ import reactor.spring.context.annotation.Selector;
  */
 @Consumer
 public class PriceRecorder {
-	private static final Logger LOG = LoggerFactory.getLogger(PriceRecorder.class);
-	
-	private final PriceRepo priceRepo;
-	
-	private final LongAdder counter = new LongAdder();
-	
+    private static final Logger LOG = LoggerFactory.getLogger(PriceRecorder.class);
 
-	@Autowired
-	public PriceRecorder(PriceRepo priceRepo, @Qualifier("priceEventBus") EventBus eventBus) {
-		this.priceRepo = priceRepo;
-	}
-	
-	@Selector(value="prices.(.+)",type=REGEX, eventBus="@priceEventBus")
-	public void handleNewPrice(Event<OandaPrice> evt) {
-	    LOG.info("Got a price event: {}", evt.getData());
-	}
+    private final PriceRepo priceRepo;
 
+    private final LongAdder counter = new LongAdder();
+
+    @Autowired
+    public PriceRecorder(PriceRepo priceRepo, @Qualifier("priceEventBus") EventBus eventBus) {
+	this.priceRepo = priceRepo;
+    }
+
+    @Selector(value = "prices.(.+)", type = REGEX, eventBus = "@priceEventBus")
+    public void handleNewPrice(Event<Price> evt) {
+	LOG.debug("Got a price event: {}", evt.getData());
+	priceRepo.save(evt.getData());
+    }
 }

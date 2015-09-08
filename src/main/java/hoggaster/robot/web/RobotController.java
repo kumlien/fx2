@@ -13,6 +13,8 @@ import hoggaster.user.Depot;
 
 import java.util.List;
 
+import org.easyrules.api.RulesEngine;
+import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,64 +35,64 @@ import reactor.bus.EventBus;
 @RestController
 @RequestMapping("robots")
 public class RobotController {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(RobotController.class);
 
-	private final RobotRegistry robotRegistry;
-	
-	private final RobotDefinitionRepo robotRepo;
-	
-	private final MovingAverageService maService;
-	
-	private final EventBus priceEventBus;
-	
-	private final BrokerConnection oandaApi;
-	
-	private final OrderService oandaOrderService;
-	
-	@Autowired //TODO Only for testing!! Used to set up a depot. 
-	private OandaProperties oandaProps;
-	
-	
-	@Autowired
-	public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageService maService, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, @Qualifier("OandaOrderService")OrderService oandaOrderService) {
-		this.robotRegistry = robotRegistry;
-		this.robotRepo = robotRepo;
-		this.maService = maService;
-		this.priceEventBus = priceEventBus;
-		this.oandaApi = oandaApi;
-		this.oandaOrderService = oandaOrderService;
+    private static final Logger LOG = LoggerFactory.getLogger(RobotController.class);
+
+    private final RobotRegistry robotRegistry;
+
+    private final RobotDefinitionRepo robotRepo;
+
+    private final MovingAverageService maService;
+
+    private final EventBus priceEventBus;
+
+    private final BrokerConnection oandaApi;
+
+    private final OrderService oandaOrderService;
+
+    @Autowired
+    // TODO Only for testing!! Used to set up a depot.
+    private OandaProperties oandaProps;
+
+    @Autowired
+    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageService maService, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, @Qualifier("OandaOrderService") OrderService oandaOrderService) {
+	this.robotRegistry = robotRegistry;
+	this.robotRepo = robotRepo;
+	this.maService = maService;
+	this.priceEventBus = priceEventBus;
+	this.oandaApi = oandaApi;
+	this.oandaOrderService = oandaOrderService;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public List<Robot> getRobots() {
+	return robotRegistry.getAllKnownRobots();
+    }
+
+    @RequestMapping(value = "{id}", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    public Robot startRobot(@PathVariable(value = "id") String robotId) {
+	LOG.info("Starting robot with id {}", robotId);
+	Robot robot = robotRegistry.getById(robotId);
+	if (robot == null) {
+	    RobotDefinition definition = robotRepo.findOne(robotId);
+	    if (definition == null) {
+		throw new IllegalArgumentException("No robotdefinition with id: " + robotId);
+	    }
+
+	    // TODO For now hardwired to oanda and main account
+	    Depot depot = new Depot(Broker.OANDA, String.valueOf(oandaProps.getMainAccountId()));
+	    RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
+	    robot = new Robot(depot, definition, maService, priceEventBus, oandaOrderService, ruleEngine);
+	    robotRegistry.add(robot);
 	}
-	
-	
-	@RequestMapping(method=RequestMethod.GET)
-	public List<Robot> getRobots() {
-		return robotRegistry.getAllKnownRobots();
+
+	if (robot.isRunning()) {
+	    LOG.info("Robot with id {} is allready started.", robotId);
+	} else {
+	    robot.start();
+	    LOG.info("Robot with id {} is now started!", robotId);
 	}
-	
-	@RequestMapping(value="{id}", method=RequestMethod.POST)
-	@ResponseStatus(value=HttpStatus.OK)
-	public Robot startRobot(@PathVariable(value="id") String robotId) {
-		LOG.info("Starting robot with id {}", robotId);
-		Robot robot = robotRegistry.getById(robotId);
-		if(robot == null) {
-			RobotDefinition definition = robotRepo.findOne(robotId);
-			if(definition == null) {
-				throw new IllegalArgumentException("No robotdefinition with id: " + robotId);
-			}
-			
-			//TODO For now hardwired to oanda and main account
-			Depot depot = new Depot(Broker.OANDA, String.valueOf(oandaProps.getMainAccountId()));
-			robot = new Robot(depot, definition, maService, priceEventBus, oandaOrderService);
-			robotRegistry.add(robot);
-		}
-		
-		if(robot.isRunning()) {
-			LOG.info("Robot with id {} is allready started.", robotId);
-		} else {
-			robot.start();
-			LOG.info("Robot with id {} is now started!", robotId);
-		}
-		return robot;
-	}
+	return robot;
+    }
 }

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.easyrules.core.AnnotatedRulesEngine;
+import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -70,9 +70,10 @@ public class Robot implements Consumer<Event<?>> {
 
     private final Instrument instrument;
 
-    // The buy conditions. Must be annotated with
+    // The buy conditions. Must be annotated with @Rule
     private final Set<Condition> buyConditions;
 
+ // The sell conditions. Must be annotated with @Rule
     private final Set<Condition> sellConditions;
 
     private final MovingAverageService maService;
@@ -86,13 +87,13 @@ public class Robot implements Consumer<Event<?>> {
 
     private RobotStatus status = RobotStatus.UNKNOWN;
 
-    private final AnnotatedRulesEngine annotatedRulesEngine = new AnnotatedRulesEngine();
+    private final RulesEngine rulesEngine;
 
     // Map with key = type of registration (prices, candles...) and registration
     // key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
-    public Robot(Depot depot, RobotDefinition definition, MovingAverageService maService, @Qualifier("priceEventBus") EventBus priceEventBus, OrderService orderService) {
+    public Robot(Depot depot, RobotDefinition definition, MovingAverageService maService, @Qualifier("priceEventBus") EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine) {
 	Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
 	Preconditions.checkArgument(maService != null, "The moving average service is null");
 	Preconditions.checkArgument(depot != null, "The depot is null");
@@ -109,13 +110,14 @@ public class Robot implements Consumer<Event<?>> {
 	this.depot = depot;
 	this.priceEventBus = priceEventBus;
 	this.orderService = orderService;
+	this.rulesEngine = rulesEngine;
 
 	buyConditions.stream().forEach(c -> {
-	    annotatedRulesEngine.registerRule(c);
+	    rulesEngine.registerRule(c);
 	});
 
 	sellConditions.stream().forEach(c -> {
-	    annotatedRulesEngine.registerRule(c);
+	    rulesEngine.registerRule(c);
 	});
     }
 
@@ -155,7 +157,7 @@ public class Robot implements Consumer<Event<?>> {
 	    c.setContext(ctx);
 	});
 
-	annotatedRulesEngine.fireRules();
+	rulesEngine.fireRules();
 
 	if (ctx.getPositiveBuyConditions().size() > 0) {
 	    LOG.info("Maybe we should buy something!");
@@ -183,7 +185,7 @@ public class Robot implements Consumer<Event<?>> {
 	    c.setContext(ctx);
 	});
 	
-	annotatedRulesEngine.fireRules();
+	rulesEngine.fireRules();
 
 	if (ctx.getPositiveBuyConditions().size() > 0) {
 	    doBuy();

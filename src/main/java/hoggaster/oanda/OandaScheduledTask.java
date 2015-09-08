@@ -66,7 +66,7 @@ public class OandaScheduledTask {
     void fetchInstruments() {
 	try {
 	    LOG.info("Start fetching instrument definitions");
-	    Instruments availableInstruments = oanda.getInstrumentsForAccount(oandaProps.getMainAccountId());
+	    Instruments availableInstruments = oanda.getInstrumentsForAccount(Integer.valueOf(oandaProps.getMainAccountId().trim()));
 	    // Only add the ones we have support for
 	    availableInstruments.getInstruments().forEach(i -> {
 		if (Instrument.valueOf(i.instrument) != null) {

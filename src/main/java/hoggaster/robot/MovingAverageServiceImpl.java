@@ -137,6 +137,7 @@ public class MovingAverageServiceImpl implements MovingAverageService {
     
     /*
      * Call the oanda api to get candles.
+     * 
      */
     private List<BidAskCandle> getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant end, Integer number, boolean doSave, boolean doNotify) throws UnsupportedEncodingException {
 	RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);

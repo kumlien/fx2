@@ -1,5 +1,6 @@
 package hoggaster.rules.conditions;
 
+import static hoggaster.rules.conditions.BuyOrSell.BUY;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
@@ -25,7 +26,7 @@ import com.google.common.collect.Sets;
  * 
  * @author svante
  */
-@Rule(name = "TwoIndicatorRule", description = "A rule comparing two indicator with the given operator")
+@Rule(name = "TwoIndicatorRule", description = "A rule comparing two indicators using the given operator")
 public class TwoIndicatorCondition implements Condition {
 
     private static final Logger LOG = LoggerFactory.getLogger(TwoIndicatorCondition.class);
@@ -74,7 +75,7 @@ public class TwoIndicatorCondition implements Condition {
 
     @Action
     public void then() {
-	if (buyOrSell == BuyOrSell.BUY) {
+	if (buyOrSell == BUY) {
 	    ctx.addBuyAction(this);
 	} else {
 	    ctx.addSellAction(this);

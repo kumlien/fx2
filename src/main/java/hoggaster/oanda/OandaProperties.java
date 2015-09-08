@@ -6,79 +6,67 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "oanda", exceptionIfInvalid=true)
+@ConfigurationProperties(prefix = "oanda", exceptionIfInvalid = true)
 public class OandaProperties {
 
-	private String fetchPricesRegex;
-	
-	private String fetchCandlesRegex;
+    private String fetchPricesRegex;
 
-	private URL restApiUrl;
+    private String fetchCandlesRegex;
 
-	private String streamingApiUrl;
+    private URL restApiUrl;
 
-	private String apiKey;
-	
-	private Integer mainAccountId;
+    private String streamingApiUrl;
 
-	public String getFetchPricesRegex() {
-		return fetchPricesRegex;
-	}
+    private String apiKey;
 
+    private String mainAccountId;
 
-	public URL getRestApiUrl() {
-		return restApiUrl;
-	}
+    public String getFetchPricesRegex() {
+	return fetchPricesRegex;
+    }
 
-	public String getStreamingApiUrl() {
-		return streamingApiUrl;
-	}
+    public URL getRestApiUrl() {
+	return restApiUrl;
+    }
 
-	
+    public String getStreamingApiUrl() {
+	return streamingApiUrl;
+    }
 
-	public String getApiKey() {
-		return apiKey;
-	}
+    public String getApiKey() {
+	return apiKey;
+    }
 
+    public String getMainAccountId() {
+	return mainAccountId;
+    }
 
-	public Integer getMainAccountId() {
-		return mainAccountId;
-	}
+    public void setFetchPricesRegex(String fetchPricesRegex) {
+	this.fetchPricesRegex = fetchPricesRegex;
+    }
 
+    public void setRestApiUrl(URL restApiUrl) {
+	this.restApiUrl = restApiUrl;
+    }
 
-	public void setFetchPricesRegex(String fetchPricesRegex) {
-		this.fetchPricesRegex = fetchPricesRegex;
-	}
+    public void setStreamingApiUrl(String streamingApiUrl) {
+	this.streamingApiUrl = streamingApiUrl;
+    }
 
+    public void setApiKey(String apiKey) {
+	this.apiKey = apiKey;
+    }
 
-	public void setRestApiUrl(URL restApiUrl) {
-		this.restApiUrl = restApiUrl;
-	}
+    public void setMainAccountId(String mainAccountId) {
+	this.mainAccountId = mainAccountId;
+    }
 
+    public String getFetchCandlesRegex() {
+	return fetchCandlesRegex;
+    }
 
-	public void setStreamingApiUrl(String streamingApiUrl) {
-		this.streamingApiUrl = streamingApiUrl;
-	}
-
-
-	public void setApiKey(String apiKey) {
-		this.apiKey = apiKey;
-	}
-
-
-	public void setMainAccountId(Integer mainAccountId) {
-		this.mainAccountId = mainAccountId;
-	}
-
-
-	public String getFetchCandlesRegex() {
-		return fetchCandlesRegex;
-	}
-
-
-	public void setFetchCandlesRegex(String fetchCandlesRegex) {
-		this.fetchCandlesRegex = fetchCandlesRegex;
-	}
-
+    public void setFetchCandlesRegex(String fetchCandlesRegex) {
+	this.fetchCandlesRegex = fetchCandlesRegex;
+    }
 
 }

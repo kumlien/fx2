@@ -16,7 +16,8 @@ import hoggaster.user.Depot;
 
 import java.time.Instant;
 
-import org.easyrules.core.AnnotatedRulesEngine;
+import org.easyrules.api.RulesEngine;
+import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -36,9 +37,9 @@ public class TwoIndicatorConditionTest {
 	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, maService);
 	tic.setContext(ctx);
 
-	AnnotatedRulesEngine annotatedRulesEngine = new AnnotatedRulesEngine();
-	annotatedRulesEngine.registerRule(tic);
-	annotatedRulesEngine.fireRules();
+	RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
+	rulesEngine.registerRule(tic);
+	rulesEngine.fireRules();
 
 	Assert.assertTrue(ctx.getPositiveBuyConditions().size() > 0);
     }

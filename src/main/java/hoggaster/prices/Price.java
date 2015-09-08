@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Price extends MarketUpdate {
 
-    private Long id;
+    private String id;
     public final Instrument instrument;
     public final Double bid;
     public final Double ask;
@@ -22,7 +22,7 @@ public class Price extends MarketUpdate {
     public final Broker broker;
 
     @PersistenceConstructor
-    public Price(Long id, Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
+    public Price(String id, Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
 	this.id = id;
 	this.instrument = instrument;
 	this.bid = bid;

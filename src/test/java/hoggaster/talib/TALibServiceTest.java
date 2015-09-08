@@ -33,4 +33,10 @@ public class TALibServiceTest {
 	    assertTrue(expected[i] + " is  not " + rsi.rsiValues.get(i), Math.round(expected[i]) == Math.round(rsi.rsiValues.get(i).doubleValue()));
 	}
     }
+    
+    
+    @Test(expected=RuntimeException.class)
+    public void testBadData() {
+	service.rsi(new double[]{}, 2);
+    }
 }
