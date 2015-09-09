@@ -43,10 +43,7 @@ public class MovingAverageServiceImpl {
 
     private final EventBus candleEventBus;
 
-    private static boolean initializedMinuteCandles = false; // Nice... But it
-							     // doesn't work to
-							     // pre-fetch in
-							     // postconstruct...
+    private static boolean initializedMinuteCandles = false; // Nice... But it doesn't work to pre-fetch in postconstruct...
 
     private static boolean initializedDayCandles = false;
 
@@ -70,7 +67,7 @@ public class MovingAverageServiceImpl {
 		initializedMinuteCandles = true;
 	    }
 
-	    List<Candle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, Instant.now(), numberOfCandles);
+	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, Instant.now(), numberOfCandles);
 	    LOG.info("Got {} one minute candles", candles.size());
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
@@ -80,11 +77,7 @@ public class MovingAverageServiceImpl {
     /*
      * Get the daily candles
      * 
-     * TODO this one needs to take into account the different opening/closing
-     * times for different instruments (and possibly in combination with
-     * different brokers) for now we hard code it to open at 17:00:00 and close
-     * at 16:59:59 New York time, that is, we record the day candle at this
-     * point.
+     * TODO this one needs to take into account the different opening/closing times for different instruments (and possibly in combination with different brokers) for now we hard code it to open at 17:00:00 and close at 16:59:59 New York time, that is, we record the day candle at this point.
      */
     @Scheduled(cron = "0 0 17 * * MON-FRI")
     @Timed
@@ -96,7 +89,7 @@ public class MovingAverageServiceImpl {
 		numberOfCandles = 200;
 		initializedDayCandles = true;
 	    }
-	    List<Candle> candles = getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, Instant.now(), numberOfCandles);
+	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, Instant.now(), numberOfCandles);
 	    LOG.info("Done fetching one day candles, got {} of them.", candles.size());
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
@@ -106,7 +99,7 @@ public class MovingAverageServiceImpl {
     /*
      * Call the oanda api to get candles.
      */
-    private List<Candle> getStoreAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant end, Integer number) throws UnsupportedEncodingException {
+    private List<Candle> getAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant end, Integer number) throws UnsupportedEncodingException {
 	RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
 	Stream<Instrument> instrumentStream = Streams.wrap(publisher);
 	final List<Candle> allCandles = new ArrayList<>();
@@ -115,8 +108,6 @@ public class MovingAverageServiceImpl {
 	Consumer<Instrument> ic = instrument -> {
 	    try {
 		List<Candle> candles = candleService.getCandles(instrument, granularity, number);
-		// Set<Candle> candles = getCandlesForOneInstrument(instrument,
-		// granularity, end, number);
 		allCandles.addAll(candles);
 		candles.forEach(bac -> {
 		    candleEventBus.notify("candles." + instrument, Event.wrap(bac));
