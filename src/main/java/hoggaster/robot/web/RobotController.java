@@ -1,14 +1,14 @@
 package hoggaster.robot.web;
 
+import hoggaster.candles.CandleService;
 import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.OrderService;
 import hoggaster.oanda.OandaProperties;
-import hoggaster.robot.MovingAverageService;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.robot.RobotRegistry;
+import hoggaster.talib.TALibService;
 import hoggaster.user.Depot;
 
 import java.util.List;
@@ -41,27 +41,27 @@ public class RobotController {
     private final RobotRegistry robotRegistry;
 
     private final RobotDefinitionRepo robotRepo;
-
-    private final MovingAverageService maService;
+    
+    private final TALibService taLibService;
 
     private final EventBus priceEventBus;
 
-    private final BrokerConnection oandaApi;
-
     private final OrderService oandaOrderService;
+    
+    private final CandleService candleService;
 
     @Autowired
     // TODO Only for testing!! Used to set up a depot.
     private OandaProperties oandaProps;
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, MovingAverageService maService, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, @Qualifier("OandaOrderService") OrderService oandaOrderService) {
+    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService) {
 	this.robotRegistry = robotRegistry;
 	this.robotRepo = robotRepo;
-	this.maService = maService;
 	this.priceEventBus = priceEventBus;
-	this.oandaApi = oandaApi;
 	this.oandaOrderService = oandaOrderService;
+	this.taLibService = taLibService;
+	this.candleService = candleService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -83,7 +83,7 @@ public class RobotController {
 	    // TODO For now hardwired to oanda and main account
 	    Depot depot = new Depot(Broker.OANDA, String.valueOf(oandaProps.getMainAccountId()));
 	    RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
-	    robot = new Robot(depot, definition, maService, priceEventBus, oandaOrderService, ruleEngine);
+	    robot = new Robot(depot, definition, priceEventBus, oandaOrderService, ruleEngine, taLibService, candleService);
 	    robotRegistry.add(robot);
 	}
 

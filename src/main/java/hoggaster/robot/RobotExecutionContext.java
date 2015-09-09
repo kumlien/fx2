@@ -1,13 +1,20 @@
 package hoggaster.robot;
 
+import hoggaster.candles.Candle;
+import hoggaster.candles.CandleService;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
+import hoggaster.rules.indicators.CandleStickField;
 import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.RSIIndicator;
+import hoggaster.talib.TALibService;
+import hoggaster.talib.TAResult;
 import hoggaster.user.Depot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
@@ -33,17 +40,20 @@ public class RobotExecutionContext {
 
     private final List<Condition> positiveSellConditions = new ArrayList<Condition>();
 
-    private final MovingAverageService maService;
+    private final TALibService taLibService;
+    
+    private final CandleService bidAskCandleService;
 
-    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, MovingAverageService maService) {
+    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
 	Preconditions.checkNotNull(marketUpdate);
 	Preconditions.checkNotNull(depot);
-	Preconditions.checkNotNull(instrument);
-	Preconditions.checkNotNull(maService);
+	Preconditions.checkNotNull(taLibService);
+	Preconditions.checkNotNull(bidAskCandleService);
 	this.marketUpdate = marketUpdate;
 	this.depot = depot;
 	this.instrument = instrument;
-	this.maService = maService;
+	this.taLibService = taLibService;
+	this.bidAskCandleService = bidAskCandleService;
     }
 
     public void addBuyAction(Condition condition) {
@@ -54,8 +64,22 @@ public class RobotExecutionContext {
 	positiveSellConditions.add(condition);
     }
 
-    public Double getMovingAverage(CandleStickGranularity granularity, int numberOfDataPoints) {
-	return maService.getMA(instrument, granularity, numberOfDataPoints);
+    
+    /**
+     * Calculate a sma using the specified parameters.
+     * Use the {@link CandleService} to fetch the candles.
+     * 
+     * @param granularity
+     * @param dataPoints
+     * @param field
+     * @param periods
+     * @return The sma for the last value in the series.
+     */
+    public Double getSimpleMovingAverage(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
+	List<Candle> candles = bidAskCandleService.getCandles(instrument, granularity, dataPoints);
+	List<Double> values = candles.stream().map(bac -> bac.getValue(field)).collect(Collectors.toList());
+	TAResult sma = taLibService.sma(values, periods);
+	return sma.values.get(0);
     }
 
     public List<Condition> getPositiveBuyConditions() {
@@ -65,12 +89,33 @@ public class RobotExecutionContext {
     @Override
     public String toString() {
 	StringBuilder builder = new StringBuilder();
-	builder.append("RobotExecutionContext [price=").append(marketUpdate).append(", depot=").append(depot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+	builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", depot=").append(depot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
 	return builder.toString();
     }
 
+    
     public List<Condition> getPositiveSellConditions() {
 	return positiveSellConditions;
+    }
+
+    
+    /**
+     * Used by the {@link RSIIndicator}
+     * First fetch the candles from the {@link CandleService}, then use the {@link TALibService} to calculate
+     * the RSI values.
+     * 
+     * @param granularity
+     * @param periods
+     * @param dataPointsNeeded
+     * @param field
+     * @return A {@link TAResult}
+     */
+    public TAResult getRSI(CandleStickGranularity granularity, int periods, int dataPointsNeeded, CandleStickField field) { 
+	List<Candle> candles = bidAskCandleService.getCandles(instrument, granularity, dataPointsNeeded);
+	List<Double> values = candles.stream()
+		.map(candle -> candle.getValue(field))
+		.collect(Collectors.toList());
+	return taLibService.rsi(values, periods);
     }
 
 }

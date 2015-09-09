@@ -17,7 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 @CompoundIndexes({ @CompoundIndex(name = "instrument_granularity_time_idx", def = "{'instrument':1, 'granularity':1, 'time': 1}", unique = true) })
-public class BidAskCandle extends MarketUpdate {
+public class Candle extends MarketUpdate {
 
     @Id
     private String id;
@@ -39,7 +39,7 @@ public class BidAskCandle extends MarketUpdate {
     public final Boolean complete;
 
     @PersistenceConstructor
-    BidAskCandle(String id, Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+    Candle(String id, Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
 	this.id = id;
 	this.instrument = instrument;
 	this.brokerId = brokerId;
@@ -57,7 +57,7 @@ public class BidAskCandle extends MarketUpdate {
 	this.complete = complete;
     }
 
-    public BidAskCandle(Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+    public Candle(Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
 	this(null, instrument, brokerId, granularity, time, openBid, openAsk, highBid, highAsk, lowBid, lowAsk, closeBid, closeAsk, volume, complete);
 	this.id = generateId();
     }
@@ -89,7 +89,7 @@ public class BidAskCandle extends MarketUpdate {
 	    return false;
 	if (getClass() != obj.getClass())
 	    return false;
-	BidAskCandle other = (BidAskCandle) obj;
+	Candle other = (Candle) obj;
 	if (granularity != other.granularity)
 	    return false;
 	if (instrument != other.instrument)

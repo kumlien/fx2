@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface BidAskCandleRepo extends MongoRepository<BidAskCandle, String> {
+public interface CandleRepo extends MongoRepository<Candle, String> {
 	
     /**
      * Get a number of candles order by date (desc).
@@ -19,5 +19,5 @@ public interface BidAskCandleRepo extends MongoRepository<BidAskCandle, String> 
      * 
      * @return The list of candles 
      */
-    List<BidAskCandle> findByInstrumentAndGranularityOrderByTimeDesc(Instrument instrument, CandleStickGranularity granularity, Pageable pageable);
+    List<Candle> findByInstrumentAndGranularityOrderByTimeDesc(Instrument instrument, CandleStickGranularity granularity, Pageable pageable);
 }

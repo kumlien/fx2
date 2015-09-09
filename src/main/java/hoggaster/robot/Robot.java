@@ -2,7 +2,8 @@ package hoggaster.robot;
 
 import static hoggaster.robot.RobotStatus.RUNNING;
 import static reactor.bus.selector.Selectors.R;
-import hoggaster.candles.BidAskCandle;
+import hoggaster.candles.Candle;
+import hoggaster.candles.CandleService;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.orders.OrderRequest;
@@ -11,6 +12,7 @@ import hoggaster.domain.orders.OrderType;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
+import hoggaster.talib.TALibService;
 import hoggaster.user.Depot;
 
 import java.util.Map;
@@ -20,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;
@@ -75,8 +76,10 @@ public class Robot implements Consumer<Event<?>> {
 
  // The sell conditions. Must be annotated with @Rule
     private final Set<Condition> sellConditions;
-
-    private final MovingAverageService maService;
+    
+    private final TALibService taLibService;
+    
+    private final CandleService candleService;
 
     private final Depot depot;
 
@@ -93,24 +96,27 @@ public class Robot implements Consumer<Event<?>> {
     // key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
-    public Robot(Depot depot, RobotDefinition definition, MovingAverageService maService, @Qualifier("priceEventBus") EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine) {
+    public Robot(Depot depot, RobotDefinition definition, EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine, TALibService taLibService, CandleService candleService) {
 	Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
-	Preconditions.checkArgument(maService != null, "The moving average service is null");
 	Preconditions.checkArgument(depot != null, "The depot is null");
 	Preconditions.checkArgument(definition != null, "The robot definition is null");
 	Preconditions.checkArgument(definition.instrument != null, "The definition instrument is null");
 	Preconditions.checkArgument(orderService != null, "The order service is null");
+	Preconditions.checkArgument(rulesEngine != null, "The rule engine is null");
+	Preconditions.checkArgument(taLibService != null, "The ta-lib service is null");
+	Preconditions.checkArgument(candleService != null, "The bidAskCandleService is null");
 
 	this.id = definition.getId(); // This is kind of wacky
 	this.name = definition.name;
 	this.instrument = definition.instrument;
 	this.buyConditions = definition.getBuyConditions();
 	this.sellConditions = definition.getSellConditions();
-	this.maService = maService;
 	this.depot = depot;
 	this.priceEventBus = priceEventBus;
 	this.orderService = orderService;
 	this.rulesEngine = rulesEngine;
+	this.taLibService = taLibService;
+	this.candleService = candleService;
 
 	buyConditions.stream().forEach(c -> {
 	    rulesEngine.registerRule(c);
@@ -148,7 +154,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     public void onNewPrice(Price price) {
 	LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, maService);
+	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, taLibService, candleService);
 
 	buyConditions.stream().forEach(c -> {
 	    c.setContext(ctx);
@@ -175,9 +181,9 @@ public class Robot implements Consumer<Event<?>> {
      * Handle new incoming candle. Create new context
      */
     @Timed
-    private void onNewCandle(BidAskCandle candle) {
+    private void onNewCandle(Candle candle) {
 	LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, maService);
+	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
 	buyConditions.stream().forEach(c -> {
 	    c.setContext(ctx);
 	});
@@ -239,12 +245,12 @@ public class Robot implements Consumer<Event<?>> {
 		    return;
 		}
 		onNewPrice((Price) t.getData());
-	    } else if (t.getData() instanceof BidAskCandle) {
-		if (!(((BidAskCandle) t.getData()).instrument == instrument)) {
-		    LOG.debug("Not to consider since it's not for this robot: {} ", ((BidAskCandle) t.getData()).instrument);
+	    } else if (t.getData() instanceof Candle) {
+		if (!(((Candle) t.getData()).instrument == instrument)) {
+		    LOG.debug("Not to consider since it's not for this robot: {} ", ((Candle) t.getData()).instrument);
 		    return;
 		}
-		onNewCandle((BidAskCandle) t.getData());
+		onNewCandle((Candle) t.getData());
 	    }
 	}
     }

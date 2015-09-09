@@ -6,4 +6,8 @@ package hoggaster.rules;
 public enum MarketUpdateType {
     
     PRICE, ONE_MINUTE_CANDLE, ONE_DAY_CANDLE;
+    
+    public boolean isCandle() {
+	return this == ONE_MINUTE_CANDLE || this == ONE_DAY_CANDLE;
+    }
 }

@@ -1,13 +1,14 @@
 package hoggaster.robot;
 
-import hoggaster.domain.Instrument;
-import hoggaster.rules.indicators.CandleStickGranularity;
 
+@Deprecated
 public interface MovingAverageService {
     
-    Double getMA(Instrument instrument, CandleStickGranularity granularity, Integer numberOfDataPoints);
+    //Double getMA(List<BidAskCandle> candles, CandleStickField field);
 
+    //TODO move!
     void fetchMinuteCandles();
 
+    //TODO move!
     void fetchDayCandles();
 }

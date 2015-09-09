@@ -102,11 +102,13 @@ public class OandaApi implements BrokerConnection, OrderService {
      * parameter may be ignored by the server depending on the time range
      * provided. If not specified, count will default to 500. The maximum
      * acceptable value for count is 5000. count should not be specified if both
-     * the start and end parameters are also specified. start2: Optional The
+     * the start and end parameters are also specified. start: Optional The
      * start timestamp for the range of candles requested. The value specified
-     * must be in a valid datetime format. end2: Optional The end timestamp for
+     * must be in a valid datetime format. end: Optional The end timestamp for
      * the range of candles requested. The value specified must be in a valid
      * datetime format.
+     * 
+     * @see http://developer.oanda.com/rest-practice/rates/#retrieveInstrumentHistory
      */
     @Override
     @Timed

@@ -1,7 +1,7 @@
 package hoggaster.domain;
 
 /**
- * TODO This list need to be somehow dynamic, (but how to handle robots
+ * TODO This list need to be somehow dynamic (store in db), (but how to handle robots
  * configured for instruments which are not traded anymore?)
  */
 public enum Instrument {

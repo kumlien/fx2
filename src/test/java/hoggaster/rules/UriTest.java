@@ -24,7 +24,7 @@ public class UriTest {
 		Integer periods = new Integer(10);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resource)
 				.queryParam("instrument", Instrument.EUR_SEK)
-				.queryParam("granularity", CandleStickGranularity.DAY.oandaStyle);
+				.queryParam("granularity", CandleStickGranularity.END_OF_DAY.oandaStyle);
 		
 		if(start != null) {
 			String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");

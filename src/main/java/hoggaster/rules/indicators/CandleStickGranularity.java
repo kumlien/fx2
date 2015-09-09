@@ -7,7 +7,7 @@ import hoggaster.rules.MarketUpdateType;
  */
 public enum CandleStickGranularity {
 	
-	DAY("D", MarketUpdateType.ONE_DAY_CANDLE), MINUTE("M1", MarketUpdateType.ONE_MINUTE_CANDLE);
+	END_OF_DAY("D", MarketUpdateType.ONE_DAY_CANDLE), MINUTE("M1", MarketUpdateType.ONE_MINUTE_CANDLE);
 	
 	public final String oandaStyle;
 	

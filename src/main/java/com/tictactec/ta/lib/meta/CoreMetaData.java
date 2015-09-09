@@ -77,7 +77,7 @@ import com.tictactec.ta.lib.meta.annotation.RealRange;
  * CoreMetaData provides low level RTTI (Run Time Type Information) for TA
  * functions. It also provides methods for those willing to call a certain TA
  * function using late binding techniques. These two functionalities let you
- * call TA functions dinamically. Even if more TA functions are added by the
+ * call TA functions dynamically. Even if more TA functions are added by the
  * time, your application code will be able to call all added functions by
  * querying TA-Lib package about:
  * 
@@ -93,7 +93,7 @@ import com.tictactec.ta.lib.meta.annotation.RealRange;
  * @see com.tictactec.ta.lib.meta.helpers.SimpleHelper is a simple API level
  *      helper class based on CoreMetaData
  * @see com.tictactec.ta.lib.meta.CoreMetaDataCompatibility for a "C" style
- *      interface, mostly intended for those traslating "C" code to Java.
+ *      interface, mostly intended for those translating "C" code to Java.
  * 
  * @author Richard Gomes
  */
@@ -135,6 +135,7 @@ public class CoreMetaData implements Comparable<CoreMetaData>, Cloneable {
 	}
     }
 
+    @Override
     public int compareTo(CoreMetaData arg) {
 	return this.name.compareTo(arg.name);
     }
@@ -225,9 +226,7 @@ public class CoreMetaData implements Comparable<CoreMetaData>, Cloneable {
 	mi.callInputParams = null;
 	mi.callOutputParams = null;
 	mi.callOptInputParams = null;
-	if (mi != null)
-	    return mi;
-	throw new NoSuchMethodException("Function " + name);
+	return mi;
     }
 
     /**

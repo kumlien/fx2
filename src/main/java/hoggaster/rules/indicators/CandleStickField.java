@@ -1,9 +1,9 @@
 package hoggaster.rules.indicators;
 
-import hoggaster.candles.BidAskCandle;
+import hoggaster.candles.Candle;
 
 /**
- * Enum with possible values in a {@link BidAskCandle}
+ * Enum with possible values in a {@link Candle}
  * 
  * @author svante2
  *

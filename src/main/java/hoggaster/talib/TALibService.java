@@ -1,5 +1,7 @@
 package hoggaster.talib;
 
+import java.util.List;
+
 import com.tictactec.ta.lib.Core;
 
 /**
@@ -12,8 +14,20 @@ public interface TALibService {
      * 
      * @param values The values used to calculate the rsi
      * @param periods The number of periods to use in the calculation
-     * @return A {@link RSIResult}
+     * @return A {@link TAResult}
      */
-    RSIResult rsi(double[] values, int periods);
+    TAResult rsi(double[] values, int periods);
+
+    TAResult rsi(List<Double> values, int periods);
+
+    
+    /**
+     * Calculate a simple moving average
+     * 
+     * @param values
+     * @param periods
+     * @return 
+     */
+    TAResult sma(List<Double> values, int periods);
 
 }

@@ -11,31 +11,31 @@ import com.tictactec.ta.lib.RetCode;
 /**
  * Representation of a {@link TALibService#rsi(double[], int)} calculation.
  */
-public class RSIResult {
+public class TAResult {
     
     public final RetCode returnCode;
-    public final List<Double> rsiValues;
+    public final List<Double> values;
     public final int beginIndex;
 
-    public RSIResult(RetCode returnCode, double[] out, MInteger outBegIndex, MInteger outNBElement) {
+    public TAResult(RetCode returnCode, double[] resultValues, MInteger outBegIndex, MInteger outNBElement) {
 	Preconditions.checkArgument(returnCode != null);
-	Preconditions.checkArgument(out != null);
-	Preconditions.checkArgument(out.length > 0);
+	Preconditions.checkArgument(resultValues != null);
+	Preconditions.checkArgument(resultValues.length > 0);
 	Preconditions.checkArgument(outBegIndex != null && outBegIndex.value >= 0);
-	Preconditions.checkArgument(outNBElement != null && outNBElement.value == out.length);
+	Preconditions.checkArgument(outNBElement != null && outNBElement.value == resultValues.length);
 	this.returnCode = returnCode;
 	List<Double> temp = new ArrayList<>();
-	for(int i=0; i<out.length; i++) {
-	    temp.add(out[i]);
+	for(int i=0; i<resultValues.length; i++) {
+	    temp.add(resultValues[i]);
 	}
-	rsiValues = Collections.unmodifiableList(temp);
+	values = Collections.unmodifiableList(temp);
 	this.beginIndex = outBegIndex.value;
     }
 
     @Override
     public String toString() {
 	StringBuilder builder = new StringBuilder();
-	builder.append("RSIResult [returnCode=").append(returnCode).append(", rsiValues=").append(rsiValues).append(", beginIndex=").append(beginIndex).append("]");
+	builder.append("RSIResult [returnCode=").append(returnCode).append(", values=").append(values).append(", beginIndex=").append(beginIndex).append("]");
 	return builder.toString();
     }
 }

@@ -1,13 +1,13 @@
 package hoggaster.rules.indicators;
 
-import hoggaster.candles.BidAskCandle;
+import hoggaster.candles.Candle;
 import hoggaster.robot.RobotExecutionContext;
 
 import com.google.common.base.Preconditions;
 
 
 /**
- * Indicator which gets it's value from a {@link BidAskCandle}.
+ * Indicator which gets it's value from a {@link Candle}.
  * 
  * @author svante2
  *
@@ -33,7 +33,7 @@ public class BidAskCandleIndicator implements Indicator {
     public Double value(RobotExecutionContext ctx) {
 	Preconditions.checkArgument(ctx != null);
 	Preconditions.checkArgument(ctx.marketUpdate != null);
-	Preconditions.checkArgument(ctx.marketUpdate.getType() == granularity.type);
-	return ((BidAskCandle)ctx.marketUpdate).getValue(field);
+	Preconditions.checkArgument(ctx.marketUpdate.getType().isCandle());
+	return ((Candle)ctx.marketUpdate).getValue(field);
     }
 }

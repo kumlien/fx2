@@ -47,6 +47,7 @@
 package com.tictactec.ta.lib.test;
 
 import junit.framework.TestCase;
+
 import com.tictactec.ta.lib.Core;
 import com.tictactec.ta.lib.meta.CoreMetaInfo;
 
@@ -59,14 +60,15 @@ public class TestAbstract extends TestCase {
 	talib = new Core();
     }
 
+    @Override
     protected void setUp() throws Exception {
 	testData = new TestData();
     }
 
+    @Override
     protected void tearDown() throws Exception {}
 
     public void testAbstract() throws Exception {
 	new CoreMetaInfo().forEach(new TestAbstractClosure(talib, testData.getAllInputData()));
     }
-
 }

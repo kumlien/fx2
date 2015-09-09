@@ -4,7 +4,7 @@ import static hoggaster.rules.conditions.BuyOrSell.BUY;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
-import hoggaster.rules.Operator;
+import hoggaster.rules.Comparator;
 import hoggaster.rules.indicators.Indicator;
 
 import java.util.Set;
@@ -19,7 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
 /**
- * Generic rule comparing two {@link Indicator}s with a given {@link Operator}
+ * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()} 
  * method will get called and we add ourselves to the buy- or sell action depending
  * on our {@link BuyOrSell} 
@@ -34,7 +34,7 @@ public class TwoIndicatorCondition implements Condition {
     public final String name;
     public final Indicator firstIndicator;
     public final Indicator secondIndicator;
-    public final Operator operator;
+    public final Comparator operator;
     public final Integer priority;
     public final BuyOrSell buyOrSell;
     private transient RobotExecutionContext ctx;
@@ -51,7 +51,7 @@ public class TwoIndicatorCondition implements Condition {
      * @param buyOrSell
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Operator operator, Integer priority, BuyOrSell buyOrSell, MarketUpdateType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, BuyOrSell buyOrSell, MarketUpdateType... eventTypes) {
 	this.name = name;
 	this.firstIndicator = firstIndicator;
 	this.secondIndicator = secondIndicator;
