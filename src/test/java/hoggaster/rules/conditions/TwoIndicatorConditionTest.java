@@ -42,7 +42,7 @@ public class TwoIndicatorConditionTest {
 
 	Indicator firstIndicator = new BidAskCandleIndicator(CandleStickGranularity.MINUTE, CandleStickField.CLOSE_BID);
 	Indicator secondIndicator = new SimpleValueIndicator(2.0);
-	TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, BuyOrSell.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
+	TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, Side.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
 	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
 	tic.setContext(ctx);
 

@@ -14,7 +14,7 @@ public class RSIIndicator implements Indicator {
     //The minimum number of data points needed to perform the calculation
     private final int dataPointsNeeded;
     
-    //Which rsi value are we interested in? 0 indicates the latest rsi value. 1 indicates the value before the last one (und so weiter...)
+    //Which rsi value are we interested in? 
     private final int indexOfInterest;
 
     //What kind of candle we use
@@ -22,6 +22,14 @@ public class RSIIndicator implements Indicator {
     
     private final CandleStickField field;
 
+    /**
+     * 
+     * @param periods How many periods we should use when calculating the rsi
+     * @param dataPointsNeeded The data used to calculate the ris
+     * @param indexOfInterest Which rsi-value to use. 0 means the rsi value for the 'youngest' data point.
+     * @param granularity What kind of candle should we use
+     * @param field Which field of the candle should we use
+     */
     public RSIIndicator(int periods, int dataPointsNeeded, int indexOfInterest, CandleStickGranularity granularity, CandleStickField field) {
 	this.periods = periods;
 	this.dataPointsNeeded = dataPointsNeeded;

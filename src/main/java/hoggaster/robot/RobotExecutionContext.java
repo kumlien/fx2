@@ -75,11 +75,10 @@ public class RobotExecutionContext {
      * @param periods
      * @return The sma for the last value in the series.
      */
-    public Double getSimpleMovingAverage(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
+    public TAResult getSMA(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
 	List<Candle> candles = bidAskCandleService.getCandles(instrument, granularity, dataPoints);
 	List<Double> values = candles.stream().map(bac -> bac.getValue(field)).collect(Collectors.toList());
-	TAResult sma = taLibService.sma(values, periods);
-	return sma.values.get(0);
+	return taLibService.sma(values, periods);
     }
 
     public List<Condition> getPositiveBuyConditions() {

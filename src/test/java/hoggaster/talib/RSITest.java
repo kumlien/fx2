@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TALibServiceTest {
+public class RSITest {
 
     TALibService service;
 
@@ -39,4 +39,7 @@ public class TALibServiceTest {
     public void testBadData() {
 	service.rsi(new double[]{}, 2);
     }
+    
+    
+
 }

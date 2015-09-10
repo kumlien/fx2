@@ -26,8 +26,17 @@ public interface TALibService {
      * 
      * @param values
      * @param periods
-     * @return 
+     * @return A {@link TAResult}
      */
     TAResult sma(List<Double> values, int periods);
+    
+    /**
+     * Calculate a simple moving average
+     * 
+     * @param values
+     * @param periods
+     * @return A {@link TAResult}
+     */
+    TAResult sma(double[] values, int periods);
 
 }

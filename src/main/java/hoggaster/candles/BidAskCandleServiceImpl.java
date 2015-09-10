@@ -44,13 +44,15 @@ public class BidAskCandleServiceImpl implements CandleService {
 	Preconditions.checkArgument(numberOfCandles > 0 && numberOfCandles < 5000);
 	LOG.info("Will try to get candles for {} for granularity {} with {} data points", instrument, granularity, numberOfCandles);
 	Pageable pageable = new PageRequest(0, numberOfCandles);
-	List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, pageable);
+	
+	men hallå!!! hur fan tänkte du här?? du måste ju ha med ett datum i villkoret annars får du ju alltid träff (efter först inserten...)
+	List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeAsc(instrument, granularity, pageable);
 	LOG.info("Got a list: {}", candles.size());
 	if (candles.size() < numberOfCandles) {
 	    LOG.info("Not all candles found in db ({} out of {}), will try to fetch the rest from oanda.", candles.size(), numberOfCandles);
 	    List<Candle> fetchedCandles = new ArrayList<>();
 	    try {
-		fetchedCandles.addAll(getFromBroker(instrument, granularity, Instant.now(), numberOfCandles));
+		fetchedCandles.addAll(getFromBroker(instrument, granularity, null, Instant.now(), numberOfCandles));
 		fetchedCandles.stream().forEach(repo::save);
 	    } catch (UnsupportedEncodingException e) {
 		LOG.error("Error fetching candles", e);
@@ -61,8 +63,9 @@ public class BidAskCandleServiceImpl implements CandleService {
 	return candles;
     }
 
-    private List<Candle> getFromBroker(Instrument instrument, CandleStickGranularity granularity, Instant now, int number) throws UnsupportedEncodingException {
-	OandaBidAskCandlesResponse bidAskCandles = brokerConnection.getBidAskCandles(instrument, granularity, number, null, now);
+    private List<Candle> getFromBroker(Instrument instrument, CandleStickGranularity granularity, Instant startDate, Instant endDate, int number) throws UnsupportedEncodingException {
+	LOG.info("Will try to fetch {} candles with startDate {} and endDate {}", number, startDate, endDate);
+	OandaBidAskCandlesResponse bidAskCandles = brokerConnection.getBidAskCandles(instrument, granularity, number, startDate, endDate);
 	return bidAskCandles.getCandles().stream()
 		.map(bac -> new Candle(instrument, Broker.OANDA, granularity, Instant.parse(bac.getTime()), bac.getOpenBid(), bac.getOpenAsk(), bac.getHighBid(), bac.getHighAsk(), bac.getLowBid(), bac.getLowAsk(), bac.getCloseBid(), bac.getCloseAsk(), bac.getVolume(), bac.getComplete()))
 		.collect(Collectors.toList());

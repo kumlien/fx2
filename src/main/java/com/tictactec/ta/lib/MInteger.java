@@ -52,4 +52,11 @@ package com.tictactec.ta.lib;
  */
 public class MInteger {
     public int value;
+
+    @Override
+    public String toString() {
+	StringBuilder builder = new StringBuilder();
+	builder.append("MInteger [value=").append(value).append("]");
+	return builder.toString();
+    }
 }

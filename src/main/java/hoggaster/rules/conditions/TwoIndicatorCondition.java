@@ -1,6 +1,6 @@
 package hoggaster.rules.conditions;
 
-import static hoggaster.rules.conditions.BuyOrSell.BUY;
+import static hoggaster.rules.conditions.Side.BUY;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
@@ -22,7 +22,7 @@ import com.google.common.collect.Sets;
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()} 
  * method will get called and we add ourselves to the buy- or sell action depending
- * on our {@link BuyOrSell} 
+ * on our {@link Side} 
  * 
  * @author svante
  */
@@ -36,7 +36,7 @@ public class TwoIndicatorCondition implements Condition {
     public final Indicator secondIndicator;
     public final Comparator operator;
     public final Integer priority;
-    public final BuyOrSell buyOrSell;
+    public final Side buyOrSell;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
@@ -51,7 +51,7 @@ public class TwoIndicatorCondition implements Condition {
      * @param buyOrSell
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, BuyOrSell buyOrSell, MarketUpdateType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, Side buyOrSell, MarketUpdateType... eventTypes) {
 	this.name = name;
 	this.firstIndicator = firstIndicator;
 	this.secondIndicator = secondIndicator;
