@@ -38,14 +38,13 @@ public class BidAskCandleServiceImpl implements CandleService {
     }
 
     
-    //TODO Very inefficient. Need to figure out which candles we need to fetch from the broker.
     @Override
-    public List<Candle> getCandles(Instrument instrument, CandleStickGranularity granularity, int numberOfCandles) {
+    public List<Candle> getLatestCandles(Instrument instrument, CandleStickGranularity granularity, int numberOfCandles) {
 	Preconditions.checkArgument(numberOfCandles > 0 && numberOfCandles < 5000);
 	LOG.info("Will try to get candles for {} for granularity {} with {} data points", instrument, granularity, numberOfCandles);
 	Pageable pageable = new PageRequest(0, numberOfCandles);
 	
-	men hallå!!! hur fan tänkte du här?? du måste ju ha med ett datum i villkoret annars får du ju alltid träff (efter först inserten...)
+	//men hallå!!! hur fan tänkte du här?? du måste ju ha med ett datum i villkoret annars får du ju alltid träff (efter först inserten...)
 	List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeAsc(instrument, granularity, pageable);
 	LOG.info("Got a list: {}", candles.size());
 	if (candles.size() < numberOfCandles) {
@@ -53,7 +52,7 @@ public class BidAskCandleServiceImpl implements CandleService {
 	    List<Candle> fetchedCandles = new ArrayList<>();
 	    try {
 		fetchedCandles.addAll(getFromBroker(instrument, granularity, null, Instant.now(), numberOfCandles));
-		fetchedCandles.stream().forEach(repo::save);
+		
 	    } catch (UnsupportedEncodingException e) {
 		LOG.error("Error fetching candles", e);
 	    }
@@ -69,5 +68,25 @@ public class BidAskCandleServiceImpl implements CandleService {
 	return bidAskCandles.getCandles().stream()
 		.map(bac -> new Candle(instrument, Broker.OANDA, granularity, Instant.parse(bac.getTime()), bac.getOpenBid(), bac.getOpenAsk(), bac.getHighBid(), bac.getHighAsk(), bac.getLowBid(), bac.getLowAsk(), bac.getCloseBid(), bac.getCloseAsk(), bac.getVolume(), bac.getComplete()))
 		.collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<Candle> fetchAndSaveNewCandles(Instrument instrument, CandleStickGranularity granularity, Integer number) {
+	
+	try {
+	    List<Candle> candles = getFromBroker(instrument, granularity, null, Instant.now(), number);
+	    repo.save(candles);
+	    return candles;
+	} catch (UnsupportedEncodingException e) {
+	    throw new RuntimeException("Error fetching candles from broker.", e);
+	}
+    }
+
+
+    @Override
+    public int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity, Instant startDate, Instant endDate) {
+	// TODO Auto-generated method stub
+	return 0;
     }
 }

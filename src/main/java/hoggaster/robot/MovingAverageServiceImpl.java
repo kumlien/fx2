@@ -6,7 +6,6 @@ import hoggaster.domain.Instrument;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +28,7 @@ import reactor.rx.Streams;
 import com.codahale.metrics.annotation.Timed;
 
 @Service
+//TODO Rename, it's only doing some scheduled stuff
 public class MovingAverageServiceImpl {
 
     static final long ONE_MINUTE = 60L * 1000;
@@ -67,7 +67,7 @@ public class MovingAverageServiceImpl {
 		initializedMinuteCandles = true;
 	    }
 
-	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, Instant.now(), numberOfCandles);
+	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, numberOfCandles);
 	    LOG.info("Got {} one minute candles", candles.size());
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
@@ -89,7 +89,7 @@ public class MovingAverageServiceImpl {
 		numberOfCandles = 200;
 		initializedDayCandles = true;
 	    }
-	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, Instant.now(), numberOfCandles);
+	    List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, numberOfCandles);
 	    LOG.info("Done fetching one day candles, got {} of them.", candles.size());
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
@@ -99,7 +99,7 @@ public class MovingAverageServiceImpl {
     /*
      * Call the oanda api to get candles.
      */
-    private List<Candle> getAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Instant end, Integer number) throws UnsupportedEncodingException {
+    private List<Candle> getAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Integer number) throws UnsupportedEncodingException {
 	RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
 	Stream<Instrument> instrumentStream = Streams.wrap(publisher);
 	final List<Candle> allCandles = new ArrayList<>();
@@ -107,7 +107,7 @@ public class MovingAverageServiceImpl {
 	// Consumer used to handle one instrument
 	Consumer<Instrument> ic = instrument -> {
 	    try {
-		List<Candle> candles = candleService.getCandles(instrument, granularity, number);
+		List<Candle> candles = candleService.fetchAndSaveNewCandles(instrument, granularity, number);
 		allCandles.addAll(candles);
 		candles.forEach(bac -> {
 		    candleEventBus.notify("candles." + instrument, Event.wrap(bac));

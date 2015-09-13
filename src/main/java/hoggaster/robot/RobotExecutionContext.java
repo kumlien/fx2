@@ -67,7 +67,7 @@ public class RobotExecutionContext {
     
     /**
      * Calculate a sma using the specified parameters.
-     * Use the {@link CandleService} to fetch the candles.
+     * Use the {@link CandleService} to fetch the latest candles.
      * 
      * @param granularity
      * @param dataPoints
@@ -76,7 +76,7 @@ public class RobotExecutionContext {
      * @return The sma for the last value in the series.
      */
     public TAResult getSMA(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
-	List<Candle> candles = bidAskCandleService.getCandles(instrument, granularity, dataPoints);
+	List<Candle> candles = bidAskCandleService.getLatestCandles(instrument, granularity, dataPoints);
 	List<Double> values = candles.stream().map(bac -> bac.getValue(field)).collect(Collectors.toList());
 	return taLibService.sma(values, periods);
     }
@@ -110,7 +110,7 @@ public class RobotExecutionContext {
      * @return A {@link TAResult}
      */
     public TAResult getRSI(CandleStickGranularity granularity, int periods, int dataPointsNeeded, CandleStickField field) { 
-	List<Candle> candles = bidAskCandleService.getCandles(instrument, granularity, dataPointsNeeded);
+	List<Candle> candles = bidAskCandleService.getLatestCandles(instrument, granularity, dataPointsNeeded);
 	List<Double> values = candles.stream()
 		.map(candle -> candle.getValue(field))
 		.collect(Collectors.toList());
