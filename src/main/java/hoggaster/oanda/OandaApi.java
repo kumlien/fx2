@@ -98,36 +98,43 @@ public class OandaApi implements BrokerConnection, OrderService {
     /**
      * Fetch candles for the specified instrument.
      * 
-     * count: Optional The number of candles to return in the response. This
-     * parameter may be ignored by the server depending on the time range
-     * provided. If not specified, count will default to 500. The maximum
-     * acceptable value for count is 5000. count should not be specified if both
-     * the start and end parameters are also specified. start: Optional The
-     * start timestamp for the range of candles requested. The value specified
-     * must be in a valid datetime format. end: Optional The end timestamp for
-     * the range of candles requested. The value specified must be in a valid
-     * datetime format.
+     * count: Optional The number of candles to return in the response. This parameter may be ignored by the server depending on the time range provided. If not specified, count will default to 500. The maximum acceptable value for count is 5000. count should not be specified if both the start and end parameters are
+     * also specified. start: Optional The start timestamp for the range of candles requested. The value specified must be in a valid datetime format. end: Optional The end timestamp for the range of candles requested. The value specified must be in a valid datetime format.
      * 
      * @see http://developer.oanda.com/rest-practice/rates/#retrieveInstrumentHistory
      */
     @Override
     @Timed
-    public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end) throws UnsupportedEncodingException {
-
+    public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer count, Instant start, Instant end, boolean includeFirst) {
+	if(includeFirst && start == null) {
+	    throw new IllegalArgumentException("Include first can only be set to true when start date is specified");
+	}
+	
+	if(start != null && end != null && count != null && count > 0) {
+	    throw new IllegalArgumentException("All three parameters start date, end date and count can't be specified");
+	}
+	
 	UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles()).queryParam("instrument", instrument).queryParam("granularity", granularity.oandaStyle);
 
-	if (start != null) {
-	    String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
-	    builder.queryParam("start", encoded);
+	try {
+	    if (start != null) {
+		String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
+		builder.queryParam("start", encoded);
+	    }
+	    if (end != null) {
+		String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
+		builder.queryParam("end", encoded);
+	    }
+	} catch (UnsupportedEncodingException e) {
+	    throw new RuntimeException(e);
 	}
-	if (end != null) {
-	    String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
-	    builder.queryParam("end", encoded);
+	
+	if (count != null) {
+	    builder.queryParam("count", count);
 	}
-	if (periods != null) {
-	    builder.queryParam("count", periods);
-	}
-	//String uri = builder.build(true).toUriString();
+	
+	builder.queryParam("includeFirst", includeFirst);
+	// String uri = builder.build(true).toUriString();
 	URI uri = builder.build(true).toUri();
 
 	ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);

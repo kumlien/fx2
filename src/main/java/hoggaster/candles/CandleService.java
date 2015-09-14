@@ -28,7 +28,7 @@ public interface CandleService {
      * @param number
      * @return A {@link List} of fetched {@link Candle}s.
      */
-    List<Candle> fetchAndSaveNewCandles(Instrument instrument, CandleStickGranularity granularity, Integer number);
+    List<Candle> fetchAndSaveLatestCandles(Instrument instrument, CandleStickGranularity granularity, Integer number);
     
     
     /**

@@ -107,7 +107,7 @@ public class MovingAverageServiceImpl {
 	// Consumer used to handle one instrument
 	Consumer<Instrument> ic = instrument -> {
 	    try {
-		List<Candle> candles = candleService.fetchAndSaveNewCandles(instrument, granularity, number);
+		List<Candle> candles = candleService.fetchAndSaveLatestCandles(instrument, granularity, number);
 		allCandles.addAll(candles);
 		candles.forEach(bac -> {
 		    candleEventBus.notify("candles." + instrument, Event.wrap(bac));

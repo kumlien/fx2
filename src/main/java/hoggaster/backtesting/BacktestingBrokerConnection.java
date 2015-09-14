@@ -60,7 +60,7 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     }
 
     @Override
-    public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end) throws UnsupportedEncodingException {
+    public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst) {
 	// TODO Auto-generated method stub
 	return null;
     }
