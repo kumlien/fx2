@@ -55,8 +55,8 @@ public class MInteger {
 
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("MInteger [value=").append(value).append("]");
-	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("MInteger [value=").append(value).append("]");
+        return builder.toString();
     }
 }

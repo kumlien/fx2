@@ -13,15 +13,15 @@ public class ErrorResponse {
 
     @JsonCreator
     public ErrorResponse(@JsonProperty("code") int code, @JsonProperty("message") String message, @JsonProperty("moreInfo") String moreInfo) {
-	this.code = code;
-	this.message = message;
-	this.moreInfo = moreInfo;
+        this.code = code;
+        this.message = message;
+        this.moreInfo = moreInfo;
     }
 
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("ErrorResponse [code=").append(code).append(", message=").append(message).append(", moreInfo=").append(moreInfo).append("]");
-	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("ErrorResponse [code=").append(code).append(", message=").append(message).append(", moreInfo=").append(moreInfo).append("]");
+        return builder.toString();
     }
 }

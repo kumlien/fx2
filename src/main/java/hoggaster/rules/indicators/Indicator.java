@@ -9,6 +9,6 @@ import hoggaster.robot.RobotExecutionContext;
  * value of 200 days moving average for the price of some Instrument.
  */
 public interface Indicator {
-	
-	Double value(RobotExecutionContext ctx);
+
+    Double value(RobotExecutionContext ctx);
 }

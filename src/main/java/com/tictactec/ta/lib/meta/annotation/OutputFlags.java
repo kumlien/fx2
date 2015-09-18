@@ -48,7 +48,7 @@ package com.tictactec.ta.lib.meta.annotation;
 
 public final class OutputFlags {
     static public final int TA_OUT_LINE = 0x00000001; /*
-						       * Suggest to display as a
+                               * Suggest to display as a
 						       * connected line.
 						       */
     static public final int TA_OUT_DOT_LINE = 0x00000002; /*

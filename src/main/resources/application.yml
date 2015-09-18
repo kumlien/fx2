@@ -27,3 +27,8 @@ robots:
 logging:
  level: 
   org: INFO
+
+server:
+ tomcat:
+  remote_ip_header: x-forward-for
+  protocol_header: x-forwarded-proto

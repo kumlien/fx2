@@ -48,7 +48,7 @@ package com.tictactec.ta.lib.meta.annotation;
 
 public class FuncFlags {
     static public final int TA_FUNC_FLG_OVERLAP = 0x01000000; /*
-							       * Output scale
+                                   * Output scale
 							       * same as input
 							       * data.
 							       */

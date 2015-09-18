@@ -1,29 +1,28 @@
 package hoggaster.rules.conditions;
 
-import static hoggaster.rules.conditions.Side.BUY;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import hoggaster.robot.RobotExecutionContext;
+import hoggaster.rules.Comparator;
 import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
-import hoggaster.rules.Comparator;
 import hoggaster.rules.indicators.Indicator;
-
-import java.util.Set;
-
 import org.easyrules.annotation.Action;
 import org.easyrules.annotation.Priority;
 import org.easyrules.annotation.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
+import java.util.Set;
+
+import static hoggaster.rules.conditions.Side.BUY;
 
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
- * Evaluated in the {@link #when()} method. If positive then the {@link #then()} 
+ * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
  * method will get called and we add ourselves to the buy- or sell action depending
- * on our {@link Side} 
- * 
+ * on our {@link Side}
+ *
  * @author svante
  */
 @Rule(name = "TwoIndicatorRule", description = "A rule comparing two indicators using the given operator")
@@ -52,50 +51,50 @@ public class TwoIndicatorCondition implements Condition {
      * @param eventTypes
      */
     public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, Side buyOrSell, MarketUpdateType... eventTypes) {
-	this.name = name;
-	this.firstIndicator = firstIndicator;
-	this.secondIndicator = secondIndicator;
-	this.operator = operator;
-	this.priority = priority;
-	this.buyOrSell = buyOrSell;
-	this.eventTypes = Sets.newHashSet(eventTypes);
+        this.name = name;
+        this.firstIndicator = firstIndicator;
+        this.secondIndicator = secondIndicator;
+        this.operator = operator;
+        this.priority = priority;
+        this.buyOrSell = buyOrSell;
+        this.eventTypes = Sets.newHashSet(eventTypes);
     }
 
     @org.easyrules.annotation.Condition
     public boolean when() {
-	Preconditions.checkState(ctx != null, "The RobotExecutionContext must be set before evaluating this rule");
-	if(!eventTypes.contains(ctx.marketUpdate.getType())) {
-	    LOG.info("Return false since we only react on {} but this update was of type {}", eventTypes, ctx.marketUpdate.getType());
-	    return false;
-	}
-	Boolean result = operator.apply(firstIndicator.value(ctx), secondIndicator.value(ctx));
-	LOG.info("Result of rule with indicators '{}', '{}' compared with operator '{}' was '{}' given context {}", firstIndicator, secondIndicator, operator, result, ctx);
-	return result;
+        Preconditions.checkState(ctx != null, "The RobotExecutionContext must be set before evaluating this rule");
+        if (!eventTypes.contains(ctx.marketUpdate.getType())) {
+            LOG.info("Return false since we only react on {} but this update was of type {}", eventTypes, ctx.marketUpdate.getType());
+            return false;
+        }
+        Boolean result = operator.apply(firstIndicator.value(ctx), secondIndicator.value(ctx));
+        LOG.info("Result of rule with indicators '{}', '{}' compared with operator '{}' was '{}' given context {}", firstIndicator, secondIndicator, operator, result, ctx);
+        return result;
     }
 
     @Action
     public void then() {
-	if (buyOrSell == BUY) {
-	    ctx.addBuyAction(this);
-	} else {
-	    ctx.addSellAction(this);
-	}
+        if (buyOrSell == BUY) {
+            ctx.addPositiveBuyAction(this);
+        } else {
+            ctx.addPositiveSellAction(this);
+        }
     }
 
     @Priority
     public int prio() {
-	return priority;
+        return priority;
     }
 
     @Override
     public void setContext(RobotExecutionContext ctx) {
-	this.ctx = ctx;
+        this.ctx = ctx;
     }
 
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("TwoIndicatorCondition [name=").append(name).append(", firstIndicator=").append(firstIndicator).append(", secondIndicator=").append(secondIndicator).append(", operator=").append(operator).append(", priority=").append(priority).append(", type=").append(buyOrSell).append("]");
-	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("TwoIndicatorCondition [name=").append(name).append(", firstIndicator=").append(firstIndicator).append(", secondIndicator=").append(secondIndicator).append(", operator=").append(operator).append(", priority=").append(priority).append(", type=").append(buyOrSell).append("]");
+        return builder.toString();
     }
 }

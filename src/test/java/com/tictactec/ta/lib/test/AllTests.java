@@ -52,15 +52,15 @@ import junit.framework.TestSuite;
 public class AllTests {
 
     public static void main(String[] args) {
-	junit.textui.TestRunner.run(AllTests.suite());
+        junit.textui.TestRunner.run(AllTests.suite());
     }
 
     public static Test suite() {
-	TestSuite suite = new TestSuite("Test for TA.Lib.Test");
-	// $JUnit-BEGIN$
-	suite.addTestSuite(TestAbstract.class);
-	// $JUnit-END$
-	return suite;
+        TestSuite suite = new TestSuite("Test for TA.Lib.Test");
+        // $JUnit-BEGIN$
+        suite.addTestSuite(TestAbstract.class);
+        // $JUnit-END$
+        return suite;
     }
 
 }

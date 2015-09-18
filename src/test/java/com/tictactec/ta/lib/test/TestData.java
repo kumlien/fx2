@@ -91,45 +91,45 @@ public class TestData {
     public final static double TA_REAL_DEFAULT = (-4e+37);
 
     TestData() {
-	allInputData = new ArrayList<InputData>();
-	inputNegData = new InputData("Negative Data", 100);
-	allInputData.add(inputNegData);
-	inputZeroData = new InputData("Zero Data", 100);
-	allInputData.add(inputZeroData);
-	inputRandFltEpsilon = new InputData("Random Float Epsilon", 100);
-	allInputData.add(inputRandFltEpsilon);
-	inputRandDblEpsilon = new InputData("Random Double Epsilon", 100);
-	allInputData.add(inputRandDblEpsilon);
-	inputRandomData = new InputData("Random Data", 2000);
-	allInputData.add(inputRandomData);
+        allInputData = new ArrayList<InputData>();
+        inputNegData = new InputData("Negative Data", 100);
+        allInputData.add(inputNegData);
+        inputZeroData = new InputData("Zero Data", 100);
+        allInputData.add(inputZeroData);
+        inputRandFltEpsilon = new InputData("Random Float Epsilon", 100);
+        allInputData.add(inputRandFltEpsilon);
+        inputRandDblEpsilon = new InputData("Random Double Epsilon", 100);
+        allInputData.add(inputRandDblEpsilon);
+        inputRandomData = new InputData("Random Data", 2000);
+        allInputData.add(inputRandomData);
 
-	for (int i = 0; i < inputNegData.size(); i++) {
-	    inputNegData.setData(i, -((double) i), -((float) i), -i);
-	}
+        for (int i = 0; i < inputNegData.size(); i++) {
+            inputNegData.setData(i, -((double) i), -((float) i), -i);
+        }
 
-	for (int i = 0; i < inputZeroData.size(); i++) {
-	    inputZeroData.setData(i, 0.0, (float) 0.0, 0);
-	}
+        for (int i = 0; i < inputZeroData.size(); i++) {
+            inputZeroData.setData(i, 0.0, (float) 0.0, 0);
+        }
 
-	for (int i = 0; i < inputRandomData.size(); i++) {
-	    double rand = Math.random() / 97.234;
-	    inputRandomData.setData(i, rand, (float) rand, (int) rand);
-	}
+        for (int i = 0; i < inputRandomData.size(); i++) {
+            double rand = Math.random() / 97.234;
+            inputRandomData.setData(i, rand, (float) rand, (int) rand);
+        }
 
-	for (int i = 0; i < inputRandFltEpsilon.size(); i++) {
-	    int sign = ((int) Math.random()) % 2;
-	    double data = (sign != 0 ? 1.0 : -1.0) * (FLT_EPSILON);
-	    inputRandFltEpsilon.setData(i, data, (float) data, sign != 0 ? TA_INTEGER_MIN : TA_INTEGER_MAX);
-	}
+        for (int i = 0; i < inputRandFltEpsilon.size(); i++) {
+            int sign = ((int) Math.random()) % 2;
+            double data = (sign != 0 ? 1.0 : -1.0) * (FLT_EPSILON);
+            inputRandFltEpsilon.setData(i, data, (float) data, sign != 0 ? TA_INTEGER_MIN : TA_INTEGER_MAX);
+        }
 
-	for (int i = 0; i < inputRandDblEpsilon.size(); i++) {
-	    int sign = ((int) Math.random()) % 2;
-	    double data = (sign != 0 ? 1.0 : -1.0) * (DBL_EPSILON);
-	    inputRandDblEpsilon.setData(i, data, (float) data, sign != 0 ? 1 : -1);
-	}
+        for (int i = 0; i < inputRandDblEpsilon.size(); i++) {
+            int sign = ((int) Math.random()) % 2;
+            double data = (sign != 0 ? 1.0 : -1.0) * (DBL_EPSILON);
+            inputRandDblEpsilon.setData(i, data, (float) data, sign != 0 ? 1 : -1);
+        }
     }
 
     public List<InputData> getAllInputData() {
-	return allInputData;
+        return allInputData;
     }
 }

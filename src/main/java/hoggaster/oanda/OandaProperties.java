@@ -1,9 +1,9 @@
 package hoggaster.oanda;
 
-import java.net.URL;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import java.net.URL;
 
 @Component
 @ConfigurationProperties(prefix = "oanda", exceptionIfInvalid = true)
@@ -22,51 +22,51 @@ public class OandaProperties {
     private String mainAccountId;
 
     public String getFetchPricesRegex() {
-	return fetchPricesRegex;
+        return fetchPricesRegex;
     }
 
     public URL getRestApiUrl() {
-	return restApiUrl;
+        return restApiUrl;
     }
 
     public String getStreamingApiUrl() {
-	return streamingApiUrl;
+        return streamingApiUrl;
     }
 
     public String getApiKey() {
-	return apiKey;
+        return apiKey;
     }
 
     public String getMainAccountId() {
-	return mainAccountId;
+        return mainAccountId;
     }
 
     public void setFetchPricesRegex(String fetchPricesRegex) {
-	this.fetchPricesRegex = fetchPricesRegex;
+        this.fetchPricesRegex = fetchPricesRegex;
     }
 
     public void setRestApiUrl(URL restApiUrl) {
-	this.restApiUrl = restApiUrl;
+        this.restApiUrl = restApiUrl;
     }
 
     public void setStreamingApiUrl(String streamingApiUrl) {
-	this.streamingApiUrl = streamingApiUrl;
+        this.streamingApiUrl = streamingApiUrl;
     }
 
     public void setApiKey(String apiKey) {
-	this.apiKey = apiKey;
+        this.apiKey = apiKey;
     }
 
     public void setMainAccountId(String mainAccountId) {
-	this.mainAccountId = mainAccountId;
+        this.mainAccountId = mainAccountId;
     }
 
     public String getFetchCandlesRegex() {
-	return fetchCandlesRegex;
+        return fetchCandlesRegex;
     }
 
     public void setFetchCandlesRegex(String fetchCandlesRegex) {
-	this.fetchCandlesRegex = fetchCandlesRegex;
+        this.fetchCandlesRegex = fetchCandlesRegex;
     }
 
 }

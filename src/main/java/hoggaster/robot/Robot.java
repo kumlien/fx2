@@ -1,7 +1,7 @@
 package hoggaster.robot;
 
-import static hoggaster.robot.RobotStatus.RUNNING;
-import static reactor.bus.selector.Selectors.R;
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.Instrument;
@@ -14,22 +14,20 @@ import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
 import hoggaster.talib.TALibService;
 import hoggaster.user.Depot;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 import reactor.fn.Consumer;
 
-import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Preconditions;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static hoggaster.robot.RobotStatus.RUNNING;
+import static reactor.bus.selector.Selectors.R;
 
 /*
  * / Definition of code parameters
@@ -74,11 +72,11 @@ public class Robot implements Consumer<Event<?>> {
     // The buy conditions. Must be annotated with @Rule
     private final Set<Condition> buyConditions;
 
- // The sell conditions. Must be annotated with @Rule
+    // The sell conditions. Must be annotated with @Rule
     private final Set<Condition> sellConditions;
-    
+
     private final TALibService taLibService;
-    
+
     private final CandleService candleService;
 
     private final Depot depot;
@@ -97,83 +95,83 @@ public class Robot implements Consumer<Event<?>> {
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
     public Robot(Depot depot, RobotDefinition definition, EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine, TALibService taLibService, CandleService candleService) {
-	Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
-	Preconditions.checkArgument(depot != null, "The depot is null");
-	Preconditions.checkArgument(definition != null, "The robot definition is null");
-	Preconditions.checkArgument(definition.instrument != null, "The definition instrument is null");
-	Preconditions.checkArgument(orderService != null, "The order service is null");
-	Preconditions.checkArgument(rulesEngine != null, "The rule engine is null");
-	Preconditions.checkArgument(taLibService != null, "The ta-lib service is null");
-	Preconditions.checkArgument(candleService != null, "The bidAskCandleService is null");
+        Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
+        Preconditions.checkArgument(depot != null, "The depot is null");
+        Preconditions.checkArgument(definition != null, "The robot definition is null");
+        Preconditions.checkArgument(definition.instrument != null, "The definition instrument is null");
+        Preconditions.checkArgument(orderService != null, "The order service is null");
+        Preconditions.checkArgument(rulesEngine != null, "The rule engine is null");
+        Preconditions.checkArgument(taLibService != null, "The ta-lib service is null");
+        Preconditions.checkArgument(candleService != null, "The bidAskCandleService is null");
 
-	this.id = definition.getId(); // This is kind of wacky
-	this.name = definition.name;
-	this.instrument = definition.instrument;
-	this.buyConditions = definition.getBuyConditions();
-	this.sellConditions = definition.getSellConditions();
-	this.depot = depot;
-	this.priceEventBus = priceEventBus;
-	this.orderService = orderService;
-	this.rulesEngine = rulesEngine;
-	this.taLibService = taLibService;
-	this.candleService = candleService;
+        this.id = definition.getId(); // This is kind of wacky
+        this.name = definition.name;
+        this.instrument = definition.instrument;
+        this.buyConditions = definition.getBuyConditions();
+        this.sellConditions = definition.getSellConditions();
+        this.depot = depot;
+        this.priceEventBus = priceEventBus;
+        this.orderService = orderService;
+        this.rulesEngine = rulesEngine;
+        this.taLibService = taLibService;
+        this.candleService = candleService;
 
-	buyConditions.stream().forEach(c -> {
-	    rulesEngine.registerRule(c);
-	});
+        buyConditions.stream().forEach(c -> {
+            rulesEngine.registerRule(c);
+        });
 
-	sellConditions.stream().forEach(c -> {
-	    rulesEngine.registerRule(c);
-	});
+        sellConditions.stream().forEach(c -> {
+            rulesEngine.registerRule(c);
+        });
     }
 
     /**
      * Kick the tires on this one.
-     * 
+     * <p>
      * Register for events.
      */
     public void start() {
-	Preconditions.checkState(priceEventBus != null, "The priceEventBus is null");
-	Preconditions.checkState(instrument != null, "The instrument is null");
-	LOG.error("this is {}", this);
-	Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + instrument.name() + "*"), this);
-	eventBusRegistrations.put("priceRegistration", reg);
-	this.status = RobotStatus.RUNNING;
-	LOG.info("Robot {} has started.", name);
+        Preconditions.checkState(priceEventBus != null, "The priceEventBus is null");
+        Preconditions.checkState(instrument != null, "The instrument is null");
+        LOG.error("this is {}", this);
+        Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + instrument.name() + "*"), this);
+        eventBusRegistrations.put("priceRegistration", reg);
+        this.status = RobotStatus.RUNNING;
+        LOG.info("Robot {} has started.", name);
     }
 
     /**
      * Unregister for events.
      */
     public void stop() {
-	this.status = RobotStatus.STOPPED;
-	eventBusRegistrations.values().stream().forEach(Registration::cancel);
-	LOG.info("Robot {} has stopped.", name);
+        this.status = RobotStatus.STOPPED;
+        eventBusRegistrations.values().stream().forEach(Registration::cancel);
+        LOG.info("Robot {} has stopped.", name);
     }
 
     @Timed
     public void onNewPrice(Price price) {
-	LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, taLibService, candleService);
+        LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
+        RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, taLibService, candleService);
 
-	buyConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
-	sellConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
+        buyConditions.stream().forEach(c -> {
+            c.setContext(ctx);
+        });
+        sellConditions.stream().forEach(c -> {
+            c.setContext(ctx);
+        });
 
-	rulesEngine.fireRules();
+        rulesEngine.fireRules();
 
-	if (ctx.getPositiveBuyConditions().size() > 0) {
-	    LOG.info("Maybe we should buy something!");
-	    doBuy();
-	} else if (ctx.getPositiveSellConditions().size() > 0) {
-	    LOG.info("Maybe we should sell something!");
-	    doSell();
-	} else {
-	    LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
-	}
+        if (ctx.getPositiveBuyConditions().size() > 0) {
+            LOG.info("Maybe we should buy something!");
+            doBuy();
+        } else if (ctx.getPositiveSellConditions().size() > 0) {
+            LOG.info("Maybe we should sell something!");
+            doSell();
+        } else {
+            LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+        }
 
     }
 
@@ -182,96 +180,96 @@ public class Robot implements Consumer<Event<?>> {
      */
     @Timed
     private void onNewCandle(Candle candle) {
-	LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
-	RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
-	buyConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
-	sellConditions.stream().forEach(c -> {
-	    c.setContext(ctx);
-	});
-	
-	rulesEngine.fireRules();
+        LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
+        RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
+        buyConditions.stream().forEach(c -> {
+            c.setContext(ctx);
+        });
+        sellConditions.stream().forEach(c -> {
+            c.setContext(ctx);
+        });
 
-	if (ctx.getPositiveBuyConditions().size() > 0) {
-	    doBuy();
-	} else if (ctx.getPositiveSellConditions().size() > 0) {
-	    doSell();
-	} else {
-	    LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
-	}
+        rulesEngine.fireRules();
+
+        if (ctx.getPositiveBuyConditions().size() > 0) {
+            doBuy();
+        } else if (ctx.getPositiveSellConditions().size() > 0) {
+            doSell();
+        } else {
+            LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+        }
 
     }
 
     private void doSell() {
-	if (!depot.ownThisInstrument(instrument)) {
-	    LOG.info("Nahh, we don't own {} yet...", instrument.name());
-	    return;
-	}
+        if (!depot.ownThisInstrument(instrument)) {
+            LOG.info("Nahh, we don't own {} yet...", instrument.name());
+            return;
+        }
 
-	LOG.info("Ooops, we should sell what we got of {}!", instrument.name());
+        LOG.info("Ooops, we should sell what we got of {}!", instrument.name());
     }
 
     private void doBuy() {
-	if (depot.ownThisInstrument(instrument)) {
-	    LOG.info("Nahh, we allready own {}, only buy once...", instrument.name());
-	    return;
-	}
+        if (depot.ownThisInstrument(instrument)) {
+            LOG.info("Nahh, we allready own {}, only buy once...", instrument.name());
+            return;
+        }
 
-	LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
-	OrderRequest order = new OrderRequest(depot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
-	OandaOrderResponse response = orderService.sendOrder(order);
-	LOG.info("Order away and we got an response! {}", response);
+        LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
+        OrderRequest order = new OrderRequest(depot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
+        OandaOrderResponse response = orderService.sendOrder(order);
+        LOG.info("Order away and we got an response! {}", response);
     }
 
     /**
      * Accept an incoming event.
-     * 
+     *
      * @param t
      */
     @Override
     public void accept(Event<?> t) {
-	if (!isRunning()) {
-	    LOG.warn("Ooops, not running but {}, bailing out", status);
-	    return;
-	}
-	Preconditions.checkArgument(t != null, "The event is not allowed to be null");
-	Preconditions.checkArgument(t.getData() != null, "The event payload is not allowed to be null");
-	synchronized (this) {
-	    LOG.info("Robot {} dealing with instrument {} received a new event: {}", name, instrument, t.getData());
-	    if (t.getData() instanceof Price) {
-		if (!(((Price) t.getData()).instrument == instrument)) {
-		    LOG.debug("Not to consider since it's not for this robot: {} ", ((Price) t.getData()).instrument);
-		    return;
-		}
-		onNewPrice((Price) t.getData());
-	    } else if (t.getData() instanceof Candle) {
-		if (!(((Candle) t.getData()).instrument == instrument)) {
-		    LOG.debug("Not to consider since it's not for this robot: {} ", ((Candle) t.getData()).instrument);
-		    return;
-		}
-		onNewCandle((Candle) t.getData());
-	    }
-	}
+        if (!isRunning()) {
+            LOG.warn("Ooops, not running but {}, bailing out", status);
+            return;
+        }
+        Preconditions.checkArgument(t != null, "The event is not allowed to be null");
+        Preconditions.checkArgument(t.getData() != null, "The event payload is not allowed to be null");
+        synchronized (this) {
+            LOG.info("Robot {} dealing with instrument {} received a new event: {}", name, instrument, t.getData());
+            if (t.getData() instanceof Price) {
+                if (!(((Price) t.getData()).instrument == instrument)) {
+                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Price) t.getData()).instrument);
+                    return;
+                }
+                onNewPrice((Price) t.getData());
+            } else if (t.getData() instanceof Candle) {
+                if (!(((Candle) t.getData()).instrument == instrument)) {
+                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Candle) t.getData()).instrument);
+                    return;
+                }
+                onNewCandle((Candle) t.getData());
+            }
+        }
     }
 
     public Depot getDepot() {
-	return depot;
+        return depot;
     }
 
     public RobotStatus getStatus() {
-	return status;
+        return status;
     }
 
     public boolean isRunning() {
-	return status == RUNNING;
+        return status == RUNNING;
     }
 
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("Robot [id=").append(id).append(", name=").append(name).append(", instrument=").append(instrument).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", depot=").append(depot).append(", status=").append(status).append("]");
-	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", instrument=").append(instrument).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", depot=").append(depot).append(", status=").append(status).append("]");
+        return builder.toString();
     }
 
 }

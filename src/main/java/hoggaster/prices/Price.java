@@ -5,11 +5,10 @@ import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.oanda.responses.OandaPrice;
 import hoggaster.rules.MarketUpdateType;
-
-import java.time.Instant;
-
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.Instant;
 
 @Document
 public class Price extends MarketUpdate {
@@ -23,39 +22,39 @@ public class Price extends MarketUpdate {
 
     @PersistenceConstructor
     public Price(String id, Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
-	this.id = id;
-	this.instrument = instrument;
-	this.bid = bid;
-	this.ask = ask;
-	this.time = time;
-	this.broker = broker;
+        this.id = id;
+        this.instrument = instrument;
+        this.bid = bid;
+        this.ask = ask;
+        this.time = time;
+        this.broker = broker;
     }
 
     public Price(Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
-	this.instrument = instrument;
-	this.bid = bid;
-	this.ask = ask;
-	this.time = time;
-	this.broker = broker;
+        this.instrument = instrument;
+        this.bid = bid;
+        this.ask = ask;
+        this.time = time;
+        this.broker = broker;
     }
 
     public Price(OandaPrice p) {
-	this.instrument = Instrument.valueOf(p.instrument);
-	this.bid = p.bid;
-	this.ask = p.ask;
-	this.time = p.time.toInstant();
-	this.broker = Broker.OANDA;
+        this.instrument = Instrument.valueOf(p.instrument);
+        this.bid = p.bid;
+        this.ask = p.ask;
+        this.time = p.time.toInstant();
+        this.broker = Broker.OANDA;
     }
 
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("Price [id=").append(id).append(", instrument=").append(instrument).append(", bid=").append(bid).append(", ask=").append(ask).append(", time=").append(time).append(", broker=").append(broker).append("]");
-	return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("Price [id=").append(id).append(", instrument=").append(instrument).append(", bid=").append(bid).append(", ask=").append(ask).append(", time=").append(time).append(", broker=").append(broker).append("]");
+        return builder.toString();
     }
 
     @Override
     public MarketUpdateType getType() {
-	return MarketUpdateType.PRICE;
+        return MarketUpdateType.PRICE;
     }
 }

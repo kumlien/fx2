@@ -54,37 +54,38 @@ public class TaFuncSignature implements Comparable {
     String name;
     Class[] inVarTypes;
 
-    public TaFuncSignature() {}
+    public TaFuncSignature() {
+    }
 
     public TaFuncSignature(String name, Class[] inVarTypes) {
-	this.name = name;
-	this.inVarTypes = inVarTypes;
+        this.name = name;
+        this.inVarTypes = inVarTypes;
     }
 
     final public int compareTo(Object rhs) {
-	int rtn;
-	TaFuncSignature that = (TaFuncSignature) rhs;
-	if ((rtn = name.compareTo(that.name)) != 0) {
-	    return rtn;
-	} else {
-	    if (inVarTypes.length != that.inVarTypes.length) {
-		return inVarTypes.length - that.inVarTypes.length;
-	    }
-	    for (int i = 0; i < inVarTypes.length; i++) {
-		if ((rtn = inVarTypes[i].getName().compareTo(that.inVarTypes[i].getName())) != 0) {
-		    return rtn;
-		}
-	    }
-	}
-	return 0;
+        int rtn;
+        TaFuncSignature that = (TaFuncSignature) rhs;
+        if ((rtn = name.compareTo(that.name)) != 0) {
+            return rtn;
+        } else {
+            if (inVarTypes.length != that.inVarTypes.length) {
+                return inVarTypes.length - that.inVarTypes.length;
+            }
+            for (int i = 0; i < inVarTypes.length; i++) {
+                if ((rtn = inVarTypes[i].getName().compareTo(that.inVarTypes[i].getName())) != 0) {
+                    return rtn;
+                }
+            }
+        }
+        return 0;
     }
 
     public Class[] getInVarTypes() {
-	return inVarTypes;
+        return inVarTypes;
     }
 
     public String getName() {
-	return name;
+        return name;
     }
 
 }

@@ -1,10 +1,6 @@
 package hoggaster.domain;
 
-import hoggaster.oanda.responses.Accounts;
-import hoggaster.oanda.responses.Instruments;
-import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaPrices;
+import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
