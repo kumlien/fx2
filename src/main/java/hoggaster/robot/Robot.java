@@ -163,10 +163,11 @@ public class Robot implements Consumer<Event<?>> {
 
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveBuyConditions().size() > 0) {
+        //All buy conditions must be positive
+        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
             LOG.info("Maybe we should buy something!");
             doBuy();
-        } else if (ctx.getPositiveSellConditions().size() > 0) {
+        } else if (ctx.getPositiveSellConditions().size() > 0) { //Enough with one positive sell condition
             LOG.info("Maybe we should sell something!");
             doSell();
         } else {

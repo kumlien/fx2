@@ -6,6 +6,7 @@ import hoggaster.domain.Instrument;
 import hoggaster.rules.Condition;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Set;
@@ -15,6 +16,8 @@ public class RobotDefinition {
 
     @Id
     private String id;
+
+    @Indexed(unique = true)
     public final String name;
     public final Instrument instrument;
     private final Set<Condition> buyConditions;

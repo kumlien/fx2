@@ -47,7 +47,7 @@ public class RobotDefintionCRUDTest {
     /**
      * Create a robot with two buy conditions:
      * 1) close bid of one-day candle is >= MA200 for one-day candle close bid
-     * 2) two day rsi(today) + two day rsi(yesterday) <=10
+     * 2) (two day rsi(today) + two day rsi(yesterday)) <=10
      *
      * @throws InterruptedException
      */
