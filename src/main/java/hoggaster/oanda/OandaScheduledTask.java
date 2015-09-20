@@ -143,6 +143,17 @@ public class OandaScheduledTask {
         }
     }
 
+
+    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 10000)
+    public void checkDepotMargins() {
+
+    }
+
+
+    public void checkDepotMargin(String depotId) {
+
+    }
+
     /*
      * Call the oanda api to get candles.
      */

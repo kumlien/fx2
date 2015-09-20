@@ -16,7 +16,9 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
             OrderSide side,
             OrderType type,
             Instant expiry,
-            Double price) {
+            Double price,
+            Double lowerBound,
+            Double upperBound) {
         add("instrument", instrument.name());
         add("units", String.valueOf(units));
         add("side", side.name());
@@ -26,6 +28,12 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
         }
         if (null != price) {
             add("price", String.valueOf(price));
+        }
+        if(null != lowerBound) {
+            add("lowerBound", String.valueOf(lowerBound));
+        }
+        if(null != upperBound) {
+            add("upperBound", String.valueOf(upperBound));
         }
     }
 }

@@ -53,7 +53,7 @@ public class RobotDefintionCRUDTest {
      */
     @Test
     public void testCreatePellesRobot() throws InterruptedException {
-        RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", Instrument.EUR_USD);
+        RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", Instrument.EUR_USD, "aTestDepot");
 
         RSIIndicator rsi1 = new RSIIndicator(2, 100, 0, END_OF_DAY, CLOSE_BID); //rsi with 2 periods, minimum 100 data points, look at first value, type of candle is DAY and field to use is close_bid
         RSIIndicator rsi2 = new RSIIndicator(2, 100, 1, END_OF_DAY, CLOSE_BID);
@@ -69,12 +69,12 @@ public class RobotDefintionCRUDTest {
 
         robotDefinition = robotRepo.save(robotDefinition);
 
-        //robotRepo.delete(robotDefinition.getId());
+        robotRepo.delete(robotDefinition.getId());
     }
 
     @Test
     public void testCRUDRobotDefinition() throws InterruptedException {
-        RobotDefinition rd = new RobotDefinition("myRobotDefinition", Instrument.AUD_CAD);
+        RobotDefinition rd = new RobotDefinition("myRobotDefinition", Instrument.AUD_CAD, "aDepotId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), GREATER_OR_EQUAL_THAN, 1, Side.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
         rd.addBuyCondition(buyCondition);
         rd = robotRepo.save(rd);
@@ -93,7 +93,7 @@ public class RobotDefintionCRUDTest {
 
     @Test
     public void testCRUDRobotDefinition2() throws InterruptedException {
-        RobotDefinition rd = new RobotDefinition("Robot2", Instrument.EUR_USD);
+        RobotDefinition rd = new RobotDefinition("Robot2", Instrument.EUR_USD, "aDepotId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), GREATER_OR_EQUAL_THAN, 1, Side.BUY);
         rd.addBuyCondition(buyCondition);
         rd = robotRepo.save(rd);

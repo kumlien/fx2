@@ -10,6 +10,7 @@ import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.robot.RobotRegistry;
 import hoggaster.talib.TALibService;
 import hoggaster.user.Depot;
+import hoggaster.user.DepotRepo;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;
@@ -43,18 +44,21 @@ public class RobotController {
 
     private final CandleService candleService;
 
+    private final DepotRepo depotRepo;
+
     @Autowired
     // TODO Only for testing!! Used to set up a depot.
     private OandaProperties oandaProps;
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService) {
+    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotRepo depotRepo) {
         this.robotRegistry = robotRegistry;
         this.robotRepo = robotRepo;
         this.priceEventBus = priceEventBus;
         this.oandaOrderService = oandaOrderService;
         this.taLibService = taLibService;
         this.candleService = candleService;
+        this.depotRepo = depotRepo;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -73,8 +77,7 @@ public class RobotController {
                 throw new IllegalArgumentException("No robotdefinition with id: " + robotId);
             }
 
-            // TODO For now hardwired to oanda and main account
-            Depot depot = new Depot(Broker.OANDA, String.valueOf(oandaProps.getMainAccountId()));
+            Depot depot = depotRepo.findOne(definition.getDepotId());
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
             robot = new Robot(depot, definition, priceEventBus, oandaOrderService, ruleEngine, taLibService, candleService);
             robotRegistry.add(robot);

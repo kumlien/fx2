@@ -2,6 +2,7 @@ package hoggaster.transaction;
 
 import hoggaster.domain.Instrument;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -12,22 +13,47 @@ public class Transaction {
     @Id
     private String id;
 
-    private String depotId;
+    private final String depotId;
 
-    private Instant time;
+    private final Instant time;
 
-    private TransactionType type;
+    private final TransactionType type;
 
-    private Instrument instrument;
+    private final Instrument instrument;
 
-    private Double quantity;
+    private final Double quantity;
 
-    private Double price;
+    private final Double price;
 
-    private Double commision;
+    private final Double commision;
 
-    private Double sum;
+    private final Double sum;
 
-    private String currency;
+    private final String currency;
 
+    @PersistenceConstructor
+    public Transaction(String id, String depotId, Instant time, TransactionType type, Instrument instrument, Double quantity, Double price, Double commision, Double sum, String currency) {
+        this.id = id;
+        this.depotId = depotId;
+        this.time = time;
+        this.type = type;
+        this.instrument = instrument;
+        this.quantity = quantity;
+        this.price = price;
+        this.commision = commision;
+        this.sum = sum;
+        this.currency = currency;
+    }
+
+    public Transaction(String depotId, Instant time, TransactionType type, Instrument instrument, Double quantity, Double price, Double commision, Double sum, String currency) {
+        this.depotId = depotId;
+        this.time = time;
+        this.type = type;
+        this.instrument = instrument;
+        this.quantity = quantity;
+        this.price = price;
+        this.commision = commision;
+        this.sum = sum;
+        this.currency = currency;
+    }
 }

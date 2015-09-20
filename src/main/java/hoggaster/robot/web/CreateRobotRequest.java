@@ -21,13 +21,13 @@ public class CreateRobotRequest {
 
     @NotNull
     @Min(1)
-    public final Long depotId;
+    public final String depotId;
 
     @JsonCreator
     public CreateRobotRequest(
             @JsonProperty(value = "name") String name,
             @JsonProperty(value = "instrument") Instrument instrument,
-            @JsonProperty(value = "depotId") Long depotId) {
+            @JsonProperty(value = "depotId") String depotId) {
         this.name = name;
         this.instrument = instrument;
         this.depotId = depotId;

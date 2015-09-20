@@ -24,6 +24,7 @@ public class OrderRequest {
 
     public final Double price;
 
+
     //Optional fields
     @JsonInclude(Include.NON_NULL)
     private Double stopLoss;
@@ -33,6 +34,13 @@ public class OrderRequest {
 
     @JsonInclude(Include.NON_NULL)
     private Double trailingStop;
+
+
+    @JsonInclude(Include.NON_NULL)
+    public Double lowerBound;
+
+    @JsonInclude(Include.NON_NULL)
+    public Double upperBound;
 
     @JsonCreator
     public OrderRequest(
@@ -74,5 +82,13 @@ public class OrderRequest {
 
     public void setTrailingStop(Double trailingStop) {
         this.trailingStop = trailingStop;
+    }
+
+    public Double getLowerBound() {
+        return lowerBound;
+    }
+
+    public Double getUpperBound() {
+        return upperBound;
     }
 }

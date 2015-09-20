@@ -57,9 +57,9 @@ public class BasicRobotTest {
 
     @Before
     public void before() {
-        depot = new Depot(Broker.OANDA, "1");
+        depot = new Depot("Test depot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05));
         depot.sold();
-        definition = new RobotDefinition("Frekkin robot!", Instrument.USD_SEK);
+        definition = new RobotDefinition("Frekkin robot!", Instrument.USD_SEK, depot.getId());
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
 

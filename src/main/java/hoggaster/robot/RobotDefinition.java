@@ -22,19 +22,22 @@ public class RobotDefinition {
     public final Instrument instrument;
     private final Set<Condition> buyConditions;
     private final Set<Condition> sellConditions;
+    private final String depotId;
 
     @PersistenceConstructor
-    RobotDefinition(String id, String name, Instrument instrument, Set<Condition> buyConditions, Set<Condition> sellConditions) {
+    RobotDefinition(String id, String name, Instrument instrument, Set<Condition> buyConditions, Set<Condition> sellConditions, String depotId) {
         this.id = id;
         this.name = name;
         this.instrument = instrument;
         this.buyConditions = buyConditions;
         this.sellConditions = sellConditions;
+        this.depotId = depotId;
     }
 
-    public RobotDefinition(String name, Instrument instrument) {
+    public RobotDefinition(String name, Instrument instrument, String depotId) {
         this.name = name;
         this.instrument = instrument;
+        this.depotId = depotId;
         this.buyConditions = Sets.newHashSet();
         this.sellConditions = Sets.newHashSet();
     }
@@ -70,4 +73,9 @@ public class RobotDefinition {
                 .append(", sellConditions=").append(sellConditions).append("]");
         return builder.toString();
     }
+
+    public String getDepotId() {
+        return depotId;
+    }
+
 }
