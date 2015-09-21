@@ -1,9 +1,6 @@
 package hoggaster.backtesting;
 
-import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
-import hoggaster.domain.Instrument;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.*;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
@@ -54,6 +51,11 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     @Override
     public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst) {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public BrokerDepot getDepot(String depotId) {
         return null;
     }
 

@@ -2,6 +2,7 @@ package hoggaster.domain;
 
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.user.Depot;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
@@ -20,4 +21,6 @@ public interface BrokerConnection {
 
     // TODO remove Oanda
     OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst);
+
+    BrokerDepot getDepot(String depotId);
 }

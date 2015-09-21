@@ -1,10 +1,7 @@
 package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
-import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
-import hoggaster.domain.Instrument;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.*;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;
@@ -65,6 +62,17 @@ public class OandaApi implements BrokerConnection, OrderService {
         LOG.info("Found {} accounts", accounts.getBody().getAccounts().size());
         accounts.getBody().getAccounts().forEach(a -> LOG.info("Account: {}", a));
         return accounts.getBody();
+    }
+
+    @Override
+    @Timed
+    public BrokerDepot getDepot(String depotId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
+        String uri = builder.pathSegment(depotId).build().toUriString();
+        LOG.info("Get depot with id {} using uri {}", depotId, uri);
+        ResponseEntity<OandaAccount> account = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccount.class);
+        LOG.info("Found {} account", account.getBody());
+        return null;
     }
 
     /**
@@ -129,6 +137,7 @@ public class OandaApi implements BrokerConnection, OrderService {
         ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
         return candles.getBody();
     }
+
 
     @Override
     @Timed

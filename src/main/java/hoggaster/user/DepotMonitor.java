@@ -1,8 +1,11 @@
 package hoggaster.user;
 
+import hoggaster.domain.BrokerConnection;
+import hoggaster.domain.BrokerDepot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,24 +23,30 @@ public class DepotMonitor {
 
     private final DepotRepo depotRepo;
 
+    private final BrokerConnection broker;
+
     @Autowired
-    public DepotMonitor(DepotRepo depotRepo) {
+    public DepotMonitor(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection broker) {
         this.depotRepo = depotRepo;
+        this.broker = broker;
     }
 
 
     @Scheduled(fixedRate = 60000, initialDelay = 10000)
     public void synchDepots() {
-        LOG.info("*********************  Synching depots...  ******************");
+        LOG.info("*********************  Synching depots...  ******************##");
         List<Depot> depots = depotRepo.findAll();
         if(depots == null || depots.isEmpty()) {
             LOG.info("No depots found...");
-        } else {
-            LOG.info("Whoohaa, found {} depots!", depots.size());
+            return;
         }
 
+        LOG.info("Whoohaa, found {} depots!", depots.size());
+        depots.forEach(this::synchDepot);
     }
 
-
-
+    public void synchDepot(Depot depot) {
+        LOG.info("Start synching depot {}", depot);
+        BrokerDepot depotFromBroker = broker.getDepot(depot.getBrokerId());
+    }
 }
