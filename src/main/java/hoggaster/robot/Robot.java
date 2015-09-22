@@ -13,7 +13,7 @@ import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
 import hoggaster.talib.TALibService;
-import hoggaster.user.Depot;
+import hoggaster.user.depot.Depot;
 import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,7 +14,7 @@ import hoggaster.rules.conditions.TwoIndicatorCondition;
 import hoggaster.rules.indicators.CurrentAskIndicator;
 import hoggaster.rules.indicators.SimpleValueIndicator;
 import hoggaster.talib.TALibService;
-import hoggaster.user.Depot;
+import hoggaster.user.depot.Depot;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Before;
@@ -55,9 +55,12 @@ public class BasicRobotTest {
     @Mock
     Registration registration;
 
+
+
     @Before
     public void before() {
-        depot = new Depot("Test depot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05));
+        //Depot newDepot = new Depot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
+        depot = new Depot("USER_ID", "Test depot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05), "USD", new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(1000.0), 0, 0, Instant.now());
         depot.sold();
         definition = new RobotDefinition("Frekkin robot!", Instrument.USD_SEK, depot.getId());
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);

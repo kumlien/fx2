@@ -1,7 +1,6 @@
 package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
-import hoggaster.domain.Broker;
 import hoggaster.domain.OrderService;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.robot.Robot;
@@ -9,8 +8,8 @@ import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.robot.RobotRegistry;
 import hoggaster.talib.TALibService;
-import hoggaster.user.Depot;
-import hoggaster.user.DepotRepo;
+import hoggaster.user.depot.Depot;
+import hoggaster.user.depot.DepotRepo;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;

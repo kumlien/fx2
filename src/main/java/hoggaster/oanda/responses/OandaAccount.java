@@ -3,7 +3,8 @@ package hoggaster.oanda.responses;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.BrokerDepot;
-import scala.Int;
+
+import java.math.BigDecimal;
 
 
 public class OandaAccount {
@@ -12,19 +13,19 @@ public class OandaAccount {
     public final String accountId;
     public final String accountName;
     public final String accountCurrency;
-    public final String marginRate;
-    public final Double balance;
-    public final Double unrealizedPl;
-    public final Double realizedPl;
-    public final Double marginUsed;
-    public final Double marginAvail;
+    public final BigDecimal marginRate;
+    public final BigDecimal balance;
+    public final BigDecimal unrealizedPl;
+    public final BigDecimal realizedPl;
+    public final BigDecimal marginUsed;
+    public final BigDecimal marginAvail;
     public final Integer openTrades;
     public final Integer openOrders;
 
     @JsonCreator
-    public OandaAccount(@JsonProperty(value = "accountId") String accountId, @JsonProperty(value = "accountName") String accountName, @JsonProperty(value = "accountCurrency") String accountCurrency, @JsonProperty(value = "marginRate") String marginRate,
-                        @JsonProperty(value = "balance") Double balance, @JsonProperty(value = "unrealizedPl") Double unrealizedPl, @JsonProperty(value = "realizedPl") Double realizedPl, @JsonProperty(value = "marginUsed") Double marginUsed,
-                        @JsonProperty(value = "marginAvail") Double marginAvail, @JsonProperty(value = "openTrades") Integer openTrades, @JsonProperty(value = "openOrders") Integer openOrders) {
+    public OandaAccount(@JsonProperty(value = "accountId") String accountId, @JsonProperty(value = "accountName") String accountName, @JsonProperty(value = "accountCurrency") String accountCurrency, @JsonProperty(value = "marginRate") BigDecimal marginRate,
+                        @JsonProperty(value = "balance") BigDecimal balance, @JsonProperty(value = "unrealizedPl") BigDecimal unrealizedPl, @JsonProperty(value = "realizedPl") BigDecimal realizedPl, @JsonProperty(value = "marginUsed") BigDecimal marginUsed,
+                        @JsonProperty(value = "marginAvail") BigDecimal marginAvail, @JsonProperty(value = "openTrades") Integer openTrades, @JsonProperty(value = "openOrders") Integer openOrders) {
         this.accountId = accountId;
         this.accountName = accountName;
         this.accountCurrency = accountCurrency;

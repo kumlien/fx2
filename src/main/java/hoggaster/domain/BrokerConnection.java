@@ -2,7 +2,6 @@ package hoggaster.domain;
 
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
-import hoggaster.user.Depot;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;

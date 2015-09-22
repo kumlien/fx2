@@ -1,0 +1,46 @@
+package it;
+
+import hoggaster.Application;
+import hoggaster.domain.Broker;
+import hoggaster.user.User;
+import hoggaster.user.depot.Depot;
+import hoggaster.user.depot.DepotService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = Application.class)
+@WebAppConfiguration
+@IntegrationTest("server.port:0")
+public class DepotServiceTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DepotServiceTest.class);
+
+    @Value("${local.server.port}")
+    int port;
+
+    @Autowired
+    DepotService depotService;
+
+
+    /**
+     */
+    @Test
+    public void testCreatePellesDepot() throws InterruptedException {
+        User user = Mockito.mock(User.class);
+        Mockito.when(user.getId()).thenReturn("aUserId");
+        Depot depot = depotService.createDepot(user, "Pelles depot", Broker.OANDA, "9678914");
+        LOG.info("Depot created: {}", depot);
+    }
+
+
+}

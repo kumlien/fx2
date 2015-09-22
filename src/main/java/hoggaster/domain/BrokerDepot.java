@@ -1,5 +1,7 @@
 package hoggaster.domain;
 
+import java.math.BigDecimal;
+
 /**
  * Generic depot on the broker side.
  * Right now it's a copy of the OandaAccount, until we add support for other brokers.
@@ -11,16 +13,16 @@ public class BrokerDepot {
     public final String id;
     public final String name;
     public final String currency;
-    public final String marginRate;
-    public final Double balance;
-    public final Double unrealizedPl;
-    public final Double realizedPl;
-    public final Double marginUsed;
-    public final Double marginAvail;
+    public final BigDecimal marginRate;
+    public final BigDecimal balance;
+    public final BigDecimal unrealizedPl;
+    public final BigDecimal realizedPl;
+    public final BigDecimal marginUsed;
+    public final BigDecimal marginAvail;
     public final Integer openTrades;
     public final Integer openOrders;
 
-    public BrokerDepot(String id, String name, String currency, String marginRate, Double balance, Double unrealizedPl, Double realizedPl, Double marginUsed, Double marginAvail, Integer openTrades, Integer openOrders) {
+    public BrokerDepot(String id, String name, String currency, BigDecimal marginRate, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvail, Integer openTrades, Integer openOrders) {
         this.id = id;
         this.name = name;
         this.currency = currency;
