@@ -67,8 +67,8 @@ public class OandaApi implements BrokerConnection, OrderService {
     @Override
     @Timed
     public BrokerDepot getDepot(String depotId) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
-        String uri = builder.pathSegment(depotId).build().toUriString();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccount());
+        String uri = builder.buildAndExpand(depotId).toUriString();
         LOG.info("Get depot with id {} using uri {}", depotId, uri);
         ResponseEntity<OandaAccount> account = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccount.class);
         LOG.info("Found {} account", account.getBody());

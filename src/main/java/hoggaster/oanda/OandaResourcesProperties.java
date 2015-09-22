@@ -9,6 +9,8 @@ public class OandaResourcesProperties {
 
     private String accounts;
 
+    private String account;
+
     private String instruments;
 
     private String candles;
@@ -67,4 +69,11 @@ public class OandaResourcesProperties {
         this.orders = orders;
     }
 
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
 }
