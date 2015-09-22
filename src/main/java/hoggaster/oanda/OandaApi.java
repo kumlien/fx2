@@ -72,7 +72,7 @@ public class OandaApi implements BrokerConnection, OrderService {
         LOG.info("Get depot with id {} using uri {}", depotId, uri);
         ResponseEntity<OandaAccount> account = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccount.class);
         LOG.info("Found {} account", account.getBody());
-        return null;
+        return account.getBody().toBrokerDepot();
     }
 
     /**

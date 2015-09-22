@@ -2,6 +2,7 @@ package hoggaster.oanda.responses;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import hoggaster.domain.BrokerDepot;
 import scala.Int;
 
 
@@ -35,6 +36,10 @@ public class OandaAccount {
         this.marginAvail = marginAvail;
         this.openTrades = openTrades;
         this.openOrders = openOrders;
+    }
+
+    public final BrokerDepot toBrokerDepot() {
+        return new BrokerDepot(accountId, accountName, accountCurrency, marginRate, balance, unrealizedPl, realizedPl, marginUsed, marginAvail, openTrades, openOrders);
     }
 
     @Override

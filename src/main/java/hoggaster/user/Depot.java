@@ -9,6 +9,7 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Set;
 
 @Document
@@ -39,6 +40,8 @@ public class Depot {
     private BigDecimal balance;
 
     private String currency;
+
+    private Instant lastSynchronizedWithBroker;
 
 
     @PersistenceConstructor
