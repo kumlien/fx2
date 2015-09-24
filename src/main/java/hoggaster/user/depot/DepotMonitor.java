@@ -34,7 +34,7 @@ public class DepotMonitor {
 
     @Scheduled(fixedRate = 60000, initialDelay = 10000)
     public void synchDepots() {
-        LOG.info("*********************  Synching depots...  ******************##");
+        LOG.info("*********************  Synching depots...  ******************");
         List<Depot> depots = depotRepo.findAll();
         if(depots == null || depots.isEmpty()) {
             LOG.info("No depots found...");
@@ -48,5 +48,9 @@ public class DepotMonitor {
     public void synchDepot(Depot depot) {
         LOG.info("Start synching depot {}", depot);
         BrokerDepot depotFromBroker = broker.getDepot(depot.getBrokerId());
+        if(depotFromBroker == null) {
+            LOG.error("Unable to fetch matching depot from broker: {}", depot);
+            return;
+        }
     }
 }
