@@ -116,7 +116,7 @@ public class OandaScheduledTask {
      */
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 5000)
     @Timed
-    public void publishMinuteCandles() {
+    public void fetchMinuteCandles() {
         LOG.info("About to fetch one minute candles");
         try {
             List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, 1);
@@ -133,7 +133,7 @@ public class OandaScheduledTask {
      */
     @Scheduled(cron = "0 0 17 * * MON-FRI")
     @Timed
-    public void publishDayCandles() {
+    public void fetchDayCandles() {
         LOG.info("About to fetch one day candles");
         try {
             List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, 1);

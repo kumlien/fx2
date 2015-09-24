@@ -34,23 +34,35 @@ public class DepotMonitor {
 
     @Scheduled(fixedRate = 60000, initialDelay = 10000)
     public void synchDepots() {
-        LOG.info("*********************  Synching depots...  ******************");
         List<Depot> depots = depotRepo.findAll();
         if(depots == null || depots.isEmpty()) {
             LOG.info("No depots found...");
             return;
         }
 
-        LOG.info("Whoohaa, found {} depots!", depots.size());
-        depots.forEach(this::synchDepot);
+        LOG.info("Whoohaa, found {} depots, let's sync them", depots.size());
+        depots.forEach(this::syncDepot);
     }
 
-    public void synchDepot(Depot depot) {
-        LOG.info("Start synching depot {}", depot);
-        BrokerDepot depotFromBroker = broker.getDepot(depot.getBrokerId());
-        if(depotFromBroker == null) {
-            LOG.error("Unable to fetch matching depot from broker: {}", depot);
-            return;
+    public void syncDepot(Depot depot) {
+        LOG.info("Start syncing depot {}", depot);
+        try {
+            BrokerDepot depotFromBroker = broker.getDepot(depot.getBrokerId());
+            if (depotFromBroker == null) {
+                LOG.error("Unable to fetch matching depot from broker: {}", depot);
+                depot.setLastSyncOk(false);
+                depotRepo.save(depot);
+                return;
+            }
+            if (depot.updateWithValuesFrom(depotFromBroker)) {
+                LOG.info("Depot has changed, persist it to db");
+                depot.setLastSyncOk(true);
+                depotRepo.save(depot);
+            }
+        } catch (Exception e) {
+            LOG.error("Error syncing depot {}", depot, e);
+            depot.setLastSyncOk(false);
+            depotRepo.save(depot);
         }
     }
 }

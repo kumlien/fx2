@@ -2,9 +2,12 @@ package hoggaster.user.depot;
 
 import com.google.common.collect.Sets;
 import hoggaster.domain.Broker;
+import hoggaster.domain.BrokerDepot;
 import hoggaster.domain.Instrument;
 import hoggaster.transaction.Transaction;
 import hoggaster.user.InstrumentOwnership;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,6 +18,8 @@ import java.util.Set;
 
 @Document
 public class Depot {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Depot.class);
 
     @Id
     private String id;
@@ -35,7 +40,7 @@ public class Depot {
 
     public final Broker broker;
 
-    public final BigDecimal marginRate;
+    public BigDecimal marginRate;
 
     /*
      * The id in the broker system for this depot.
@@ -48,15 +53,17 @@ public class Depot {
 
     private BigDecimal balance;
 
-    public final String currency;
+    public String currency;
+
+    private Boolean lastSyncOk;
 
     private Instant lastSynchronizedWithBroker;
 
 
     @PersistenceConstructor
     public Depot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, String currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                 BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker) {
-        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker);
+                 BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk) {
+        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk);
         this.id = id;
         this.transactions = transactions;
         this.ownerships = ownerships;
@@ -64,17 +71,17 @@ public class Depot {
 
     /**
      * Create a new Depot.
-     *
-     * @param userId The id of the user owning this depot
+     *  @param userId The id of the user owning this depot
      * @param name Our internal name for this depot
      * @param broker The broker to which this depot is connected.
      * @param brokerDepotName The name of this depot/account on the broker side
      * @param brokerId The id of this depot on the broker side
      * @param marginRate The margin rate for this depot
      * @param currency The base currency for this depot
+     * @param lastSyncOk
      *
      */
-    public Depot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker) {
+    public Depot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -90,6 +97,7 @@ public class Depot {
         this.brokerDepotName = brokerDepotName;
         this.currency = currency;
         this.lastSynchronizedWithBroker = lastSynchronizedWithBroker;
+        this.lastSyncOk = lastSyncOk;
     }
 
     public boolean ownThisInstrument(Instrument instrument) {
@@ -135,6 +143,71 @@ public class Depot {
     public void sold() {
         // TODO Auto-generated method stub
 
+    }
+
+    /**
+     * Update our values with the values from the BrokerDepot
+     *
+     * @param brokerDepot
+     * @return true if any fields were changed
+     */
+    public boolean updateWithValuesFrom(BrokerDepot brokerDepot) {
+        boolean changed = false;
+        if(balance != brokerDepot.balance) {
+            LOG.info("Balance updated with new value for depot {}: {} -> {}", id, balance, brokerDepot.balance);
+            balance = brokerDepot.balance;
+            changed = true;
+        }
+
+        if(marginAvailable != brokerDepot.marginAvail) {
+            LOG.info("Available margin updated with new value for depot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
+            balance = brokerDepot.balance;
+            changed = true;
+        }
+
+        if(currency != brokerDepot.currency) {
+            LOG.warn("Currency updated with new value for depot {}: {} -> {}", id, currency, brokerDepot.currency);
+            currency = brokerDepot.currency;
+            changed = true;
+        }
+
+        if(marginRate != brokerDepot.marginRate) {
+            LOG.warn("Margin rate updated with new value for depot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
+            marginRate = brokerDepot.marginRate;
+            changed = true;
+        }
+
+        if(marginUsed != brokerDepot.marginUsed) {
+            LOG.info("Margin used updated with new value for depot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
+            marginUsed = brokerDepot.marginUsed;
+            changed = true;
+        }
+
+        if(openOrders != brokerDepot.openOrders) {
+            LOG.info("Open orders updated with new value for depot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
+            openOrders = brokerDepot.openOrders;
+            changed = true;
+        }
+
+        if(openTrades != brokerDepot.openTrades) {
+            LOG.info("Open trades updated with new value for depot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
+            openTrades = brokerDepot.openTrades;
+            changed = true;
+        }
+
+        if(realizedPl != brokerDepot.realizedPl) {
+            LOG.info("Realized profit/loss updated with new value for depot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
+            realizedPl = brokerDepot.realizedPl;
+            changed = true;
+        }
+
+        if(unrealizedPl != brokerDepot.unrealizedPl) {
+            LOG.info("Unrealized profit/loss updated with new value for depot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
+            unrealizedPl = brokerDepot.unrealizedPl;
+            changed = true;
+        }
+
+        return changed;
     }
 
     public Set<Transaction> getTransactions() {
@@ -212,5 +285,13 @@ public class Depot {
 
     public void setOpenOrders(Integer openOrders) {
         this.openOrders = openOrders;
+    }
+
+    public Boolean getLastSyncOk() {
+        return lastSyncOk;
+    }
+
+    public void setLastSyncOk(Boolean lastSyncOk) {
+        this.lastSyncOk = lastSyncOk;
     }
 }

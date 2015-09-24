@@ -34,7 +34,6 @@ public class DepotServiceImpl implements  DepotService {
 
 
     @Override
-    //String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker) {
     public Depot createDepot(User user, String name, Broker broker, String brokerId) {
         Preconditions.checkArgument(broker == Broker.OANDA, "Sorry, we only support " + Broker.OANDA + " at the moment");
 
@@ -46,7 +45,7 @@ public class DepotServiceImpl implements  DepotService {
         BrokerDepot brokerDepot = brokerConnection.getDepot(brokerId);
         Preconditions.checkArgument(brokerDepot != null);
 
-        Depot newDepot = new Depot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
+        Depot newDepot = new Depot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true);
         newDepot = depotRepo.save(newDepot);
         return newDepot;
     }
@@ -55,7 +54,7 @@ public class DepotServiceImpl implements  DepotService {
     @Override
     public void deleteDepot(Depot depot) {
         //TODO Synch with broker and check transactions/orders/balance etc
-        LOG.info("Deleting depot {}", depot);
+        LOG.warn("Deleting depot {}", depot);
         depotRepo.delete(depot);
     }
 

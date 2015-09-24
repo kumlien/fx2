@@ -40,7 +40,6 @@ public class BidAskCandleServiceImpl implements CandleService {
         LOG.info("Will try to get candles for {} for granularity {} with {} data points", instrument, granularity, numberOfCandles);
         Pageable pageable = new PageRequest(0, numberOfCandles);
 
-        // men hallå!!! hur fan tänkte du här?? du måste ju ha med ett datum i villkoret annars får du ju alltid träff (efter först inserten...)
         List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeAsc(instrument, granularity, pageable);
         LOG.info("Got a list: {}", candles.size());
         if (candles.size() < numberOfCandles) {
