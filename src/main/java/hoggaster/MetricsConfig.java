@@ -19,5 +19,4 @@ public class MetricsConfig extends MetricsConfigurerAdapter {
                 .build()
                 .start(1, TimeUnit.MINUTES);
     }
-
 }
