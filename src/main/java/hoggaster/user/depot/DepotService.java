@@ -3,6 +3,8 @@ package hoggaster.user.depot;
 import hoggaster.domain.Broker;
 import hoggaster.user.User;
 
+import java.util.List;
+
 /**
  * Created by svante on 15-09-22.
  */
@@ -26,6 +28,8 @@ public interface DepotService {
     void deleteDepot(Depot depot);
 
     Depot findDepotById(String id);
+
+    List<Depot> findAll();
 
 
 }

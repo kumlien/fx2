@@ -38,10 +38,6 @@ public class OandaScheduledTask {
 
     static final long ONE_MINUTE = 60L * 1000;
 
-    static final long ONE_HOUR = ONE_MINUTE * 60;
-
-    static final long ONE_DAY = ONE_HOUR * 24;
-
     private final BrokerConnection oanda;
 
     private final EventBus priceEventBus;
@@ -144,15 +140,7 @@ public class OandaScheduledTask {
     }
 
 
-    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 10000)
-    public void checkDepotMargins() {
 
-    }
-
-
-    public void checkDepotMargin(String depotId) {
-
-    }
 
     /*
      * Call the oanda api to get candles.

@@ -42,9 +42,34 @@ public class Depot {
 
     public BigDecimal marginRate;
 
+    @Override
+    public String toString() {
+        return "Depot{" +
+                "id='" + id + '\'' +
+                ", unrealizedPl=" + unrealizedPl +
+                ", realizedPl=" + realizedPl +
+                ", marginUsed=" + marginUsed +
+                ", marginAvailable=" + marginAvailable +
+                ", openTrades=" + openTrades +
+                ", openOrders=" + openOrders +
+                ", userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", brokerDepotName='" + brokerDepotName + '\'' +
+                ", broker=" + broker +
+                ", marginRate=" + marginRate +
+                ", brokerId='" + brokerId + '\'' +
+                ", ownerships=" + ownerships +
+                ", transactions=" + transactions +
+                ", balance=" + balance +
+                ", currency='" + currency + '\'' +
+                ", lastSyncOk=" + lastSyncOk +
+                ", lastSynchronizedWithBroker=" + lastSynchronizedWithBroker +
+                '}';
+    }
+
     /*
-     * The id in the broker system for this depot.
-     */
+         * The id in the broker system for this depot.
+         */
     public final String brokerId;
 
     private Set<InstrumentOwnership> ownerships = Sets.newHashSet();
@@ -293,5 +318,13 @@ public class Depot {
 
     public void setLastSyncOk(Boolean lastSyncOk) {
         this.lastSyncOk = lastSyncOk;
+    }
+
+    public Instant getLastSynchronizedWithBroker() {
+        return lastSynchronizedWithBroker;
+    }
+
+    public void setLastSynchronizedWithBroker(Instant lastSynchronizedWithBroker) {
+        this.lastSynchronizedWithBroker = lastSynchronizedWithBroker;
     }
 }

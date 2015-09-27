@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Created by svante on 15-09-22.
@@ -53,7 +54,7 @@ public class DepotServiceImpl implements  DepotService {
 
     @Override
     public void deleteDepot(Depot depot) {
-        //TODO Synch with broker and check transactions/orders/balance etc
+        //TODO Synch with broker and check transactions/orders/balance etc before deleting
         LOG.warn("Deleting depot {}", depot);
         depotRepo.delete(depot);
     }
@@ -61,5 +62,10 @@ public class DepotServiceImpl implements  DepotService {
     @Override
     public Depot findDepotById(String id) {
         return depotRepo.findOne(id);
+    }
+
+    @Override
+    public List<Depot> findAll() {
+        return depotRepo.findAll();
     }
 }
