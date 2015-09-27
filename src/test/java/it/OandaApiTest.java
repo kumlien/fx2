@@ -13,31 +13,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.fn.Consumer;
 import reactor.rx.Stream;
 import reactor.rx.Streams;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-@WebAppConfiguration
-@IntegrationTest("server.port:0")
+//@WebAppConfiguration
+//@IntegrationTest("server.port:0")
 public class OandaApiTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaApiTest.class);
 
-    @Value("${local.server.port}")
+    //@Value("${local.server.port}")
     int port;
 
     @Autowired
@@ -58,11 +54,10 @@ public class OandaApiTest {
     @Test
     @Ignore
     public void testHistoricCandles() throws InterruptedException, UnsupportedEncodingException {
-        Arrays.asList(Instrument.values()).forEach(instrument -> {
-            Instant start = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(Duration.ofDays(365 * 20));
-            int midPointCandles = candleService.fetchAndSaveHistoricCandles(instrument, CandleStickGranularity.MINUTE, start, null);
+        //Arrays.asList(Instrument.values()).forEach(instrument -> {
+            int midPointCandles = candleService.fetchAndSaveHistoricCandles(Instrument.USD_SEK, CandleStickGranularity.END_OF_DAY);
             LOG.info("Got a few candles: {}", midPointCandles);
-        });
+        //});
     }
 
     @Test

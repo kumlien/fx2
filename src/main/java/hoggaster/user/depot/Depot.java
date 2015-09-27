@@ -42,31 +42,6 @@ public class Depot {
 
     public BigDecimal marginRate;
 
-    @Override
-    public String toString() {
-        return "Depot{" +
-                "id='" + id + '\'' +
-                ", unrealizedPl=" + unrealizedPl +
-                ", realizedPl=" + realizedPl +
-                ", marginUsed=" + marginUsed +
-                ", marginAvailable=" + marginAvailable +
-                ", openTrades=" + openTrades +
-                ", openOrders=" + openOrders +
-                ", userId='" + userId + '\'' +
-                ", name='" + name + '\'' +
-                ", brokerDepotName='" + brokerDepotName + '\'' +
-                ", broker=" + broker +
-                ", marginRate=" + marginRate +
-                ", brokerId='" + brokerId + '\'' +
-                ", ownerships=" + ownerships +
-                ", transactions=" + transactions +
-                ", balance=" + balance +
-                ", currency='" + currency + '\'' +
-                ", lastSyncOk=" + lastSyncOk +
-                ", lastSynchronizedWithBroker=" + lastSynchronizedWithBroker +
-                '}';
-    }
-
     /*
          * The id in the broker system for this depot.
          */
@@ -178,55 +153,55 @@ public class Depot {
      */
     public boolean updateWithValuesFrom(BrokerDepot brokerDepot) {
         boolean changed = false;
-        if(balance != brokerDepot.balance) {
+        if(balance.compareTo(brokerDepot.balance) != 0) {
             LOG.info("Balance updated with new value for depot {}: {} -> {}", id, balance, brokerDepot.balance);
             balance = brokerDepot.balance;
             changed = true;
         }
 
-        if(marginAvailable != brokerDepot.marginAvail) {
+        if(marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
             LOG.info("Available margin updated with new value for depot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
             balance = brokerDepot.balance;
             changed = true;
         }
 
-        if(currency != brokerDepot.currency) {
+        if(!currency.equals(brokerDepot.currency)) {
             LOG.warn("Currency updated with new value for depot {}: {} -> {}", id, currency, brokerDepot.currency);
             currency = brokerDepot.currency;
             changed = true;
         }
 
-        if(marginRate != brokerDepot.marginRate) {
+        if(marginRate.compareTo(brokerDepot.marginRate) != 0) {
             LOG.warn("Margin rate updated with new value for depot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
             marginRate = brokerDepot.marginRate;
             changed = true;
         }
 
-        if(marginUsed != brokerDepot.marginUsed) {
+        if(marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
             LOG.info("Margin used updated with new value for depot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
 
-        if(openOrders != brokerDepot.openOrders) {
+        if(openOrders.compareTo(brokerDepot.openOrders) != 0) {
             LOG.info("Open orders updated with new value for depot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
             openOrders = brokerDepot.openOrders;
             changed = true;
         }
 
-        if(openTrades != brokerDepot.openTrades) {
+        if(openTrades.compareTo(brokerDepot.openTrades) != 0) {
             LOG.info("Open trades updated with new value for depot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
             openTrades = brokerDepot.openTrades;
             changed = true;
         }
 
-        if(realizedPl != brokerDepot.realizedPl) {
+        if(realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
             LOG.info("Realized profit/loss updated with new value for depot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
-        if(unrealizedPl != brokerDepot.unrealizedPl) {
+        if(unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
             LOG.info("Unrealized profit/loss updated with new value for depot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;
@@ -326,5 +301,16 @@ public class Depot {
 
     public void setLastSynchronizedWithBroker(Instant lastSynchronizedWithBroker) {
         this.lastSynchronizedWithBroker = lastSynchronizedWithBroker;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Depot{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", userId='").append(userId).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", broker=").append(broker);
+        sb.append('}');
+        return sb.toString();
     }
 }

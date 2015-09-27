@@ -149,26 +149,22 @@ public class Robot implements Consumer<Event<?>> {
         LOG.info("Robot {} has stopped.", name);
     }
 
+    /*
+     * Handle new incoming price
+     */
     @Timed
-    public void onNewPrice(Price price) {
+    private void onNewPrice(Price price) {
         LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
         RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, taLibService, candleService);
-
-        buyConditions.stream().forEach(c -> {
-            c.setContext(ctx);
-        });
-        sellConditions.stream().forEach(c -> {
-            c.setContext(ctx);
-        });
-
+        setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
         //All buy conditions must be positive
         if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
-            LOG.info("Maybe we should buy something!");
+            LOG.info("Maybe we should buy something based on new price!");
             doBuy();
         } else if (ctx.getPositiveSellConditions().size() > 0) { //Enough with one positive sell condition
-            LOG.info("Maybe we should sell something!");
+            LOG.info("Maybe we should sell something based on new price!");
             doSell();
         } else {
             LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
@@ -177,22 +173,16 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     /*
-     * Handle new incoming candle. Create new context
+     * Handle new incoming candle.
      */
     @Timed
     private void onNewCandle(Candle candle) {
         LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
         RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
-        buyConditions.stream().forEach(c -> {
-            c.setContext(ctx);
-        });
-        sellConditions.stream().forEach(c -> {
-            c.setContext(ctx);
-        });
-
+        setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveBuyConditions().size() > 0) {
+        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
             doBuy();
         } else if (ctx.getPositiveSellConditions().size() > 0) {
             doSell();
@@ -200,6 +190,15 @@ public class Robot implements Consumer<Event<?>> {
             LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
         }
 
+    }
+
+    private void setCtxOnConditions(RobotExecutionContext ctx) {
+        buyConditions.parallelStream().forEach(c -> {
+            c.setContext(ctx);
+        });
+        sellConditions.parallelStream().forEach(c -> {
+            c.setContext(ctx);
+        });
     }
 
     private void doSell() {

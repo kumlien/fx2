@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.core.processor.RingBufferWorkProcessor;
@@ -26,12 +25,12 @@ import reactor.rx.Streams;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-//TODO Split
+
 
 /**
- * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link MovingAverageServiceImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
+ * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link hoggaster.user.depot.DepotMonitorImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
  */
-@Component
+//@Component
 public class OandaScheduledTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaScheduledTask.class);
@@ -59,6 +58,19 @@ public class OandaScheduledTask {
         this.candleService = candleService;
     }
 
+
+    /**
+     * Fill the db with candles for the specified instrument and granularity.
+     * Only needed at startup to make us up to date.
+     *
+     * @param instrument
+     * @param granularity
+     */
+    private void preFillOldCandles(Instrument instrument, CandleStickGranularity granularity) {
+
+    }
+
+
     /**
      * Fetch all instruments available for the main account and update the list we use when fetching prices.
      */
@@ -82,11 +94,13 @@ public class OandaScheduledTask {
         }
     }
 
+
     public void logAccounts() {
         oanda.getAccounts().getAccounts().forEach(a -> {
             LOG.info("Account: {}", a);
         });
     }
+
 
     @Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
@@ -107,10 +121,11 @@ public class OandaScheduledTask {
         }
     }
 
+
     /*
      * Get the one minute candles wtf is this method doing in this class??
      */
-    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 5000)
+    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
         LOG.info("About to fetch one minute candles");
@@ -122,8 +137,9 @@ public class OandaScheduledTask {
         }
     }
 
+
     /*
-     * Get the daily candles
+     * Get the daily candles.
      * 
      * TODO this one needs to take into account the different opening/closing times for different instruments (and possibly in combination with different brokers) for now we hard code it to open at 17:00:00 and close at 16:59:59 New York time, that is, we record the day candle at this point.
      */
@@ -135,11 +151,9 @@ public class OandaScheduledTask {
             List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, 1);
             LOG.info("Done fetching one day candles, got {} of them.", candles.size());
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            LOG.error("Error fetching candles", e);
         }
     }
-
-
 
 
     /*
@@ -153,7 +167,7 @@ public class OandaScheduledTask {
         // Consumer used to handle one instrument
         Consumer<Instrument> ic = instrument -> {
             try {
-                List<Candle> candles = candleService.fetchAndSaveLatestCandles(instrument, granularity, number);
+                List<Candle> candles = candleService.fetchAndSaveLatestCandlesFromBroker(instrument, granularity, number);
                 allCandles.addAll(candles);
                 candles.forEach(bac -> {
                     candleEventBus.notify("candles." + instrument, Event.wrap(bac));

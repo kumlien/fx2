@@ -116,6 +116,7 @@ public class OandaApi implements BrokerConnection, OrderService {
             if (start != null) {
                 String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
                 builder.queryParam("start", encoded);
+                builder.queryParam("includeFirst", includeFirst); //Only add this param is start is specified
             }
             if (end != null) {
                 String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
@@ -128,9 +129,7 @@ public class OandaApi implements BrokerConnection, OrderService {
         if (count != null) {
             builder.queryParam("count", count);
         }
-        if (includeFirst) {
-            builder.queryParam("includeFirst", includeFirst);
-        }
+
         // String uri = builder.build(true).toUriString();
         URI uri = builder.build(true).toUri();
         LOG.info("URI used: {}", uri);

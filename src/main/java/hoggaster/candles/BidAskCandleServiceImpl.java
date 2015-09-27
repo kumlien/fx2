@@ -14,7 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +25,9 @@ import java.util.stream.Collectors;
 public class BidAskCandleServiceImpl implements CandleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BidAskCandleServiceImpl.class);
+
+    //The earliest date we try to fetch candles from
+    private static final Instant FIRST_CANDLE_DATE = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(Duration.ofDays(365 * 20));
 
     private final CandleRepo repo;
 
@@ -40,7 +45,7 @@ public class BidAskCandleServiceImpl implements CandleService {
         LOG.info("Will try to get candles for {} for granularity {} with {} data points", instrument, granularity, numberOfCandles);
         Pageable pageable = new PageRequest(0, numberOfCandles);
 
-        List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeAsc(instrument, granularity, pageable);
+        List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, pageable);
         LOG.info("Got a list: {}", candles.size());
         if (candles.size() < numberOfCandles) {
             LOG.info("Not all candles found in db ({} out of {}), will try to fetch the rest from oanda.", candles.size(), numberOfCandles);
@@ -53,7 +58,7 @@ public class BidAskCandleServiceImpl implements CandleService {
     }
 
     @Override
-    public List<Candle> fetchAndSaveLatestCandles(Instrument instrument, CandleStickGranularity granularity, Integer number) {
+    public List<Candle> fetchAndSaveLatestCandlesFromBroker(Instrument instrument, CandleStickGranularity granularity, Integer number) {
         LOG.info("Fetch and save {} new candles for {}:{} ", number, instrument, granularity);
         List<Candle> candles = getFromBroker(instrument, granularity, null, Instant.now(), number);
         LOG.info("Got {} candles back", candles.size());
@@ -65,18 +70,25 @@ public class BidAskCandleServiceImpl implements CandleService {
     }
 
     @Override
-    public int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity, Instant startDate, Instant endDate) {
-        LOG.info("Start fetching historic candles for {} ({}) starting at {} ending at {}", instrument, granularity, startDate, endDate);
+    public int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity) {
+        Instant startDate = FIRST_CANDLE_DATE;
+        List<Candle> existingCandles = repo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, new PageRequest(0, 1));
+        if(existingCandles != null && !existingCandles.isEmpty()) {
+            startDate = existingCandles.get(0).time;
+            LOG.info("Found a saved entry for {}: {}, will use that start date ({})", instrument, granularity, startDate);
+        }
+        LOG.info("Start fetching historic candles for {} ({}) starting at {}", instrument, granularity, startDate);
         int totalFetched = 0;
         Candle lastCandle = null;
         List<Candle> candles = getFromBroker(instrument, granularity, startDate, null, 5000, true);
-        while (!candles.isEmpty() && !gotOneIdenticalCandle(candles, lastCandle)) {
+        //Do loop until we don't get any more candle or until the last one is not completed.
+        while (!candles.isEmpty() || !lastCandle.complete) { //Need to check for empty list (if we are starting up at a weekend)
             LOG.info("Received {} candles", candles.size());
             totalFetched += candles.size();
             lastCandle = candles.get(candles.size() - 1);
             repo.save(candles);
-            LOG.info("Last candle received is from {}", lastCandle);
-            candles = getFromBroker(instrument, granularity, lastCandle.time, null, 5000, false);
+            LOG.info("Last candle received: {}", lastCandle);
+            candles = getFromBroker(instrument, granularity, lastCandle.time, null, 4999, false);
         }
 
         LOG.info("Received an empty list of candles, assume we are done after {} candles, last candle received: {}", totalFetched, lastCandle);
