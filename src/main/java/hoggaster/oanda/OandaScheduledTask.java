@@ -15,13 +15,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.fn.Consumer;
+import reactor.fn.tuple.Tuple;
+import reactor.fn.tuple.Tuple2;
 import reactor.rx.Stream;
 import reactor.rx.Streams;
 
+import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -30,7 +34,7 @@ import java.util.*;
 /**
  * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link hoggaster.user.depot.DepotMonitorImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
  */
-//@Component
+@Component
 public class OandaScheduledTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaScheduledTask.class);
@@ -49,6 +53,8 @@ public class OandaScheduledTask {
 
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
+    private static boolean historicDataFetched = false;
+
     @Autowired
     public OandaScheduledTask(@Qualifier("OandaBrokerConnection") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("candleEventBus") EventBus candleEventBus, OandaProperties oandaProps, CandleService candleService) {
         this.oanda = oanda;
@@ -62,12 +68,37 @@ public class OandaScheduledTask {
     /**
      * Fill the db with candles for the specified instrument and granularity.
      * Only needed at startup to make us up to date.
-     *
-     * @param instrument
-     * @param granularity
      */
-    private void preFillOldCandles(Instrument instrument, CandleStickGranularity granularity) {
+    //@PostConstruct
+    void fetchAllHistoricData() {
+        Arrays.asList(Instrument.MAJORS).forEach(i -> candleService.fetchAndSaveHistoricCandles(i, CandleStickGranularity.END_OF_DAY));
+        Arrays.asList(Instrument.MAJORS).forEach(i -> candleService.fetchAndSaveHistoricCandles(i, CandleStickGranularity.MINUTE));
+        historicDataFetched = true;
+    }
 
+    @PostConstruct
+    void fetchAllHistoricData2() {
+        RingBufferWorkProcessor<Tuple2<Instrument, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
+        Stream<Tuple2<Instrument, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
+
+        // Consumer used to handle one instrument
+        Consumer<Tuple2<Instrument, CandleStickGranularity>> ic = t -> {
+            try {
+                candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
+            } catch (Exception e) {
+                LOG.error("Error fetching {} candles", t, e);
+            }
+        };
+
+        // Attach  consumers
+        instrumentStream.consume(ic);
+        instrumentStream.consume(ic);
+        instrumentStream.consume(ic);
+        instrumentStream.consume(ic);
+
+        Arrays.asList(Instrument.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
+        Arrays.asList(Instrument.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
+        publisher.onComplete();
     }
 
 
@@ -104,6 +135,7 @@ public class OandaScheduledTask {
 
     @Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
+        if (!historicDataFetched) return;
         try {
             if (instrumentsForMainAccount == null) {
                 fetchInstruments();
@@ -128,6 +160,7 @@ public class OandaScheduledTask {
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
+        if(!historicDataFetched) return;
         LOG.info("About to fetch one minute candles");
         try {
             List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, 1);
@@ -146,6 +179,7 @@ public class OandaScheduledTask {
     @Scheduled(cron = "0 0 17 * * MON-FRI")
     @Timed
     public void fetchDayCandles() {
+        if(!historicDataFetched) return;
         LOG.info("About to fetch one day candles");
         try {
             List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, 1);

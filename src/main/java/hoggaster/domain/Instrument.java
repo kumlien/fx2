@@ -16,4 +16,8 @@ public enum Instrument {
     /*USD_TWD,*/ USD_ZAR, WHEAT_USD, WTICO_USD, XAG_AUD, XAG_CAD, XAG_CHF, XAG_EUR, XAG_GBP, XAG_HKD, XAG_JPY, XAG_NZD, XAG_SGD, XAG_USD,
     XAU_AUD, XAU_CAD, XAU_CHF, XAU_EUR, XAU_GBP, XAU_HKD, XAU_JPY, XAU_NZD, XAU_SGD, XAU_USD, XAU_XAG,
     /*XCU_USD,*/ XPD_USD, XPT_USD, ZAR_JPY;
+
+    public static Instrument[] MAJORS = new Instrument[] {EUR_USD, USD_JPY, GBP_USD, AUD_USD, USD_CHF, NZD_USD, USD_CAD};
+    public static Instrument[] MINORS = new Instrument[] {EUR_GBP, EUR_CHF, EUR_CAD, EUR_AUD, EUR_NZD, EUR_JPY, GBP_JPY, CHF_JPY, CAD_JPY, AUD_JPY, NZD_JPY, GBP_CHF, GBP_AUD, GBP_CAD};
+    public static Instrument[] EXOTICS = new Instrument[] {EUR_TRY, USD_SEK, USD_NOK, USD_DKK, USD_ZAR, USD_HKD, USD_SGD};
 }

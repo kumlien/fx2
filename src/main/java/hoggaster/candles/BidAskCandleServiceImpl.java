@@ -69,9 +69,14 @@ public class BidAskCandleServiceImpl implements CandleService {
         return candles;
     }
 
+
+    /*
+     * Used to make sure an instrument/granularity combo is up to date in the db.
+     */
     @Override
     public int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity) {
         Instant startDate = FIRST_CANDLE_DATE;
+        LOG.error("instrument {}", instrument);
         List<Candle> existingCandles = repo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, new PageRequest(0, 1));
         if(existingCandles != null && !existingCandles.isEmpty()) {
             startDate = existingCandles.get(0).time;
@@ -79,26 +84,23 @@ public class BidAskCandleServiceImpl implements CandleService {
         }
         LOG.info("Start fetching historic candles for {} ({}) starting at {}", instrument, granularity, startDate);
         int totalFetched = 0;
-        Candle lastCandle = null;
         List<Candle> candles = getFromBroker(instrument, granularity, startDate, null, 5000, true);
+        Candle lastCandle = null;
         //Do loop until we don't get any more candle or until the last one is not completed.
-        while (!candles.isEmpty() || !lastCandle.complete) { //Need to check for empty list (if we are starting up at a weekend)
+        while (!candles.isEmpty()) { //Need to check for empty list (if we are starting up at a weekend)
             LOG.info("Received {} candles", candles.size());
             totalFetched += candles.size();
             lastCandle = candles.get(candles.size() - 1);
             repo.save(candles);
             LOG.info("Last candle received: {}", lastCandle);
+            if(!lastCandle.complete) break;
             candles = getFromBroker(instrument, granularity, lastCandle.time, null, 4999, false);
         }
 
-        LOG.info("Received an empty list of candles, assume we are done after {} candles, last candle received: {}", totalFetched, lastCandle);
+        LOG.info("Received an empty list of candles or an incomplete last candle, assume we are done after {} candles, last candle received: {}", totalFetched, lastCandle);
         return totalFetched;
     }
 
-
-    private static boolean gotOneIdenticalCandle(List<Candle> candles, Candle lastCandle) {
-        return lastCandle != null && candles.size() == 1 && candles.get(0).getId().equals(lastCandle.getId());
-    }
 
     private List<Candle> getFromBroker(Instrument instrument, CandleStickGranularity granularity, Instant startDate, Instant endDate, int number, boolean includeFirst) {
         LOG.info("Will try to fetch {} candles with startDate {} and endDate {}", number, startDate, endDate);

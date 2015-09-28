@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>hoggaster.Application</start-class>
 		<java.version>1.8</java.version>
-		<reactorVersion>2.0.3.RELEASE</reactorVersion>
+		<reactorVersion>2.0.4.RELEASE</reactorVersion>
 		<easyrules.version>2.1.0</easyrules.version>
 		<metrics.version>3.1.2</metrics.version>
 	</properties>

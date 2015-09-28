@@ -34,8 +34,6 @@ public interface CandleService {
      *
      * @param instrument
      * @param granularity
-     * @param startDate
-     * @param endDate
      * @return The number of fetched candles.
      */
     int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity);
