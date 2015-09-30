@@ -76,7 +76,6 @@ public class BidAskCandleServiceImpl implements CandleService {
     @Override
     public int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity) {
         Instant startDate = FIRST_CANDLE_DATE;
-        LOG.error("instrument {}", instrument);
         List<Candle> existingCandles = repo.findByInstrumentAndGranularityOrderByTimeDesc(instrument, granularity, new PageRequest(0, 1));
         if(existingCandles != null && !existingCandles.isEmpty()) {
             startDate = existingCandles.get(0).time;

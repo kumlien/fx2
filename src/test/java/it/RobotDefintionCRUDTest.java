@@ -4,13 +4,13 @@ import hoggaster.Application;
 import hoggaster.domain.Instrument;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
-import hoggaster.rules.Comparator;
 import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.conditions.Side;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
 import hoggaster.rules.indicators.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -22,11 +22,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import static hoggaster.rules.Comparator.*;
+import static hoggaster.rules.Comparator.GREATER_OR_EQUAL_THAN;
 import static hoggaster.rules.Comparator.LESS_OR_EQUAL_THAN;
 import static hoggaster.rules.MarketUpdateType.ONE_DAY_CANDLE;
 import static hoggaster.rules.conditions.Side.BUY;
-import static hoggaster.rules.indicators.CandleStickField.*;
+import static hoggaster.rules.indicators.CandleStickField.CLOSE_BID;
 import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -52,6 +52,7 @@ public class RobotDefintionCRUDTest {
      * @throws InterruptedException
      */
     @Test
+    @Ignore
     public void testCreatePellesRobot() throws InterruptedException {
         RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", Instrument.EUR_USD, "aTestDepot");
 
@@ -73,6 +74,7 @@ public class RobotDefintionCRUDTest {
     }
 
     @Test
+    @Ignore
     public void testCRUDRobotDefinition() throws InterruptedException {
         RobotDefinition rd = new RobotDefinition("myRobotDefinition", Instrument.AUD_CAD, "aDepotId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), GREATER_OR_EQUAL_THAN, 1, Side.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
@@ -92,6 +94,7 @@ public class RobotDefintionCRUDTest {
 
 
     @Test
+    @Ignore
     public void testCRUDRobotDefinition2() throws InterruptedException {
         RobotDefinition rd = new RobotDefinition("Robot2", Instrument.EUR_USD, "aDepotId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(150.0), GREATER_OR_EQUAL_THAN, 1, Side.BUY);

@@ -1,0 +1,20 @@
+                                                                    
+                                                                    
+FFFFFFFFFFFFFFFFFFFFFFXXXXXXX       XXXXXXX      222222222222222    
+F::::::::::::::::::::FX:::::X       X:::::X     2:::::::::::::::22  
+F::::::::::::::::::::FX:::::X       X:::::X     2::::::222222:::::2 
+FF::::::FFFFFFFFF::::FX::::::X     X::::::X     2222222     2:::::2 
+  F:::::F       FFFFFFXXX:::::X   X:::::XXX                 2:::::2 
+  F:::::F                X:::::X X:::::X                    2:::::2 
+  F::::::FFFFFFFFFF       X:::::X:::::X                  2222::::2  
+  F:::::::::::::::F        X:::::::::X              22222::::::22   
+  F:::::::::::::::F        X:::::::::X            22::::::::222     
+  F::::::FFFFFFFFFF       X:::::X:::::X          2:::::22222        
+  F:::::F                X:::::X X:::::X        2:::::2             
+  F:::::F             XXX:::::X   X:::::XXX     2:::::2             
+FF:::::::FF           X::::::X     X::::::X     2:::::2       222222
+F::::::::FF           X:::::X       X:::::X     2::::::2222222:::::2
+F::::::::FF           X:::::X       X:::::X     2::::::::::::::::::2
+FFFFFFFFFFF           XXXXXXX       XXXXXXX     22222222222222222222
+
+${application.formatted-version} running with Spring Boot ${spring-boot.formatted-version}

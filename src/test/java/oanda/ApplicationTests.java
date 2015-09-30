@@ -1,6 +1,7 @@
 package oanda;
 
 import hoggaster.Application;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.IntegrationTest;
@@ -14,6 +15,7 @@ public class ApplicationTests {
 
 
     @Test
+    @Ignore
     public void contextLoads() {
 
 

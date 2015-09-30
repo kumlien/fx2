@@ -53,8 +53,6 @@ public class OandaScheduledTask {
 
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
-    private static boolean historicDataFetched = false;
-
     @Autowired
     public OandaScheduledTask(@Qualifier("OandaBrokerConnection") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("candleEventBus") EventBus candleEventBus, OandaProperties oandaProps, CandleService candleService) {
         this.oanda = oanda;
@@ -67,17 +65,10 @@ public class OandaScheduledTask {
 
     /**
      * Fill the db with candles for the specified instrument and granularity.
-     * Only needed at startup to make us up to date.
+     * Only needed at startup to get us up to date.
      */
-    //@PostConstruct
-    void fetchAllHistoricData() {
-        Arrays.asList(Instrument.MAJORS).forEach(i -> candleService.fetchAndSaveHistoricCandles(i, CandleStickGranularity.END_OF_DAY));
-        Arrays.asList(Instrument.MAJORS).forEach(i -> candleService.fetchAndSaveHistoricCandles(i, CandleStickGranularity.MINUTE));
-        historicDataFetched = true;
-    }
-
     @PostConstruct
-    void fetchAllHistoricData2() {
+    void fetchAllHistoricData() {
         RingBufferWorkProcessor<Tuple2<Instrument, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
         Stream<Tuple2<Instrument, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
 
@@ -135,7 +126,6 @@ public class OandaScheduledTask {
 
     @Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
-        if (!historicDataFetched) return;
         try {
             if (instrumentsForMainAccount == null) {
                 fetchInstruments();
@@ -160,13 +150,12 @@ public class OandaScheduledTask {
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
-        if(!historicDataFetched) return;
         LOG.info("About to fetch one minute candles");
         try {
-            List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.MINUTE, 1);
+            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity.MINUTE);
             LOG.info("Got {} one minute candles", candles.size());
         } catch (UnsupportedEncodingException e) {
-            LOG.error("Error publishing last minutue candle", e);
+            LOG.error("Error publishing last minute candle", e);
         }
     }
 
@@ -174,16 +163,17 @@ public class OandaScheduledTask {
     /*
      * Get the daily candles.
      * 
-     * TODO this one needs to take into account the different opening/closing times for different instruments (and possibly in combination with different brokers) for now we hard code it to open at 17:00:00 and close at 16:59:59 New York time, that is, we record the day candle at this point.
+     * TODO this one needs to take into account the different opening/closing times for different instruments (and possibly in combination with different brokers) for now we hard code it to open at 17:01:00 and close at 16:59:59 New York time, that is, we record the day candle at this point.
      */
-    @Scheduled(cron = "0 0 17 * * MON-FRI")
+    @Scheduled(cron = "0 1 17 * * MON-FRI", zone = "America/New_York")
     @Timed
     public void fetchDayCandles() {
-        if(!historicDataFetched) return;
         LOG.info("About to fetch one day candles");
         try {
-            List<Candle> candles = getAndNotifyCandlesForAllInstruments(CandleStickGranularity.END_OF_DAY, 1);
-            LOG.info("Done fetching one day candles, got {} of them.", candles.size());
+            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity.END_OF_DAY);
+            if(candles != null && !candles.isEmpty()) {
+                LOG.info("Done fetching one day candle, got {}", candles.get(0));
+            }
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error fetching candles", e);
         }
@@ -191,9 +181,9 @@ public class OandaScheduledTask {
 
 
     /*
-     * Call the oanda api to get candles.
+     * Call the oanda api to get candles and put them on the eventbus.
      */
-    private List<Candle> getAndNotifyCandlesForAllInstruments(CandleStickGranularity granularity, Integer number) throws UnsupportedEncodingException {
+    private List<Candle> fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity granularity) throws UnsupportedEncodingException {
         RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
         Stream<Instrument> instrumentStream = Streams.wrap(publisher);
         final List<Candle> allCandles = new ArrayList<>();
@@ -201,12 +191,12 @@ public class OandaScheduledTask {
         // Consumer used to handle one instrument
         Consumer<Instrument> ic = instrument -> {
             try {
-                List<Candle> candles = candleService.fetchAndSaveLatestCandlesFromBroker(instrument, granularity, number);
+                List<Candle> candles = candleService.fetchAndSaveLatestCandlesFromBroker(instrument, granularity, 1);
                 allCandles.addAll(candles);
                 candles.forEach(bac -> {
                     candleEventBus.notify("candles." + instrument, Event.wrap(bac));
                 });
-                LOG.debug("{} {} candles saved and sent to event bus for instrument {} ({})", candles.size(), granularity, instrument, candles.isEmpty() ? null : candles.iterator().next());
+                LOG.debug("{} {} candles saved and sent to event bus for instrument {} ({})", candles.size(), granularity, instrument, candles.isEmpty() ? null : candles.get(0));
             } catch (Exception e) {
                 LOG.error("Error fetching {} candles", granularity, e);
             }
@@ -218,19 +208,6 @@ public class OandaScheduledTask {
 
         Arrays.asList(Instrument.values()).forEach(i -> publisher.onNext(i));
         publisher.onComplete();
-        // Sort them by time
-        Collections.sort(allCandles, new Comparator<Candle>() {
-            @Override
-            public int compare(Candle o1, Candle o2) {
-                if (o1 == null) {
-                    return -1;
-                }
-                if (o2 == null) {
-                    return 1;
-                }
-                return o1.time.compareTo(o2.time);
-            }
-        });
         return allCandles;
     }
 }
