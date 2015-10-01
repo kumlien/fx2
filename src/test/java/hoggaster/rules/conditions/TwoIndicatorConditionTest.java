@@ -9,7 +9,7 @@ import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.indicators.*;
 import hoggaster.talib.TALibService;
-import hoggaster.user.depot.Depot;
+import hoggaster.depot.Depot;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Assert;

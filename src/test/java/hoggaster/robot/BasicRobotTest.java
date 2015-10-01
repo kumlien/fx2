@@ -14,7 +14,7 @@ import hoggaster.rules.conditions.TwoIndicatorCondition;
 import hoggaster.rules.indicators.CurrentAskIndicator;
 import hoggaster.rules.indicators.SimpleValueIndicator;
 import hoggaster.talib.TALibService;
-import hoggaster.user.depot.Depot;
+import hoggaster.depot.Depot;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Before;

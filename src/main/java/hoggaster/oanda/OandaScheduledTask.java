@@ -3,6 +3,7 @@ package hoggaster.oanda;
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
+import hoggaster.depot.DepotMonitorImpl;
 import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.Instruments;
@@ -32,7 +33,7 @@ import java.util.*;
 
 
 /**
- * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link hoggaster.user.depot.DepotMonitorImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
+ * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link DepotMonitorImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
  */
 @Component
 public class OandaScheduledTask {

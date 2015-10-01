@@ -1,4 +1,4 @@
-package hoggaster.user.depot;
+package hoggaster.depot;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;

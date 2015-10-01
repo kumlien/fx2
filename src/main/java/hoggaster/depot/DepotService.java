@@ -1,4 +1,4 @@
-package hoggaster.user.depot;
+package hoggaster.depot;
 
 import hoggaster.domain.Broker;
 import hoggaster.user.User;

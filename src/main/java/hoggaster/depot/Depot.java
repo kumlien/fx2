@@ -1,11 +1,10 @@
-package hoggaster.user.depot;
+package hoggaster.depot;
 
 import com.google.common.collect.Sets;
 import hoggaster.domain.Broker;
 import hoggaster.domain.BrokerDepot;
 import hoggaster.domain.Instrument;
 import hoggaster.transaction.Transaction;
-import hoggaster.user.InstrumentOwnership;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;

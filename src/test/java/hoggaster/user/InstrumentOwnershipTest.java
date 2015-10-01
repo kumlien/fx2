@@ -1,5 +1,6 @@
 package hoggaster.user;
 
+import hoggaster.depot.InstrumentOwnership;
 import hoggaster.domain.Instrument;
 import org.junit.Assert;
 import org.junit.Before;

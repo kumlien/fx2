@@ -11,7 +11,7 @@ import hoggaster.rules.indicators.CandleStickGranularity;
 import hoggaster.rules.indicators.RSIIndicator;
 import hoggaster.talib.TALibService;
 import hoggaster.talib.TAResult;
-import hoggaster.user.depot.Depot;
+import hoggaster.depot.Depot;
 
 import java.util.ArrayList;
 import java.util.List;

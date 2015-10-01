@@ -1,4 +1,4 @@
-package hoggaster.user.depot;
+package hoggaster.depot;
 
 /**
  * Created by svante on 15-09-27.
