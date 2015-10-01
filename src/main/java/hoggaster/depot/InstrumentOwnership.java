@@ -41,7 +41,7 @@ public class InstrumentOwnership {
      * Add a number of shares with the specified price per share.
      *
      * @param incomingQuantity
-     * @param incomingPricePerShare
+     * @param incomingPPS
      */
     public Double add(BigDecimal incomingQuantity, BigDecimal incomingPPS) {
         Preconditions.checkArgument(incomingQuantity != null, "Quantity can't be null");
