@@ -32,6 +32,8 @@ public class Depot {
 
     public final String userId;
 
+    public final Type type;
+
     public final String name;
 
     //The name used by the broker for this depot
@@ -61,8 +63,8 @@ public class Depot {
 
     @PersistenceConstructor
     public Depot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, String currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                 BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk) {
-        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk);
+                 BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.transactions = transactions;
         this.ownerships = ownerships;
@@ -80,7 +82,7 @@ public class Depot {
      * @param lastSyncOk
      *
      */
-    public Depot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk) {
+    public Depot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -97,6 +99,7 @@ public class Depot {
         this.currency = currency;
         this.lastSynchronizedWithBroker = lastSynchronizedWithBroker;
         this.lastSyncOk = lastSyncOk;
+        this.type = type;
     }
 
     public boolean ownThisInstrument(Instrument instrument) {
@@ -120,7 +123,7 @@ public class Depot {
     }
 
     /**
-     * TODO Should be the responsibility of the depot to carry out the trad (using services of course)
+     * TODO Should be the responsibility of the depot to carry out the trade (using services of course)
      *
      * Signal a that we bought something
      * Add to set of {@link InstrumentOwnership} if not already present
@@ -311,5 +314,9 @@ public class Depot {
         sb.append(", broker=").append(broker);
         sb.append('}');
         return sb.toString();
+    }
+
+    public enum Type {
+        LIVE, DEMO, SIMULATION;
     }
 }
