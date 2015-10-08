@@ -2,8 +2,8 @@ package it;
 
 import hoggaster.Application;
 import hoggaster.candles.CandleService;
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.junit.Ignore;

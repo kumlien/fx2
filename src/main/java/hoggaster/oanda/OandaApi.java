@@ -1,7 +1,11 @@
 package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
-import hoggaster.domain.*;
+import hoggaster.domain.Instrument;
+import hoggaster.domain.OrderService;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;

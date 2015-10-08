@@ -1,5 +1,6 @@
-package hoggaster.domain;
+package hoggaster.domain.brokers;
 
+import hoggaster.domain.Instrument;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 

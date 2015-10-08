@@ -1,7 +1,7 @@
 package hoggaster;
 
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.OrderService;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.OandaApi;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.OandaResourcesProperties;
@@ -13,7 +13,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -26,7 +25,6 @@ import java.io.UnsupportedEncodingException;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableScheduling
-@EnableCaching
 public class Application {
 
     public static void main(String[] args) {

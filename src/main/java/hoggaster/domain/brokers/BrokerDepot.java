@@ -1,4 +1,4 @@
-package hoggaster.domain;
+package hoggaster.domain.brokers;
 
 import java.math.BigDecimal;
 

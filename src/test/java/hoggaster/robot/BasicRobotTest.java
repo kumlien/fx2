@@ -2,10 +2,10 @@ package hoggaster.robot;
 
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DbDepot;
-import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.prices.Price;
 import hoggaster.rules.Comparator;

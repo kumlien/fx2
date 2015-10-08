@@ -2,12 +2,12 @@ package hoggaster.user;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by svante2 on 2015-10-03.
  */
 public interface UserRepo extends MongoRepository<User, String> {
 
-    List<User> findByUsername(String username);
+    Optional<User> findByUsername(String username);
 }

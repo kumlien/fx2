@@ -2,7 +2,7 @@ package hoggaster.oanda.responses;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hoggaster.domain.BrokerDepot;
+import hoggaster.domain.brokers.BrokerDepot;
 
 import java.math.BigDecimal;
 

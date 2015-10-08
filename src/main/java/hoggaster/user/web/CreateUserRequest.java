@@ -1,5 +1,7 @@
-package hoggaster.user;
+package hoggaster.user.web;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -17,10 +19,10 @@ public class CreateUserRequest {
     @NotBlank(message = "The username must not be blank")
     public final String password2;
 
-    @Email
-    public final String email;
+    @Email(message = "Invalid email address")
+    public final String email1;
 
-    @Email
+    @Email(message = "Invalid email address")
     public final String email2;
 
     @NotBlank(message = "First name must not be blank")
@@ -29,11 +31,19 @@ public class CreateUserRequest {
     @NotBlank(message = "Last name must not be blank")
     public final String lastName;
 
-    public CreateUserRequest(String username, String password1, String password2, String email, String email2, String firstName, String lastName) {
+    @JsonCreator
+    public CreateUserRequest(
+            @JsonProperty("username") String username,
+            @JsonProperty("password1")String password1,
+            @JsonProperty("password2")String password2,
+            @JsonProperty("email1")String email1,
+            @JsonProperty("email2")String email2,
+            @JsonProperty("firstName")String firstName,
+            @JsonProperty("lastName")String lastName) {
         this.username = username;
         this.password1 = password1;
         this.password2 = password2;
-        this.email = email;
+        this.email1 = email1;
         this.email2 = email2;
         this.firstName = firstName;
         this.lastName = lastName;

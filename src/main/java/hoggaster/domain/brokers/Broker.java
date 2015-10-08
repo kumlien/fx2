@@ -1,4 +1,4 @@
-package hoggaster.domain;
+package hoggaster.domain.brokers;
 
 
 public enum Broker {

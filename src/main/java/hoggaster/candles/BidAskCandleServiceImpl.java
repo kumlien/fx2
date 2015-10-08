@@ -1,9 +1,9 @@
 package hoggaster.candles;
 
 import com.google.common.base.Preconditions;
-import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;

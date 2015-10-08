@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -26,7 +27,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(User user) {
         validateFieldsNotNullOrEmpty(user);
-        checkArgument(null == userRepo.findByUsername(user.username), "There is already a user with username '" + user.username + "'");
+        checkArgument(!userRepo.findByUsername(user.username).isPresent(), "There is already a user with username '" + user.username + "'");
         return userRepo.save(user);
     }
 
@@ -46,16 +47,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUsername(String username) {
+    public Optional<User> getUserByUsername(String username) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(username), "The provided username is null or empty");
-        List<User> users = userRepo.findByUsername(username);
-        return users != null && !users.isEmpty() ? users.get(0) : null;
+        return userRepo.findByUsername(username);
     }
 
     @Override
-    public User getUserById(String id) {
+    public Optional<User> getUserById(String id) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "The provided is is null or empty");
-        return userRepo.findOne(id);
+        return Optional.of(userRepo.findOne(id));
     }
 
     @Override

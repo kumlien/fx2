@@ -1,7 +1,7 @@
 package hoggaster.robot.web;
 
-import hoggaster.domain.BrokerConnection;
 import hoggaster.domain.OrderService;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
 package hoggaster.depot;
 
-import hoggaster.domain.Broker;
+import hoggaster.domain.brokers.Broker;
 import hoggaster.user.User;
 
 import java.util.List;

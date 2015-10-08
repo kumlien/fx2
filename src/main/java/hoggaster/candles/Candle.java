@@ -1,8 +1,8 @@
 package hoggaster.candles;
 
-import hoggaster.domain.Broker;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
+import hoggaster.domain.brokers.Broker;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.indicators.CandleStickField;
 import hoggaster.rules.indicators.CandleStickGranularity;

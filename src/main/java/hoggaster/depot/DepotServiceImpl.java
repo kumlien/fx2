@@ -2,9 +2,9 @@ package hoggaster.depot;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import hoggaster.domain.Broker;
-import hoggaster.domain.BrokerConnection;
-import hoggaster.domain.BrokerDepot;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +42,9 @@ public class DepotServiceImpl implements  DepotService {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "The dbDepot must have a name");
         Preconditions.checkArgument(broker != null, "The broker must be specified");
 
-        Preconditions.checkArgument(depotRepo.findBybrokerId(brokerId) == null, "There is already a dbDepot connected with broker id '" + brokerId + "'");
+        Preconditions.checkArgument(!depotRepo.findByBrokerId(brokerId).isPresent(), "There is already a Depot connected with broker " + broker + " with the id '" + brokerId + "'");
         BrokerDepot brokerDepot = brokerConnection.getDepot(brokerId);
-        Preconditions.checkArgument(brokerDepot != null);
+        Preconditions.checkArgument(brokerDepot != null, "Unable to fetch a depot from " + broker + " with id '" + brokerId + "'");
 
         DbDepot newDbDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true, type);
         newDbDepot = depotRepo.save(newDbDepot);

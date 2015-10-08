@@ -1,7 +1,7 @@
 package hoggaster.depot;
 
-import hoggaster.domain.BrokerConnection;
-import hoggaster.domain.BrokerDepot;
+import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.brokers.BrokerDepot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

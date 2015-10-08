@@ -3,7 +3,7 @@ package it;
 import hoggaster.Application;
 import hoggaster.depot.DbDepot;
 import hoggaster.depot.DepotService;
-import hoggaster.domain.Broker;
+import hoggaster.domain.brokers.Broker;
 import hoggaster.user.User;
 import org.junit.Ignore;
 import org.junit.Test;
