@@ -5,7 +5,7 @@ package hoggaster.depot;
  */
 public interface DepotMonitor {
 
-    Depot syncDepot(Depot depot);
+    DbDepot syncDepot(DbDepot dbDepot);
 
-    void checkDepotMargin(Depot depot, boolean doSync);
+    void checkDepotMargin(DbDepot dbDepot, boolean doSync);
 }

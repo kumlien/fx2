@@ -35,37 +35,37 @@ public class DepotServiceImpl implements  DepotService {
 
 
     @Override
-    public Depot createDepot(User user, String name, Broker broker, String brokerId) {
+    public DbDepot createDepot(User user, String name, Broker broker, String brokerId, DbDepot.Type type) {
         Preconditions.checkArgument(broker == Broker.OANDA, "Sorry, we only support " + Broker.OANDA + " at the moment");
 
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "The depot must have a name");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "The depot must have a name");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "The dbDepot must have a name");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "The dbDepot must have a name");
         Preconditions.checkArgument(broker != null, "The broker must be specified");
 
-        Preconditions.checkArgument(depotRepo.findBybrokerId(brokerId) == null, "There is already a depot connected with broker id '" + brokerId + "'");
+        Preconditions.checkArgument(depotRepo.findBybrokerId(brokerId) == null, "There is already a dbDepot connected with broker id '" + brokerId + "'");
         BrokerDepot brokerDepot = brokerConnection.getDepot(brokerId);
         Preconditions.checkArgument(brokerDepot != null);
 
-        Depot newDepot = new Depot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true);
-        newDepot = depotRepo.save(newDepot);
-        return newDepot;
+        DbDepot newDbDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true, type);
+        newDbDepot = depotRepo.save(newDbDepot);
+        return newDbDepot;
     }
 
 
     @Override
-    public void deleteDepot(Depot depot) {
+    public void deleteDepot(DbDepot dbDepot) {
         //TODO Synch with broker and check transactions/orders/balance etc before deleting
-        LOG.warn("Deleting depot {}", depot);
-        depotRepo.delete(depot);
+        LOG.warn("Deleting dbDepot {}", dbDepot);
+        depotRepo.delete(dbDepot);
     }
 
     @Override
-    public Depot findDepotById(String id) {
+    public DbDepot findDepotById(String id) {
         return depotRepo.findOne(id);
     }
 
     @Override
-    public List<Depot> findAll() {
+    public List<DbDepot> findAll() {
         return depotRepo.findAll();
     }
 }

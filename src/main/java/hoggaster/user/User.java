@@ -10,6 +10,8 @@ public class User {
     @Id
     private String id;
 
+    public final String username;
+
     public final String firstName;
 
     public final String lastName;
@@ -20,16 +22,14 @@ public class User {
 
 
     @PersistenceConstructor
-    public User(String firstName, String lastName, String email, String password, String id) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
+    public User(String username, String firstName, String lastName, String email, String password, String id) {
+        this(username,firstName, lastName, email, password);
         this.id = id;
     }
 
 
-    public User(String firstName, String lastName, String email, String password) {
+    public User(String username, String firstName, String lastName, String email, String password) {
+        this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

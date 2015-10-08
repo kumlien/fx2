@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
+import hoggaster.depot.DbDepot;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.orders.OrderRequest;
@@ -13,7 +14,6 @@ import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
 import hoggaster.talib.TALibService;
-import hoggaster.depot.Depot;
 import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +79,7 @@ public class Robot implements Consumer<Event<?>> {
 
     private final CandleService candleService;
 
-    private final Depot depot;
+    private final DbDepot dbDepot;
 
     private final EventBus priceEventBus;
 
@@ -94,9 +94,9 @@ public class Robot implements Consumer<Event<?>> {
     // key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
-    public Robot(Depot depot, RobotDefinition definition, EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine, TALibService taLibService, CandleService candleService) {
+    public Robot(DbDepot dbDepot, RobotDefinition definition, EventBus priceEventBus, OrderService orderService, RulesEngine rulesEngine, TALibService taLibService, CandleService candleService) {
         Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
-        Preconditions.checkArgument(depot != null, "The depot is null");
+        Preconditions.checkArgument(dbDepot != null, "The dbDepot is null");
         Preconditions.checkArgument(definition != null, "The robot definition is null");
         Preconditions.checkArgument(definition.instrument != null, "The definition instrument is null");
         Preconditions.checkArgument(orderService != null, "The order service is null");
@@ -109,7 +109,7 @@ public class Robot implements Consumer<Event<?>> {
         this.instrument = definition.instrument;
         this.buyConditions = definition.getBuyConditions();
         this.sellConditions = definition.getSellConditions();
-        this.depot = depot;
+        this.dbDepot = dbDepot;
         this.priceEventBus = priceEventBus;
         this.orderService = orderService;
         this.rulesEngine = rulesEngine;
@@ -155,7 +155,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     private void onNewPrice(Price price) {
         LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-        RobotExecutionContext ctx = new RobotExecutionContext(price, depot, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(price, dbDepot, instrument, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
@@ -178,7 +178,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     private void onNewCandle(Candle candle) {
         LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
-        RobotExecutionContext ctx = new RobotExecutionContext(candle, depot, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(candle, dbDepot, instrument, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
@@ -202,7 +202,7 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void doSell() {
-        if (!depot.ownThisInstrument(instrument)) {
+        if (!dbDepot.ownThisInstrument(instrument)) {
             LOG.info("Nahh, we don't own {} yet...", instrument.name());
             return;
         }
@@ -211,13 +211,14 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void doBuy() {
-        if (depot.ownThisInstrument(instrument)) {
-            LOG.info("Nahh, we allready own {}, only buy once...", instrument.name());
+        dbDepot.buy(instrument);
+        if (dbDepot.ownThisInstrument(instrument)) {
+            LOG.info("Nahh, we already own {}, only buy once...", instrument.name());
             return;
         }
 
         LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
-        OrderRequest order = new OrderRequest(depot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
+        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
         OandaOrderResponse response = orderService.sendOrder(order);
         LOG.info("Order away and we got an response! {}", response);
     }
@@ -253,8 +254,8 @@ public class Robot implements Consumer<Event<?>> {
         }
     }
 
-    public Depot getDepot() {
-        return depot;
+    public DbDepot getDbDepot() {
+        return dbDepot;
     }
 
     public RobotStatus getStatus() {
@@ -268,7 +269,7 @@ public class Robot implements Consumer<Event<?>> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", instrument=").append(instrument).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", depot=").append(depot).append(", status=").append(status).append("]");
+        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", instrument=").append(instrument).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", dbDepot=").append(dbDepot).append(", status=").append(status).append("]");
         return builder.toString();
     }
 

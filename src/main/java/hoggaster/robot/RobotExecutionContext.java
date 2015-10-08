@@ -3,6 +3,7 @@ package hoggaster.robot;
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
+import hoggaster.depot.DbDepot;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
@@ -11,7 +12,6 @@ import hoggaster.rules.indicators.CandleStickGranularity;
 import hoggaster.rules.indicators.RSIIndicator;
 import hoggaster.talib.TALibService;
 import hoggaster.talib.TAResult;
-import hoggaster.depot.Depot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class RobotExecutionContext {
 
     public final MarketUpdate marketUpdate;
 
-    public final Depot depot;
+    public final DbDepot dbDepot;
 
     public final Instrument instrument;
 
@@ -46,13 +46,13 @@ public class RobotExecutionContext {
 
     private final CandleService bidAskCandleService;
 
-    public RobotExecutionContext(MarketUpdate marketUpdate, Depot depot, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
+    public RobotExecutionContext(MarketUpdate marketUpdate, DbDepot dbDepot, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
         Preconditions.checkNotNull(marketUpdate);
-        Preconditions.checkNotNull(depot);
+        Preconditions.checkNotNull(dbDepot);
         Preconditions.checkNotNull(taLibService);
         Preconditions.checkNotNull(bidAskCandleService);
         this.marketUpdate = marketUpdate;
-        this.depot = depot;
+        this.dbDepot = dbDepot;
         this.instrument = instrument;
         this.taLibService = taLibService;
         this.bidAskCandleService = bidAskCandleService;
@@ -98,7 +98,7 @@ public class RobotExecutionContext {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", depot=").append(depot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", dbDepot=").append(dbDepot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
         return builder.toString();
     }
 

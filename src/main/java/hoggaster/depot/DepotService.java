@@ -12,24 +12,25 @@ public interface DepotService {
 
 
     /**
-     * Create a depot with the specified parameters. The depot must exist at the broker side. The service
-     * will synchronize the local depot with the depot on the Broker side. The service will also persist
-     * the depot.
+     * Create a dbDepot with the specified parameters. The dbDepot must exist at the broker side. The service
+     * will synchronize the local dbDepot with the dbDepot on the Broker side. The service will also persist
+     * the dbDepot.
      *
-     * @param user The User to whom the Depot belongs
-     * @param name A logical name of the depot, unique within the User context.
-     * @param broker The broker used for trades on this depot.
-     * @param brokerId The id of this depot on the broker side.
+     * @param user The User to whom the DbDepot belongs
+     * @param name A logical name of the dbDepot, unique within the User context.
+     * @param broker The broker used for trades on this dbDepot.
+     * @param brokerId The id of this dbDepot on the broker side.
+     * @param  type The type of dbDepot.
      *
-     * @return The newly created depot with synchronized values from the Broker
+     * @return The newly created dbDepot with synchronized values from the Broker
      */
-    Depot createDepot(User user, String name, Broker broker, String brokerId);
+    DbDepot createDepot(User user, String name, Broker broker, String brokerId, DbDepot.Type type);
 
-    void deleteDepot(Depot depot);
+    void deleteDepot(DbDepot dbDepot);
 
-    Depot findDepotById(String id);
+    DbDepot findDepotById(String id);
 
-    List<Depot> findAll();
+    List<DbDepot> findAll();
 
 
 }

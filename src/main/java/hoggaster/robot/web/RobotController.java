@@ -1,15 +1,14 @@
 package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
+import hoggaster.depot.DbDepot;
+import hoggaster.depot.DepotRepo;
 import hoggaster.domain.OrderService;
-import hoggaster.oanda.OandaProperties;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.robot.RobotRegistry;
 import hoggaster.talib.TALibService;
-import hoggaster.depot.Depot;
-import hoggaster.depot.DepotRepo;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;
@@ -45,9 +44,6 @@ public class RobotController {
 
     private final DepotRepo depotRepo;
 
-    @Autowired
-    // TODO Only for testing!! Used to set up a depot.
-    private OandaProperties oandaProps;
 
     @Autowired
     public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotRepo depotRepo) {
@@ -76,14 +72,14 @@ public class RobotController {
                 throw new IllegalArgumentException("No robotdefinition with id: " + robotId);
             }
 
-            Depot depot = depotRepo.findOne(definition.getDepotId());
+            DbDepot dbDepot = depotRepo.findOne(definition.getDepotId());
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
-            robot = new Robot(depot, definition, priceEventBus, oandaOrderService, ruleEngine, taLibService, candleService);
+            robot = new Robot(dbDepot, definition, priceEventBus, oandaOrderService, ruleEngine, taLibService, candleService);
             robotRegistry.add(robot);
         }
 
         if (robot.isRunning()) {
-            LOG.info("Robot with id {} is allready started.", robotId);
+            LOG.info("Robot with id {} is already started.", robotId);
         } else {
             robot.start();
             LOG.info("Robot with id {} is now started!", robotId);

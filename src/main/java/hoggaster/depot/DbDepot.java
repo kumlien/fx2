@@ -16,9 +16,9 @@ import java.time.Instant;
 import java.util.Set;
 
 @Document
-public class Depot {
+public class DbDepot {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Depot.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DbDepot.class);
 
     @Id
     private String id;
@@ -36,7 +36,7 @@ public class Depot {
 
     public final String name;
 
-    //The name used by the broker for this depot
+    //The name used by the broker for this dbDepot
     public final String brokerDepotName;
 
     public final Broker broker;
@@ -44,7 +44,7 @@ public class Depot {
     public BigDecimal marginRate;
 
     /*
-         * The id in the broker system for this depot.
+         * The id in the broker system for this dbDepot.
          */
     public final String brokerId;
 
@@ -62,8 +62,8 @@ public class Depot {
 
 
     @PersistenceConstructor
-    public Depot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, String currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                 BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, String currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
+                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.transactions = transactions;
@@ -71,18 +71,18 @@ public class Depot {
     }
 
     /**
-     * Create a new Depot.
-     *  @param userId The id of the user owning this depot
-     * @param name Our internal name for this depot
-     * @param broker The broker to which this depot is connected.
-     * @param brokerDepotName The name of this depot/account on the broker side
-     * @param brokerId The id of this depot on the broker side
-     * @param marginRate The margin rate for this depot
-     * @param currency The base currency for this depot
+     * Create a new DbDepot.
+     *  @param userId The id of the user owning this dbDepot
+     * @param name Our internal name for this dbDepot
+     * @param broker The broker to which this dbDepot is connected.
+     * @param brokerDepotName The name of this dbDepot/account on the broker side
+     * @param brokerId The id of this dbDepot on the broker side
+     * @param marginRate The margin rate for this dbDepot
+     * @param currency The base currency for this dbDepot
      * @param lastSyncOk
      *
      */
-    public Depot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -123,7 +123,7 @@ public class Depot {
     }
 
     /**
-     * TODO Should be the responsibility of the depot to carry out the trade (using services of course)
+     * TODO Should be the responsibility of the dbDepot to carry out the trade (using services of course)
      *
      * Signal a that we bought something
      * Add to set of {@link InstrumentOwnership} if not already present
@@ -156,55 +156,55 @@ public class Depot {
     public boolean updateWithValuesFrom(BrokerDepot brokerDepot) {
         boolean changed = false;
         if(balance.compareTo(brokerDepot.balance) != 0) {
-            LOG.info("Balance updated with new value for depot {}: {} -> {}", id, balance, brokerDepot.balance);
+            LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
             balance = brokerDepot.balance;
             changed = true;
         }
 
         if(marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
-            LOG.info("Available margin updated with new value for depot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
+            LOG.info("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
             balance = brokerDepot.balance;
             changed = true;
         }
 
         if(!currency.equals(brokerDepot.currency)) {
-            LOG.warn("Currency updated with new value for depot {}: {} -> {}", id, currency, brokerDepot.currency);
+            LOG.warn("Currency updated with new value for dbDepot {}: {} -> {}", id, currency, brokerDepot.currency);
             currency = brokerDepot.currency;
             changed = true;
         }
 
         if(marginRate.compareTo(brokerDepot.marginRate) != 0) {
-            LOG.warn("Margin rate updated with new value for depot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
+            LOG.warn("Margin rate updated with new value for dbDepot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
             marginRate = brokerDepot.marginRate;
             changed = true;
         }
 
         if(marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
-            LOG.info("Margin used updated with new value for depot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
+            LOG.info("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
 
         if(openOrders.compareTo(brokerDepot.openOrders) != 0) {
-            LOG.info("Open orders updated with new value for depot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
+            LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
             openOrders = brokerDepot.openOrders;
             changed = true;
         }
 
         if(openTrades.compareTo(brokerDepot.openTrades) != 0) {
-            LOG.info("Open trades updated with new value for depot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
+            LOG.info("Open trades updated with new value for dbDepot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
             openTrades = brokerDepot.openTrades;
             changed = true;
         }
 
         if(realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
-            LOG.info("Realized profit/loss updated with new value for depot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
+            LOG.info("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
         if(unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
-            LOG.info("Unrealized profit/loss updated with new value for depot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
+            LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;
         }
@@ -307,13 +307,16 @@ public class Depot {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Depot{");
+        final StringBuilder sb = new StringBuilder("DbDepot{");
         sb.append("id='").append(id).append('\'');
         sb.append(", userId='").append(userId).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", broker=").append(broker);
         sb.append('}');
         return sb.toString();
+    }
+
+    public void buy(Instrument instrument) {
     }
 
     public enum Type {

@@ -3,7 +3,7 @@ package hoggaster.domain;
 import java.math.BigDecimal;
 
 /**
- * Generic depot on the broker side.
+ * Generic dbDepot on the broker side.
  * Right now it's a copy of the OandaAccount, until we add support for other brokers.
  *
  * Created by svante2 on 15-09-21.

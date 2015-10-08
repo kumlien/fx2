@@ -1,10 +1,10 @@
 package it;
 
 import hoggaster.Application;
+import hoggaster.depot.DbDepot;
+import hoggaster.depot.DepotService;
 import hoggaster.domain.Broker;
 import hoggaster.user.User;
-import hoggaster.depot.Depot;
-import hoggaster.depot.DepotService;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +17,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-public class DepotServiceTest {
+public class DbDepotServiceTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DepotServiceTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DbDepotServiceTest.class);
 
     @Autowired
     DepotService depotService;
@@ -32,9 +32,7 @@ public class DepotServiceTest {
     public void testCreatePellesDepot() throws InterruptedException {
         User user = Mockito.mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
-        Depot depot = depotService.createDepot(user, "Pelles depot", Broker.OANDA, "9678914");
-        LOG.info("Depot created: {}", depot);
+        DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", Broker.OANDA, "9678914", DbDepot.Type.DEMO);
+        LOG.info("DbDepot created: {}", dbDepot);
     }
-
-
 }

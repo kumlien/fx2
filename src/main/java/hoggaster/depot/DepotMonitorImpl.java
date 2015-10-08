@@ -29,7 +29,7 @@ public class DepotMonitorImpl implements DepotMonitor {
 
     private final BrokerConnection broker;
 
-    //TODO Define (per depot)
+    //TODO Define (per dbDepot)
     private static final BigDecimal MIN_MARGIN_AVAILABLE = new BigDecimal(1000);
 
     @Autowired
@@ -41,38 +41,38 @@ public class DepotMonitorImpl implements DepotMonitor {
 
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 10000)
     public void syncAndCheckAllDepots() {
-        List<Depot> depots = depotRepo.findAll();
-        if (depots == null || depots.isEmpty()) {
-            LOG.info("No depots found...");
+        List<DbDepot> dbDepots = depotRepo.findAll();
+        if (dbDepots == null || dbDepots.isEmpty()) {
+            LOG.info("No dbDepots found...");
             return;
         }
 
-        LOG.info("Whoohaa, found {} depots, let's sync and check them", depots.size());
-        depots.forEach(depot -> checkDepotMargin(depot, true));
+        LOG.info("Whoohaa, found {} dbDepots, let's sync and check them", dbDepots.size());
+        dbDepots.forEach(depot -> checkDepotMargin(depot, true));
     }
 
 
     @Override
-    public Depot syncDepot(Depot depot) {
-        LOG.info("Start syncing depot {}", depot);
-        BrokerDepot depotFromBroker = broker.getDepot(depot.getBrokerId());
+    public DbDepot syncDepot(DbDepot dbDepot) {
+        LOG.info("Start syncing dbDepot {}", dbDepot);
+        BrokerDepot depotFromBroker = broker.getDepot(dbDepot.getBrokerId());
         if (depotFromBroker == null) {
-            LOG.error("Unable to fetch matching depot from broker: {}", depot);
-            depot.setLastSyncOk(false);
+            LOG.error("Unable to fetch matching dbDepot from broker: {}", dbDepot);
+            dbDepot.setLastSyncOk(false);
         } else {
-            depot.setLastSyncOk(true);
-            depot.setLastSynchronizedWithBroker(Instant.now());
-            depot.updateWithValuesFrom(depotFromBroker);
+            dbDepot.setLastSyncOk(true);
+            dbDepot.setLastSynchronizedWithBroker(Instant.now());
+            dbDepot.updateWithValuesFrom(depotFromBroker);
         }
-        depotRepo.save(depot);
-        return depot;
+        depotRepo.save(dbDepot);
+        return dbDepot;
     }
 
     @Override
-    public void checkDepotMargin(Depot depot, boolean doSync) {
+    public void checkDepotMargin(DbDepot dbDepot, boolean doSync) {
         if (doSync) {
-            depot = syncDepot(depot);
+            dbDepot = syncDepot(dbDepot);
         }
-        LOG.warn("Implement depot margin check here...");
+        LOG.warn("Implement dbDepot margin check here...");
     }
 }
