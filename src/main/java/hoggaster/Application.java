@@ -36,13 +36,6 @@ public class Application {
         return new ConcurrentMapCacheManager("books");
     }
 
-    @Bean
-    public ClientHttpRequestFactory httpRequestFactory(OandaProperties props) {
-        CloseableHttpClient httpClient = HttpClientBuilder.create().setMaxConnPerRoute(10).setRetryHandler(new StandardHttpRequestRetryHandler(2, true)).build();
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        return factory;
-    }
-
     @Bean(name = "OandaBrokerConnection")
     public BrokerConnection oandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
         return new OandaApi(oandaProps, restTemplate, resources);

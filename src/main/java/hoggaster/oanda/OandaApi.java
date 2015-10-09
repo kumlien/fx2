@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -37,6 +38,8 @@ public class OandaApi implements BrokerConnection, OrderService {
     private final OandaResourcesProperties resources;
 
     private final RestTemplate restTemplate;
+
+    private final RetryTemplate oandaRetryTemplate;
 
     private final HttpEntity<String> defaultHttpEntity;
 
