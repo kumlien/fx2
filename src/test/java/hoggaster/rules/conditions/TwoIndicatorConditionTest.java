@@ -3,6 +3,7 @@ package hoggaster.rules.conditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DbDepot;
+import hoggaster.depot.Depot;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.robot.RobotExecutionContext;
@@ -29,8 +30,6 @@ public class TwoIndicatorConditionTest {
     @Mock
     TALibService taLibService;
 
-    @Mock
-    DbDepot dbDepot;
 
     @Test
     public void testTriggerBuyOnOneMinuteCandle() {
@@ -41,7 +40,7 @@ public class TwoIndicatorConditionTest {
         Indicator firstIndicator = new CandleIndicator(CandleStickGranularity.MINUTE, CandleStickField.CLOSE_BID);
         Indicator secondIndicator = new SimpleValueIndicator(2.0);
         TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, Side.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
-        RobotExecutionContext ctx = new RobotExecutionContext(candle, dbDepot, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(candle, instrument, taLibService, candleService);
         tic.setContext(ctx);
 
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();

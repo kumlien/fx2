@@ -23,6 +23,8 @@ import static org.springframework.http.HttpStatus.CREATED;
  * TODO Add links to depots
  *
  * Created by svante2 on 2015-10-03.
+ *
+ * add some security: http://spring.io/guides/tutorials/bookmarks/
  */
 
 @RestController

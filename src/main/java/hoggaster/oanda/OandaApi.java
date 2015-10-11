@@ -46,15 +46,16 @@ public class OandaApi implements BrokerConnection, OrderService {
     private final HttpHeaders defaultHeaders;
 
     @Autowired
-    public OandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
+    public OandaApi(OandaProperties oandaProps, RetryTemplate oandaRetryTemplate, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
         this.restTemplate = restTemplate;
         this.resources = resources;
+        this.oandaRetryTemplate = oandaRetryTemplate;
         defaultHeaders = new HttpHeaders();
         defaultHeaders.set(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate");
         defaultHeaders.set(HttpHeaders.CONNECTION, "Keep-Alive");
         defaultHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
         defaultHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        defaultHttpEntity = new HttpEntity<String>(defaultHeaders);
+        defaultHttpEntity = new HttpEntity<>(defaultHeaders);
     }
 
     /**

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DbDepot;
+import hoggaster.depot.Depot;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
@@ -30,8 +31,6 @@ public class RobotExecutionContext {
 
     public final MarketUpdate marketUpdate;
 
-    public final DbDepot dbDepot;
-
     public final Instrument instrument;
 
     private final List<Condition> positiveBuyConditions = new ArrayList<>();
@@ -46,13 +45,11 @@ public class RobotExecutionContext {
 
     private final CandleService bidAskCandleService;
 
-    public RobotExecutionContext(MarketUpdate marketUpdate, DbDepot dbDepot, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
+    public RobotExecutionContext(MarketUpdate marketUpdate, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
         Preconditions.checkNotNull(marketUpdate);
-        Preconditions.checkNotNull(dbDepot);
         Preconditions.checkNotNull(taLibService);
         Preconditions.checkNotNull(bidAskCandleService);
         this.marketUpdate = marketUpdate;
-        this.dbDepot = dbDepot;
         this.instrument = instrument;
         this.taLibService = taLibService;
         this.bidAskCandleService = bidAskCandleService;
@@ -98,7 +95,7 @@ public class RobotExecutionContext {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", dbDepot=").append(dbDepot).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
         return builder.toString();
     }
 

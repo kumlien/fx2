@@ -2,6 +2,8 @@ package hoggaster.robot;
 
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DbDepot;
+import hoggaster.depot.Depot;
+import hoggaster.depot.DepotImpl;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.brokers.Broker;
@@ -33,6 +35,8 @@ import java.time.Instant;
 @RunWith(MockitoJUnitRunner.class)
 public class BasicRobotTest {
 
+    Depot depot;
+
     DbDepot dbDepot;
 
     RobotDefinition definition;
@@ -61,7 +65,7 @@ public class BasicRobotTest {
     public void before() {
         //DbDepot newDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
         dbDepot = new DbDepot("USER_ID", "Test dbDepot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05), "USD", new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(1000.0), 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
-        dbDepot.sold();
+        depot = new DepotImpl(dbDepot, orderService);
         definition = new RobotDefinition("Frekkin robot!", Instrument.USD_SEK, dbDepot.getId());
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
@@ -74,7 +78,7 @@ public class BasicRobotTest {
         TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 2, Side.BUY, MarketUpdateType.PRICE);
         definition.addBuyCondition(condition);
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
-        Robot robot = new Robot(dbDepot, definition, priceEventBus, orderService, rulesEngine, taLibService, candleService);
+        Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();
         Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
@@ -90,7 +94,7 @@ public class BasicRobotTest {
         definition.addBuyCondition(condition);
         dbDepot.bought(Instrument.USD_SEK, new BigDecimal(100.0), new BigDecimal(100.0));
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
-        Robot robot = new Robot(dbDepot, definition, priceEventBus, orderService, rulesEngine, taLibService, candleService);
+        Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();
         Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));

@@ -23,12 +23,12 @@ public class DbDepot {
     @Id
     private String id;
 
-    private  BigDecimal unrealizedPl;
-    private  BigDecimal realizedPl;
-    private  BigDecimal marginUsed;
-    private  BigDecimal marginAvailable;
-    private  Integer openTrades;
-    private  Integer openOrders;
+    private BigDecimal unrealizedPl;
+    private BigDecimal realizedPl;
+    private BigDecimal marginUsed;
+    private BigDecimal marginAvailable;
+    private Integer openTrades;
+    private Integer openOrders;
 
     public final String userId;
 
@@ -44,8 +44,8 @@ public class DbDepot {
     public BigDecimal marginRate;
 
     /*
-         * The id in the broker system for this dbDepot.
-         */
+     * The id in the broker system for this dbDepot.
+     */
     public final String brokerId;
 
     private Set<InstrumentOwnership> ownerships = Sets.newHashSet();
@@ -72,15 +72,15 @@ public class DbDepot {
 
     /**
      * Create a new DbDepot.
-     *  @param userId The id of the user owning this dbDepot
-     * @param name Our internal name for this dbDepot
-     * @param broker The broker to which this dbDepot is connected.
-     * @param brokerDepotName The name of this dbDepot/account on the broker side
-     * @param brokerId The id of this dbDepot on the broker side
-     * @param marginRate The margin rate for this dbDepot
-     * @param currency The base currency for this dbDepot
-     * @param lastSyncOk
      *
+     * @param userId          The id of the user owning this dbDepot
+     * @param name            Our internal name for this dbDepot
+     * @param broker          The broker to which this dbDepot is connected.
+     * @param brokerDepotName The name of this dbDepot/account on the broker side
+     * @param brokerId        The id of this dbDepot on the broker side
+     * @param marginRate      The margin rate for this dbDepot
+     * @param currency        The base currency for this dbDepot
+     * @param lastSyncOk
      */
     public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
@@ -124,7 +124,7 @@ public class DbDepot {
 
     /**
      * TODO Should be the responsibility of the dbDepot to carry out the trade (using services of course)
-     *
+     * <p>
      * Signal a that we bought something
      * Add to set of {@link InstrumentOwnership} if not already present
      *
@@ -155,55 +155,55 @@ public class DbDepot {
      */
     public boolean updateWithValuesFrom(BrokerDepot brokerDepot) {
         boolean changed = false;
-        if(balance.compareTo(brokerDepot.balance) != 0) {
+        if (balance.compareTo(brokerDepot.balance) != 0) {
             LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
             balance = brokerDepot.balance;
             changed = true;
         }
 
-        if(marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
+        if (marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
             LOG.info("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
             balance = brokerDepot.balance;
             changed = true;
         }
 
-        if(!currency.equals(brokerDepot.currency)) {
+        if (!currency.equals(brokerDepot.currency)) {
             LOG.warn("Currency updated with new value for dbDepot {}: {} -> {}", id, currency, brokerDepot.currency);
             currency = brokerDepot.currency;
             changed = true;
         }
 
-        if(marginRate.compareTo(brokerDepot.marginRate) != 0) {
+        if (marginRate.compareTo(brokerDepot.marginRate) != 0) {
             LOG.warn("Margin rate updated with new value for dbDepot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
             marginRate = brokerDepot.marginRate;
             changed = true;
         }
 
-        if(marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
+        if (marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
             LOG.info("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
 
-        if(openOrders.compareTo(brokerDepot.openOrders) != 0) {
+        if (openOrders.compareTo(brokerDepot.openOrders) != 0) {
             LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
             openOrders = brokerDepot.openOrders;
             changed = true;
         }
 
-        if(openTrades.compareTo(brokerDepot.openTrades) != 0) {
+        if (openTrades.compareTo(brokerDepot.openTrades) != 0) {
             LOG.info("Open trades updated with new value for dbDepot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
             openTrades = brokerDepot.openTrades;
             changed = true;
         }
 
-        if(realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
+        if (realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
             LOG.info("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
-        if(unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
+        if (unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
             LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;

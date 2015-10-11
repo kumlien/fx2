@@ -38,11 +38,14 @@ import java.util.Map;
 @Configuration
 public class HttpConfig {
 
+    public static final int BACK_OFF_PERIOD = 2000;
+    public static final int MAX_ATTEMPTS = 3;
+    public static final String OANDA_CALL_CTX_ATTR = "oanda.call";
     private static Logger LOG = LoggerFactory.getLogger(Application.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
-    @Bean("oandaRetryTemplate")
+    @Bean(name = "oandaRetryTemplate")
     public RetryTemplate oandaRetryTemplate() {
         final RetryTemplate retryTemplate = new RetryTemplate();
         retryTemplate.setRetryPolicy(simpleRetryPolicy());
@@ -57,13 +60,13 @@ public class HttpConfig {
         retryableExceptions.put(HttpServerErrorException.class, true);
         retryableExceptions.put(ResourceAccessException.class, true);
         retryableExceptions.put(HttpMessageNotReadableException.class, true);
-        return new SimpleRetryPolicy(3, retryableExceptions);
+        return new SimpleRetryPolicy(MAX_ATTEMPTS, retryableExceptions);
     }
 
     @Bean
     public FixedBackOffPolicy fixedBackoffPolicy() {
         final FixedBackOffPolicy backoffPolicy = new FixedBackOffPolicy();
-        backoffPolicy.setBackOffPeriod(2000);
+        backoffPolicy.setBackOffPeriod(BACK_OFF_PERIOD);
         return backoffPolicy;
     }
 
@@ -77,18 +80,18 @@ public class HttpConfig {
         @Override
         public <T, E extends Throwable> void close(final RetryContext context, final RetryCallback<T, E> callback, final Throwable throwable) {
             if (throwable != null) {
-                LOG.info("Final {} retry attempt failed, exception will be propagated.", context.getAttribute("oanda.call"), throwable);
+                LOG.info("Final {} retry attempt failed, exception will be propagated.", context.getAttribute(OANDA_CALL_CTX_ATTR), throwable);
             }
         }
 
         @Override
         public <T, E extends Throwable> void onError(final RetryContext context, final RetryCallback<T, E> callback, final Throwable throwable) {
-            LOG.info("{} call failed with {}, retryCount is {}", context.getAttribute("oanda.call"), throwable.getClass().getSimpleName(),
+            LOG.info("{} call failed with {}, retryCount is {}", context.getAttribute(OANDA_CALL_CTX_ATTR), throwable.getClass().getSimpleName(),
                     context.getRetryCount());
         }
     }
 
-    @Bean("oandaClient")
+    @Bean(name="oandaClient")
     public RestTemplate oandaClient(OandaProperties props, ClientHttpRequestFactory requestFactory) {
         RestTemplate rt = new RestTemplate(requestFactory);
         rt.getMessageConverters().add(0, new FormHttpMessageConverter());

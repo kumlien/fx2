@@ -5,9 +5,6 @@ import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.OandaApi;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.OandaResourcesProperties;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,8 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,12 +33,13 @@ public class Application {
     }
 
     @Bean(name = "OandaBrokerConnection")
-    public BrokerConnection oandaApi(OandaProperties oandaProps, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
-        return new OandaApi(oandaProps, restTemplate, resources);
+    public BrokerConnection oandaApi(OandaProperties oandaProps, RetryTemplate oandaRetryTemplate, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
+        return new OandaApi(oandaProps, oandaRetryTemplate, restTemplate, resources);
     }
 
     @Bean
     public OrderService OandaOrderService(@Qualifier("OandaBrokerConnection") BrokerConnection oandaApi) {
         return (OrderService) oandaApi;
     }
+
 }

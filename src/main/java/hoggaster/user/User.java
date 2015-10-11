@@ -1,5 +1,6 @@
 package hoggaster.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +19,7 @@ public class User {
 
     public final String email;
 
+    @JsonIgnore
     public final String password;
 
 

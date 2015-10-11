@@ -2,6 +2,8 @@ package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DbDepot;
+import hoggaster.depot.Depot;
+import hoggaster.depot.DepotImpl;
 import hoggaster.depot.DepotRepo;
 import hoggaster.domain.OrderService;
 import hoggaster.robot.Robot;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.bus.EventBus;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Used to start/stop/query running robot instances.
@@ -45,6 +48,7 @@ public class RobotController {
     private final DepotRepo depotRepo;
 
 
+
     @Autowired
     public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotRepo depotRepo) {
         this.robotRegistry = robotRegistry;
@@ -61,6 +65,7 @@ public class RobotController {
         return robotRegistry.getAllKnownRobots();
     }
 
+    //Well, this was an interesting mapping for starting something... TODO
     @RequestMapping(value = "{id}", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     public Robot startRobot(@PathVariable(value = "id") String robotId) {
@@ -69,12 +74,14 @@ public class RobotController {
         if (robot == null) {
             RobotDefinition definition = robotRepo.findOne(robotId);
             if (definition == null) {
-                throw new IllegalArgumentException("No robotdefinition with id: " + robotId);
+                throw new IllegalArgumentException("No robot definition with id: " + robotId);
             }
+            DbDepot dbDepot = Objects.requireNonNull(depotRepo.findOne(definition.getDepotId()), "Unable to find a depot connected to robot with id '" + definition.getId() + "', the depot is supposed to have id '" + definition.getDepotId() + "'");
 
-            DbDepot dbDepot = depotRepo.findOne(definition.getDepotId());
+            Depot depot = new DepotImpl(dbDepot, oandaOrderService);
+
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
-            robot = new Robot(dbDepot, definition, priceEventBus, oandaOrderService, ruleEngine, taLibService, candleService);
+            robot = new Robot(depot, definition, priceEventBus, ruleEngine, taLibService, candleService);
             robotRegistry.add(robot);
         }
 
