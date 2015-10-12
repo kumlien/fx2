@@ -1,7 +1,9 @@
 package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
-import hoggaster.depot.*;
+import hoggaster.depot.Depot;
+import hoggaster.depot.DepotImpl;
+import hoggaster.depot.DepotService;
 import hoggaster.domain.OrderService;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.bus.EventBus;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Used to start/stop/query running robot instances.

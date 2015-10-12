@@ -23,9 +23,31 @@ public class DbDepot {
     @Id
     private String id;
 
+    /**
+     * The current profit or loss total for all your open trades.
+     * If you were to close all of your open trades at this exact point in time,
+     * this amount would be "realized" and added to the Realized P&L.
+     */
     private BigDecimal unrealizedPl;
+
+    /**
+     * The amount of profit or loss you have incurred with your trading activity to date.
+     * This value changes when you realize profits or losses on your open positions
+     */
     private BigDecimal realizedPl;
+
+    /**
+     * The amount of your account balance and Unrealized P&L that is reserved for margin.
+     * This amount is equal to the Position Value multiplied by your margin ratio.
+     * The margin ratio is the inverse of leverage; for example, 50:1 leverage equals a 0.02 margin ratio.
+     * Look here for oanda margin rules: http://fxtrade.oanda.com/help/policies/margin-rules
+     */
     private BigDecimal marginUsed;
+
+    /**
+     * The amount of your Balance and Unrealized P&L available as margin for new trading transactions.
+     * It is equal to your Net Asset Value minus Margin Used.
+     */
     private BigDecimal marginAvailable;
     private Integer openTrades;
     private Integer openOrders;
@@ -43,7 +65,7 @@ public class DbDepot {
 
     public BigDecimal marginRate;
 
-    /*
+    /**
      * The id in the broker system for this dbDepot.
      */
     public final String brokerId;
@@ -52,6 +74,11 @@ public class DbDepot {
 
     private Set<Transaction> transactions = Sets.newHashSet();
 
+    /**
+     * The amount of cash in your account.
+     * Your balance changes when you realize a profit or loss on your positions, earn/pay interest, or deposit/withdraw funds.
+     * This value does not change with the current exchange rate on your open positions.
+     */
     private BigDecimal balance;
 
     public String currency;

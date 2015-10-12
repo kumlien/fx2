@@ -107,6 +107,7 @@ public class OandaScheduledTask {
                 try {
                     Instrument.valueOf(i.instrument); //throws if not found
                     instrumentsForMainAccount.add(i);
+                    LOG.info("Fetched an instrument: {}", i);
                 } catch (IllegalArgumentException e) {
                     LOG.warn("Missing Instrument enum for instrument {}", i.instrument);
                     instrumentsForMainAccount.remove(i.instrument);
