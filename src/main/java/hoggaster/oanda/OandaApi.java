@@ -1,6 +1,7 @@
 package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
+import hoggaster.HttpConfig;
 import hoggaster.domain.Instrument;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.brokers.Broker;
@@ -66,7 +67,12 @@ public class OandaApi implements BrokerConnection, OrderService {
     public Accounts getAccounts() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
         String uri = builder.buildAndExpand("").toUriString();
-        ResponseEntity<Accounts> accounts = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Accounts.class);
+
+        ResponseEntity<Accounts> accounts = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccounts");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Accounts.class);
+                });
         LOG.info("Found {} accounts", accounts.getBody().getAccounts().size());
         accounts.getBody().getAccounts().forEach(a -> LOG.info("Account: {}", a));
         return accounts.getBody();
@@ -77,8 +83,12 @@ public class OandaApi implements BrokerConnection, OrderService {
     public BrokerDepot getDepot(String depotId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccount());
         String uri = builder.buildAndExpand(depotId).toUriString();
-        LOG.info("Get dbDepot with id {} using uri {}", depotId, uri);
-        ResponseEntity<OandaAccount> account = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccount.class);
+        LOG.info("Get account from oanda with id {} using uri {}", depotId, uri);
+        ResponseEntity<OandaAccount> account = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccount");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccount.class);
+                });
         LOG.info("Found {} account", account.getBody());
         return account.getBody().toBrokerDepot();
     }
@@ -94,7 +104,12 @@ public class OandaApi implements BrokerConnection, OrderService {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getInstruments());
         URI uri = builder.queryParam("accountId", accountId).queryParam("fields", "displayName%2Cinstrument%2Cpip%2CmaxTradeUnits%2Cprecision%2CmaxTrailingStop%2CminTrailingStop%2CmarginRate%2Chalted%2CinterestRate").build(true).toUri();
         LOG.debug("uri: {}", uri);
-        ResponseEntity<Instruments> instruments = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Instruments.class);
+
+        ResponseEntity<Instruments> instruments = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getInstruments");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Instruments.class);
+                });
         LOG.debug("Got {}", instruments.getBody().getInstruments());
         return instruments.getBody();
     }
@@ -140,8 +155,12 @@ public class OandaApi implements BrokerConnection, OrderService {
 
         // String uri = builder.build(true).toUriString();
         URI uri = builder.build(true).toUri();
-        LOG.info("URI used: {}", uri);
-        ResponseEntity<OandaBidAskCandlesResponse> candles = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
+        LOG.debug("URI used: {}", uri);
+        ResponseEntity<OandaBidAskCandlesResponse> candles = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getCandles");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaBidAskCandlesResponse.class);
+                });
         return candles.getBody();
     }
 
@@ -155,7 +174,11 @@ public class OandaApi implements BrokerConnection, OrderService {
         URI uri = builder.queryParam("instruments", sb.toString()).build(true).toUri();
         ResponseEntity<OandaPrices> prices = null;
         try {
-            prices = restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaPrices.class);
+            prices = oandaRetryTemplate
+                    .execute(context -> {
+                        context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAllPrices");
+                        return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaPrices.class);
+                    });
             LOG.debug("Got {}", prices.getBody().prices);
         } catch (HttpClientErrorException e) {
             LOG.error("Client Error with the following body: {}", e.getResponseBodyAsString(), e);
@@ -184,10 +207,14 @@ public class OandaApi implements BrokerConnection, OrderService {
         // }
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
         LOG.info("Sending order to oanda: {}", uri);
-
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
-        ResponseEntity<OandaOrderResponse> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaOrderResponse.class);
-        return responseEntity.getBody();
+        ResponseEntity<OandaOrderResponse> orderResponse = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAllPrices");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaOrderResponse.class);
+                });
+        LOG.info("Received order response: {}", orderResponse.getBody());
+        return orderResponse.getBody();
     }
 
     @Override

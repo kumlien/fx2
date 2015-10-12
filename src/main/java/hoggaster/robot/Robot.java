@@ -6,6 +6,7 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.depot.Depot;
 import hoggaster.domain.Instrument;
+import hoggaster.domain.MarketUpdate;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
 import hoggaster.talib.TALibService;
@@ -150,7 +151,7 @@ public class Robot implements Consumer<Event<?>> {
         //All buy conditions must be positive
         if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
             LOG.info("Maybe we should buy something based on new price!");
-            doBuy();
+            doBuy(price);
         } else if (ctx.getPositiveSellConditions().size() > 0) { //Enough with one positive sell condition
             LOG.info("Maybe we should sell something based on new price!");
             doSell();
@@ -171,7 +172,7 @@ public class Robot implements Consumer<Event<?>> {
         rulesEngine.fireRules();
 
         if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
-            doBuy();
+            doBuy(candle);
         } else if (ctx.getPositiveSellConditions().size() > 0) {
             doSell();
         } else {
@@ -190,26 +191,13 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void doSell() {
-        depot.sell(instrument, this.id);
-//        if (!depot.ownThisInstrument(instrument)) {
-//            LOG.info("Nahh, we don't own {} yet...", instrument.name());
-//            return;
-//        }
-//
-//        LOG.info("Ooops, we should sell what we got of {}!", instrument.name());
+        depot.sell(instrument, -1, this.id);
+
     }
 
-    private void doBuy() {
-        depot.buy(instrument, this.id);
-//        if (dbDepot.ownThisInstrument(instrument)) {
-//            LOG.info("Nahh, we already own {}, only buy once...", instrument.name());
-//            return;
-//        }
-//
-//        LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
-//        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
-//        OandaOrderResponse response = orderService.sendOrder(order);
-//        LOG.info("Order away and we got an response! {}", response);
+    private void doBuy(MarketUpdate marketUpdate) {
+        depot.buy(instrument, -1, marketUpdate, this.id);
+
     }
 
     /**

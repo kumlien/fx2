@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
-@Document
+@Document(collection = "depot")
 public class DbDepot {
 
     private static final Logger LOG = LoggerFactory.getLogger(DbDepot.class);
@@ -161,49 +161,49 @@ public class DbDepot {
             changed = true;
         }
 
-        if (marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
+        if (marginAvailable == null || marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
             LOG.info("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
-            balance = brokerDepot.balance;
+            marginAvailable = brokerDepot.marginAvail;
             changed = true;
         }
 
-        if (!currency.equals(brokerDepot.currency)) {
+        if (currency == null || !currency.equals(brokerDepot.currency)) {
             LOG.warn("Currency updated with new value for dbDepot {}: {} -> {}", id, currency, brokerDepot.currency);
             currency = brokerDepot.currency;
             changed = true;
         }
 
-        if (marginRate.compareTo(brokerDepot.marginRate) != 0) {
+        if (marginRate == null || marginRate.compareTo(brokerDepot.marginRate) != 0) {
             LOG.warn("Margin rate updated with new value for dbDepot {}: {} -> {}", id, marginRate, brokerDepot.marginRate);
             marginRate = brokerDepot.marginRate;
             changed = true;
         }
 
-        if (marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
+        if (marginUsed == null || marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
             LOG.info("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
 
-        if (openOrders.compareTo(brokerDepot.openOrders) != 0) {
+        if (openOrders == null || openOrders.compareTo(brokerDepot.openOrders) != 0) {
             LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
             openOrders = brokerDepot.openOrders;
             changed = true;
         }
 
-        if (openTrades.compareTo(brokerDepot.openTrades) != 0) {
+        if (openTrades == null || openTrades.compareTo(brokerDepot.openTrades) != 0) {
             LOG.info("Open trades updated with new value for dbDepot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
             openTrades = brokerDepot.openTrades;
             changed = true;
         }
 
-        if (realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
+        if (realizedPl == null || realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
             LOG.info("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
-        if (unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
+        if (unrealizedPl == null || unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
             LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;

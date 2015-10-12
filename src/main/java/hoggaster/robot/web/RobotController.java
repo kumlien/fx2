@@ -1,10 +1,7 @@
 package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
-import hoggaster.depot.DbDepot;
-import hoggaster.depot.Depot;
-import hoggaster.depot.DepotImpl;
-import hoggaster.depot.DepotRepo;
+import hoggaster.depot.*;
 import hoggaster.domain.OrderService;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
@@ -45,19 +42,19 @@ public class RobotController {
 
     private final CandleService candleService;
 
-    private final DepotRepo depotRepo;
+    private final DepotService depotService;
 
 
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotRepo depotRepo) {
+    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotService depotService) {
         this.robotRegistry = robotRegistry;
         this.robotRepo = robotRepo;
         this.priceEventBus = priceEventBus;
         this.oandaOrderService = oandaOrderService;
         this.taLibService = taLibService;
         this.candleService = candleService;
-        this.depotRepo = depotRepo;
+        this.depotService = depotService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -76,9 +73,8 @@ public class RobotController {
             if (definition == null) {
                 throw new IllegalArgumentException("No robot definition with id: " + robotId);
             }
-            DbDepot dbDepot = Objects.requireNonNull(depotRepo.findOne(definition.getDepotId()), "Unable to find a depot connected to robot with id '" + definition.getId() + "', the depot is supposed to have id '" + definition.getDepotId() + "'");
 
-            Depot depot = new DepotImpl(dbDepot, oandaOrderService);
+            Depot depot = new DepotImpl(definition.getDepotId(), oandaOrderService, depotService);
 
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
             robot = new Robot(depot, definition, priceEventBus, ruleEngine, taLibService, candleService);

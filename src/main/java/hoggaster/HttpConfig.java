@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
 import hoggaster.domain.ErrorResponse;
 import hoggaster.oanda.OandaProperties;
+import hoggaster.oanda.exceptions.RateLimitException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
@@ -60,6 +61,7 @@ public class HttpConfig {
         retryableExceptions.put(HttpServerErrorException.class, true);
         retryableExceptions.put(ResourceAccessException.class, true);
         retryableExceptions.put(HttpMessageNotReadableException.class, true);
+        retryableExceptions.put(RateLimitException.class, true);
         return new SimpleRetryPolicy(MAX_ATTEMPTS, retryableExceptions);
     }
 
@@ -108,6 +110,9 @@ public class HttpConfig {
                     String body = CharStreams.toString(new InputStreamReader(response.getBody()));
                     LOG.error("Received a {} from oanda with body {}", response.getRawStatusCode(), body);
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
+                    if(errorResponse.code == 68) {
+                        throw new RateLimitException(errorResponse.message);
+                    }
                     throw new RuntimeException(errorResponse.toString()); //TODO Own exception
                 }
                 super.handleError(response);

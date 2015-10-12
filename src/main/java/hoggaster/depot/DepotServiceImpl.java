@@ -25,6 +25,7 @@ public class DepotServiceImpl implements  DepotService {
 
     private final DepotRepo depotRepo;
 
+    //Only support one broker connection for now (oanda)
     private final BrokerConnection brokerConnection;
 
     @Autowired
