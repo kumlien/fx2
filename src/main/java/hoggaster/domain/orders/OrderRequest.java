@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 
 import java.time.Instant;
 
@@ -12,7 +12,7 @@ public class OrderRequest {
 
     public final String externalDepotId;
 
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
 
     public final Long units;
 
@@ -45,14 +45,14 @@ public class OrderRequest {
     @JsonCreator
     public OrderRequest(
             @JsonProperty("externalDepotId") String externalDepotId,
-            @JsonProperty("instrument") Instrument instrument,
+            @JsonProperty("currencyPair") CurrencyPair currencyPair,
             @JsonProperty("units") Long units,
             @JsonProperty("side") OrderSide side,
             @JsonProperty("type") OrderType type,
             @JsonProperty(value = "expiry", required = false) Instant expiry,
             @JsonProperty(value = "price", required = false) Double price) {
         this.externalDepotId = externalDepotId;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.units = units;
         this.side = side;
         this.type = type;

@@ -1,7 +1,7 @@
 package hoggaster.depot;
 
 import com.google.common.collect.Sets;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.transaction.Transaction;
@@ -129,12 +129,12 @@ public class DbDepot {
         this.type = type;
     }
 
-    public boolean ownThisInstrument(Instrument instrument) {
-        return findByInstrument(instrument) != null;
+    public boolean ownThisInstrument(CurrencyPair currencyPair) {
+        return findByInstrument(currencyPair) != null;
     }
 
-    private InstrumentOwnership findByInstrument(Instrument instrument) {
-        return ownerships.stream().filter(io -> io.getInstrument() == instrument).findFirst().orElse(null);
+    private InstrumentOwnership findByInstrument(CurrencyPair currencyPair) {
+        return ownerships.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(null);
     }
 
     public Broker getBroker() {
@@ -155,15 +155,15 @@ public class DbDepot {
      * Signal a that we bought something
      * Add to set of {@link InstrumentOwnership} if not already present
      *
-     * @param instrument
+     * @param currencyPair
      * @param quantity
      * @param pricePerShare
      */
-    public void bought(Instrument instrument, BigDecimal quantity, BigDecimal pricePerShare) {
+    public void bought(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare) {
         synchronized (ownerships) {
-            InstrumentOwnership io = findByInstrument(instrument);
+            InstrumentOwnership io = findByInstrument(currencyPair);
             if (io == null) {
-                io = new InstrumentOwnership(instrument);
+                io = new InstrumentOwnership(currencyPair);
             }
             io.add(quantity, pricePerShare);
         }
@@ -343,7 +343,7 @@ public class DbDepot {
         return sb.toString();
     }
 
-    public void buy(Instrument instrument) {
+    public void buy(CurrencyPair currencyPair) {
     }
 
     public enum Type {

@@ -1,6 +1,6 @@
 package hoggaster.depot;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.orders.OrderRequest;
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Objects;
 
 /**
@@ -31,6 +32,8 @@ public class DepotImpl implements Depot {
     // The service we use to deal with orders
     private final OrderService orderService;
 
+    private final PriceService priceService;
+
     public DepotImpl(String dbDepotId, OrderService orderService, DepotService depotService) {
         Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depot with id '" + dbDepotId + "'");
         this.depotService = depotService;
@@ -40,25 +43,30 @@ public class DepotImpl implements Depot {
 
 
     @Override
-    public void sell(Instrument instrument, int requestedUnits, String robotId) {
+    public void sell(CurrencyPair currencyPair, int requestedUnits, String robotId) {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
-        LOG.info("We are told by robot {} to sell {}",robotId, instrument);
-        if (!dbDepot.ownThisInstrument(instrument)) {
-            LOG.info("Nahh, we don't own {} yet...", instrument.name());
+        LOG.info("We are told by robot {} to sell {}",robotId, currencyPair);
+        if (!dbDepot.ownThisInstrument(currencyPair)) {
+            LOG.info("Nahh, we don't own {} yet...", currencyPair.name());
             return;
         }
 
-        LOG.info("Ooops, we should sell what we got of {}!", instrument.name());
+        LOG.info("Ooops, we should sell what we got of {}!", currencyPair.name());
     }
 
     @Override
-//    New positions should not push available margin below 50%. If available margin is below 50% no new positions can be opened.
-//    Other details on position sizing is handled by robot.
-    public void buy(Instrument instrument, int requestedUnits, MarketUpdate marketUpdate, String robotId) {
-        LOG.info("We are told by robot {} to buy {}",robotId, instrument);
+    /**
+     * Buy something...
+     * First -  for now, check if we already own the currencyPair, in that case we bail out.
+     * Second - Calculate the value of the order in the depot currency (dollar for us). For now we aim to buy for 2% of the available margin.
+     * Third - Check if the order value would push the available margin below 50% of the balance
+     * Fourth -
+     */
+    public void buy(CurrencyPair currencyPair, int requestedUnits, MarketUpdate marketUpdate, String robotId) {
+        LOG.info("We are told by robot {} to buy {}",robotId, currencyPair);
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
-        if (dbDepot.ownThisInstrument(instrument)) {
-            LOG.info("Nahh, we already own {}, only buy once...", instrument.name());
+        if (dbDepot.ownThisInstrument(currencyPair)) {
+            LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
             return;
         }
 
@@ -70,9 +78,32 @@ public class DepotImpl implements Depot {
         BigDecimal balance = dbDepot.getBalance();
 
 
-        LOG.info("Ooops, we should buy since we don't own any {} yet!", instrument.name());
-        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), instrument, 1000L, OrderSide.buy, OrderType.market, null, null);
+        LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
+        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, 1000L, OrderSide.buy, OrderType.market, null, null);
         OandaOrderResponse response = orderService.sendOrder(order);
         LOG.info("Order away and we got an response! {}", response);
+    }
+
+
+    /**
+     * This calculation uses the following formula:
+     * Margin Available * (margin ratio) / ({BASE}/{HOME Currency} Exchange Rate)
+     * For example, suppose:
+     * Home Currency: USD
+     * Currency Pair: GBP/CHF
+     * Margin Available: 100
+     * Margin Ratio : 20:1
+     * Base / Home Currency: GBP/USD = 1.584
+     *
+     * Then,
+     * Units = (100 * 20) / 1.584
+     * Units = 1262
+     *
+     *
+     */
+    public static int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio) {
+        CurrencyPair baseAndHome = CurrencyPair.ofBaseAndQuote(baseCurrency,homeCurrency);
+        get the price...
+        return 0;
     }
 }

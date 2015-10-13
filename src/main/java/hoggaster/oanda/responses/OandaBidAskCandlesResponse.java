@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({"instrument", "granularity", "candles"})
+@JsonPropertyOrder({"currencyPair", "granularity", "candles"})
 public class OandaBidAskCandlesResponse {
 
-    @JsonProperty("instrument")
+    @JsonProperty("currencyPair")
     private String instrument;
     @JsonProperty("granularity")
     private String granularity;
@@ -24,17 +24,17 @@ public class OandaBidAskCandlesResponse {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * @return The instrument
+     * @return The currencyPair
      */
-    @JsonProperty("instrument")
+    @JsonProperty("currencyPair")
     public String getInstrument() {
         return instrument;
     }
 
     /**
-     * @param instrument The instrument
+     * @param instrument The currencyPair
      */
-    @JsonProperty("instrument")
+    @JsonProperty("currencyPair")
     public void setInstrument(String instrument) {
         this.instrument = instrument;
     }

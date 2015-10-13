@@ -1,6 +1,6 @@
 package hoggaster.reactor;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.reactivestreams.Processor;
@@ -57,8 +57,8 @@ public class RingBufferProcessorTest {
 
     @Test
     public void test1() {
-        Stream<Instrument> coolStream = Streams.from(Instrument.values());
-        coolStream.consume(i -> LOG.info("Instrument {}", i));
+        Stream<CurrencyPair> coolStream = Streams.from(CurrencyPair.values());
+        coolStream.consume(i -> LOG.info("CurrencyPair {}", i));
 
     }
 

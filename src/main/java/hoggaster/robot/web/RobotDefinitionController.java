@@ -34,7 +34,7 @@ public class RobotDefinitionController {
 
     @RequestMapping(method = RequestMethod.POST)
     public RobotDefinition create(@Valid @RequestBody CreateRobotRequest req) {
-        RobotDefinition def = new RobotDefinition(req.name, req.instrument, req.depotId);
+        RobotDefinition def = new RobotDefinition(req.name, req.currencyPair, req.depotId);
         repo.save(def);
         return def;
     }

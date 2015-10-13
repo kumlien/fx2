@@ -1,6 +1,6 @@
 package hoggaster.oanda.requests;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import org.springframework.util.LinkedMultiValueMap;
@@ -11,7 +11,7 @@ import java.time.Instant;
 public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
 
     public OandaOrderRequest(
-            Instrument instrument,
+            CurrencyPair currencyPair,
             Long units,
             OrderSide side,
             OrderType type,
@@ -19,7 +19,7 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
             Double price,
             Double lowerBound,
             Double upperBound) {
-        add("instrument", instrument.name());
+        add("currencyPair", currencyPair.name());
         add("units", String.valueOf(units));
         add("side", side.name());
         add("type", type.name());

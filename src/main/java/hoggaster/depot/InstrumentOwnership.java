@@ -1,14 +1,14 @@
 package hoggaster.depot;
 
 import com.google.common.base.Preconditions;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 
 /**
- * Represents the ownership of an instrument
+ * Represents the ownership of an currencyPair
  */
 public class InstrumentOwnership {
 
@@ -16,20 +16,20 @@ public class InstrumentOwnership {
 
     public static MathContext MATH_CONTEXT = MathContext.DECIMAL64;
 
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
 
     private BigDecimal quantity;
 
     private BigDecimal averagePricePerShare;
 
-    public InstrumentOwnership(Instrument instrument) {
-        this.instrument = instrument;
+    public InstrumentOwnership(CurrencyPair currencyPair) {
+        this.currencyPair = currencyPair;
         quantity = new BigDecimal(0);
         averagePricePerShare = new BigDecimal(0l);
     }
 
-    public Instrument getInstrument() {
-        return instrument;
+    public CurrencyPair getCurrencyPair() {
+        return currencyPair;
     }
 
     public Double getQuantity() {
@@ -48,7 +48,7 @@ public class InstrumentOwnership {
         Preconditions.checkArgument(incomingQuantity.doubleValue() > 0, "Quantity must be > 0");
         Preconditions.checkArgument(incomingPPS != null, "Price per share can't be null");
         Preconditions.checkArgument(incomingPPS.doubleValue() > 0, "Price per share must be a positive value (provided value: " + incomingPPS + ")");
-        LOG.info("Adding {} units of {} with price per share {}, averagePPS before adding is {}", incomingQuantity, instrument, incomingPPS, getAveragePricePerShare());
+        LOG.info("Adding {} units of {} with price per share {}, averagePPS before adding is {}", incomingQuantity, currencyPair, incomingPPS, getAveragePricePerShare());
         synchronized (this) {
             BigDecimal oldTotalValue = this.quantity.multiply(averagePricePerShare, MATH_CONTEXT);
             BigDecimal incomingTotalValue = incomingQuantity.multiply(incomingPPS, MATH_CONTEXT);
@@ -69,11 +69,11 @@ public class InstrumentOwnership {
         Preconditions.checkArgument(incomingQuantity != null, "Quantity can't be null");
         Preconditions.checkArgument(incomingQuantity.doubleValue() > 0, "Quantity must be > 0");
         Preconditions.checkArgument(this.quantity.compareTo(incomingQuantity) >= 0, "Not possible to remove " + incomingQuantity + " from " + this.quantity);
-        LOG.info("Subtracting {} units of {}. Before subtracting we own {} units.", incomingQuantity, instrument, this.quantity);
+        LOG.info("Subtracting {} units of {}. Before subtracting we own {} units.", incomingQuantity, currencyPair, this.quantity);
         synchronized (this) {
             this.quantity = this.quantity.subtract(incomingQuantity, MATH_CONTEXT);
         }
-        LOG.info("After subtracting {} we now have {} of {}", incomingQuantity, quantity, instrument);
+        LOG.info("After subtracting {} we now have {} of {}", incomingQuantity, quantity, currencyPair);
         return this.quantity;
     }
 

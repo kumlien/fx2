@@ -2,7 +2,7 @@ package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.HttpConfig;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.OrderService;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
@@ -94,7 +94,7 @@ public class OandaApi implements BrokerConnection, OrderService {
     }
 
     /**
-     * Get all available {@link Instrument}s for the first account we find.
+     * Get all available {@link CurrencyPair}s for the first account we find.
      *
      * @throws UnsupportedEncodingException
      */
@@ -115,7 +115,7 @@ public class OandaApi implements BrokerConnection, OrderService {
     }
 
     /**
-     * Fetch candles for the specified instrument.
+     * Fetch candles for the specified currencyPair.
      * <p>
      * count: Optional The number of candles to return in the response. This parameter may be ignored by the server depending on the time range provided. If not specified, count will default to 500. The maximum acceptable value for count is 5000. count should not be specified if both the start and end parameters are
      * also specified. start: Optional The start timestamp for the range of candles requested. The value specified must be in a valid datetime format. end: Optional The end timestamp for the range of candles requested. The value specified must be in a valid datetime format.
@@ -124,7 +124,7 @@ public class OandaApi implements BrokerConnection, OrderService {
      */
     @Override
     @Timed
-    public OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer count, Instant start, Instant end, boolean includeFirst) {
+    public OandaBidAskCandlesResponse getBidAskCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer count, Instant start, Instant end, boolean includeFirst) {
         if (includeFirst && start == null) {
             throw new IllegalArgumentException("Include first can only be set to true when start date is specified");
         }
@@ -133,7 +133,7 @@ public class OandaApi implements BrokerConnection, OrderService {
             throw new IllegalArgumentException("All three parameters start date, end date and count can't be specified");
         }
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles()).queryParam("instrument", instrument).queryParam("granularity", granularity.oandaStyle);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles()).queryParam("currencyPair", currencyPair).queryParam("granularity", granularity.oandaStyle);
 
         try {
             if (start != null) {
@@ -193,9 +193,9 @@ public class OandaApi implements BrokerConnection, OrderService {
     @Timed
     public OandaOrderResponse sendOrder(OrderRequest request) {
         LOG.info("Sendning order to oanda: {}", request);
-        MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.instrument, request.units, request.side, request.type, request.expiry, request.price, request.lowerBound, request.upperBound);
+        MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.lowerBound, request.upperBound);
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
-        // builder.queryParam("instrument", request.instrument)
+        // builder.queryParam("currencyPair", request.currencyPair)
         // .queryParam("units", request.units)
         // .queryParam("side", request.side)
         // .queryParam("type", request.type);

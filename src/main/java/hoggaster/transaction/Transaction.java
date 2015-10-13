@@ -1,6 +1,6 @@
 package hoggaster.transaction;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,7 +19,7 @@ public class Transaction {
 
     private final TransactionType type;
 
-    private final Instrument instrument;
+    private final CurrencyPair currencyPair;
 
     private final Double quantity;
 
@@ -32,12 +32,12 @@ public class Transaction {
     private final String currency;
 
     @PersistenceConstructor
-    public Transaction(String id, String depotId, Instant time, TransactionType type, Instrument instrument, Double quantity, Double price, Double commision, Double sum, String currency) {
+    public Transaction(String id, String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, Double quantity, Double price, Double commision, Double sum, String currency) {
         this.id = id;
         this.depotId = depotId;
         this.time = time;
         this.type = type;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.quantity = quantity;
         this.price = price;
         this.commision = commision;
@@ -45,11 +45,11 @@ public class Transaction {
         this.currency = currency;
     }
 
-    public Transaction(String depotId, Instant time, TransactionType type, Instrument instrument, Double quantity, Double price, Double commision, Double sum, String currency) {
+    public Transaction(String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, Double quantity, Double price, Double commision, Double sum, String currency) {
         this.depotId = depotId;
         this.time = time;
         this.type = type;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.quantity = quantity;
         this.price = price;
         this.commision = commision;

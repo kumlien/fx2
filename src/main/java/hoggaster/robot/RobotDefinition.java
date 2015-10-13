@@ -2,7 +2,7 @@ package hoggaster.robot;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.rules.Condition;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -19,24 +19,24 @@ public class RobotDefinition {
 
     @Indexed(unique = true)
     public final String name;
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
     private final Set<Condition> buyConditions;
     private final Set<Condition> sellConditions;
     private final String depotId;
 
     @PersistenceConstructor
-    RobotDefinition(String id, String name, Instrument instrument, Set<Condition> buyConditions, Set<Condition> sellConditions, String depotId) {
+    RobotDefinition(String id, String name, CurrencyPair currencyPair, Set<Condition> buyConditions, Set<Condition> sellConditions, String depotId) {
         this.id = id;
         this.name = name;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.buyConditions = buyConditions;
         this.sellConditions = sellConditions;
         this.depotId = depotId;
     }
 
-    public RobotDefinition(String name, Instrument instrument, String depotId) {
+    public RobotDefinition(String name, CurrencyPair currencyPair, String depotId) {
         this.name = name;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.depotId = depotId;
         this.buyConditions = Sets.newHashSet();
         this.sellConditions = Sets.newHashSet();
@@ -68,7 +68,7 @@ public class RobotDefinition {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("RobotDefinition [id=").append(id).append(", name=")
-                .append(name).append(", instrument=").append(instrument)
+                .append(name).append(", currencyPair=").append(currencyPair)
                 .append(", buyConditions=").append(buyConditions)
                 .append(", sellConditions=").append(sellConditions).append("]");
         return builder.toString();

@@ -1,6 +1,6 @@
 package hoggaster.candles;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.util.List;
@@ -11,31 +11,31 @@ public interface CandleService {
     /**
      * Get the latest stored candles if available. If not avai
      *
-     * @param instrument
+     * @param currencyPair
      * @param granularity
      * @param dataPointsNeeded
      * @return A {@link List} of {@link Candle}s
      */
-    List<Candle> getLatestCandles(Instrument instrument, CandleStickGranularity granularity, int dataPointsNeeded);
+    List<Candle> getLatestCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, int dataPointsNeeded);
 
     /**
      * Fetch the specified number of candles from the broker
      *
-     * @param instrument
+     * @param currencyPair
      * @param granularity
      * @param number
      * @return A {@link List} of fetched {@link Candle}s.
      */
-    List<Candle> fetchAndSaveLatestCandlesFromBroker(Instrument instrument, CandleStickGranularity granularity, Integer number);
+    List<Candle> fetchAndSaveLatestCandlesFromBroker(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer number);
 
 
     /**
      * Fetch historic candles (synchronous...)
      *
-     * @param instrument
+     * @param currencyPair
      * @param granularity
      * @return The number of fetched candles.
      */
-    int fetchAndSaveHistoricCandles(Instrument instrument, CandleStickGranularity granularity);
+    int fetchAndSaveHistoricCandles(CurrencyPair currencyPair, CandleStickGranularity granularity);
 
 }

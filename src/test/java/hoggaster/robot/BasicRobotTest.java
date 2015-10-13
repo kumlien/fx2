@@ -1,15 +1,11 @@
 package hoggaster.robot;
 
 import hoggaster.candles.CandleService;
-import hoggaster.depot.DbDepot;
 import hoggaster.depot.Depot;
-import hoggaster.depot.DepotImpl;
 import hoggaster.depot.DepotService;
-import hoggaster.domain.Instrument;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.orders.OrderRequest;
 import hoggaster.prices.Price;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
@@ -30,15 +26,13 @@ import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicRobotTest {
 
+    @Mock
     Depot depot;
-
-    DbDepot dbDepot;
 
     RobotDefinition definition;
 
@@ -50,9 +44,6 @@ public class BasicRobotTest {
 
     @Mock
     BrokerConnection broker;
-
-    @Mock
-    OrderService orderService;
 
     @Mock
     DepotService depotService;
@@ -67,10 +58,8 @@ public class BasicRobotTest {
 
     @Before
     public void before() {
-        //DbDepot newDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
-        dbDepot = new DbDepot("USER_ID", "Test dbDepot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05), "USD", new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(1000.0), 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
-        depot = new DepotImpl(dbDepot.getId(), orderService, depotService);
-        definition = new RobotDefinition("Frekkin robot!", Instrument.USD_SEK, dbDepot.getId());
+
+        definition = new RobotDefinition("Frekkin robot!", CurrencyPair.USD_SEK, "1");
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
 
@@ -84,24 +73,8 @@ public class BasicRobotTest {
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
         Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();
-        Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
+        Price price = new Price(CurrencyPair.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
-        Mockito.verify(orderService).sendOrder(Mockito.any(OrderRequest.class));
-    }
-
-    @Test
-    public void noBuyIfInstrumentOwned() {
-        SimpleValueIndicator svi = new SimpleValueIndicator(2.0); //First indicator
-        CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
-        //Let's compare them in a condition, putting an operator between them
-        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 2, Side.BUY, MarketUpdateType.PRICE);
-        definition.addBuyCondition(condition);
-        dbDepot.bought(Instrument.USD_SEK, new BigDecimal(100.0), new BigDecimal(100.0));
-        RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
-        Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
-        robot.start();
-        Price price = new Price(Instrument.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
-        robot.accept(Event.wrap(price));
-        Mockito.verify(orderService).sendOrder(Mockito.any(OrderRequest.class));
+        Mockito.verify(depot).buy(CurrencyPair.USD_SEK, -1, price, robot.id);
     }
 }

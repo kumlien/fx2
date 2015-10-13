@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.depot.Depot;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.prices.Price;
 import hoggaster.rules.Condition;
@@ -63,7 +63,7 @@ public class Robot implements Consumer<Event<?>> {
 
     public final String name;
 
-    private final Instrument instrument;
+    private final CurrencyPair currencyPair;
 
     // The buy conditions. Must be annotated with @Rule
     private final Set<Condition> buyConditions;
@@ -91,14 +91,14 @@ public class Robot implements Consumer<Event<?>> {
         Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
         Preconditions.checkArgument(depot != null, "The dbDepot is null");
         Preconditions.checkArgument(definition != null, "The robot definition is null");
-        Preconditions.checkArgument(definition.instrument != null, "The definition instrument is null");
+        Preconditions.checkArgument(definition.currencyPair != null, "The definition currencyPair is null");
         Preconditions.checkArgument(rulesEngine != null, "The rule engine is null");
         Preconditions.checkArgument(taLibService != null, "The ta-lib service is null");
         Preconditions.checkArgument(candleService != null, "The bidAskCandleService is null");
 
         this.id = definition.getId(); // This is kind of wacky
         this.name = definition.name;
-        this.instrument = definition.instrument;
+        this.currencyPair = definition.currencyPair;
         this.buyConditions = definition.getBuyConditions();
         this.sellConditions = definition.getSellConditions();
         this.depot = depot;
@@ -123,7 +123,7 @@ public class Robot implements Consumer<Event<?>> {
      */
     public void start() {
         LOG.info("This is Robot {} starting up", this);
-        Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + instrument.name() + "*"), this);
+        Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + currencyPair.name() + "*"), this);
         eventBusRegistrations.put("priceRegistration", reg);
         this.status = RobotStatus.RUNNING;
         LOG.info("Robot {} has started.", name);
@@ -144,7 +144,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     private void onNewPrice(Price price) {
         LOG.info("Price is for us, let's see if any of the rules are based on price info (not candle info that is)");
-        RobotExecutionContext ctx = new RobotExecutionContext(price, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(price, currencyPair, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
@@ -167,7 +167,7 @@ public class Robot implements Consumer<Event<?>> {
     @Timed
     private void onNewCandle(Candle candle) {
         LOG.info("Candle is for us, let's see if any of the rules are based on price info (not candle info that is)");
-        RobotExecutionContext ctx = new RobotExecutionContext(candle, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(candle, currencyPair, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
@@ -191,12 +191,12 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void doSell() {
-        depot.sell(instrument, -1, this.id);
+        depot.sell(currencyPair, -1, this.id);
 
     }
 
     private void doBuy(MarketUpdate marketUpdate) {
-        depot.buy(instrument, -1, marketUpdate, this.id);
+        depot.buy(currencyPair, -1, marketUpdate, this.id);
 
     }
 
@@ -214,16 +214,16 @@ public class Robot implements Consumer<Event<?>> {
         Preconditions.checkArgument(t != null, "The event is not allowed to be null");
         Preconditions.checkArgument(t.getData() != null, "The event payload is not allowed to be null");
         synchronized (this) {
-            LOG.info("Robot {} dealing with instrument {} received a new event: {}", name, instrument, t.getData());
+            LOG.info("Robot {} dealing with currencyPair {} received a new event: {}", name, currencyPair, t.getData());
             if (t.getData() instanceof Price) {
-                if (!(((Price) t.getData()).instrument == instrument)) {
-                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Price) t.getData()).instrument);
+                if (!(((Price) t.getData()).currencyPair == currencyPair)) {
+                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Price) t.getData()).currencyPair);
                     return;
                 }
                 onNewPrice((Price) t.getData());
             } else if (t.getData() instanceof Candle) {
-                if (!(((Candle) t.getData()).instrument == instrument)) {
-                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Candle) t.getData()).instrument);
+                if (!(((Candle) t.getData()).currencyPair == currencyPair)) {
+                    LOG.debug("Not to consider since it's not for this robot: {} ", ((Candle) t.getData()).currencyPair);
                     return;
                 }
                 onNewCandle((Candle) t.getData());
@@ -242,7 +242,7 @@ public class Robot implements Consumer<Event<?>> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", instrument=").append(instrument).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
+        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", currencyPair=").append(currencyPair).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
         return builder.toString();
     }
 

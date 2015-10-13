@@ -2,7 +2,7 @@ package hoggaster.robot.web;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Min;
@@ -17,7 +17,7 @@ public class CreateRobotRequest {
     public final String name;
 
     @NotEmpty
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
 
     @NotNull
     @Min(1)
@@ -26,10 +26,10 @@ public class CreateRobotRequest {
     @JsonCreator
     public CreateRobotRequest(
             @JsonProperty(value = "name") String name,
-            @JsonProperty(value = "instrument") Instrument instrument,
+            @JsonProperty(value = "currencyPair") CurrencyPair currencyPair,
             @JsonProperty(value = "depotId") String depotId) {
         this.name = name;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.depotId = depotId;
     }
 }

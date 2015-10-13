@@ -1,6 +1,6 @@
 package hoggaster.domain.brokers;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
@@ -20,7 +20,7 @@ public interface BrokerConnection {
     Broker getBrokerID();
 
     // TODO remove Oanda
-    OandaBidAskCandlesResponse getBidAskCandles(Instrument instrument, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst);
+    OandaBidAskCandlesResponse getBidAskCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst);
 
     BrokerDepot getDepot(String depotId);
 }

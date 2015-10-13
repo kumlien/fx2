@@ -15,7 +15,7 @@ public class OandaMidPointCandlesResponse {
     public final List<OandaMidPointCandle> candles;
 
     @JsonCreator
-    public OandaMidPointCandlesResponse(@JsonProperty(value = "instrument") String instrument, @JsonProperty(value = "granularity") String granularity,
+    public OandaMidPointCandlesResponse(@JsonProperty(value = "currencyPair") String instrument, @JsonProperty(value = "granularity") String granularity,
                                         @JsonProperty(value = "candles") List<OandaMidPointCandle> candles) {
         this.instrument = instrument;
         this.granularity = granularity;
@@ -25,7 +25,7 @@ public class OandaMidPointCandlesResponse {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("InstrumentHistory [instrument=").append(instrument)
+        builder.append("InstrumentHistory [currencyPair=").append(instrument)
                 .append(", granularity=").append(granularity)
                 .append(", candles=").append(candles).append("]");
         return builder.toString();

@@ -17,7 +17,7 @@ public class OandaInstrument {
 
     @JsonCreator
     public OandaInstrument(
-            @JsonProperty(value = "instrument") String instrument,
+            @JsonProperty(value = "currencyPair") String instrument,
             @JsonProperty(value = "displayName") String displayName,
             @JsonProperty(value = "pip") Double pip,
             @JsonProperty(value = "maxTradeUnits") Long maxTradeUnits,
@@ -40,7 +40,7 @@ public class OandaInstrument {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Instrument [instrument=").append(instrument)
+        builder.append("CurrencyPair [currencyPair=").append(instrument)
                 .append(", displayName=").append(displayName).append(", pip=")
                 .append(pip).append(", maxTradeUnits=").append(maxTradeUnits)
                 .append(", precision=").append(precision)

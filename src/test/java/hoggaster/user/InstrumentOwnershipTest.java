@@ -1,7 +1,7 @@
 package hoggaster.user;
 
 import hoggaster.depot.InstrumentOwnership;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +14,11 @@ public class InstrumentOwnershipTest {
 
     InstrumentOwnership ownership;
 
-    Instrument instrument = Instrument.AUD_CAD;
+    CurrencyPair currencyPair = CurrencyPair.AUD_USD;
 
     @Before
     public void init() {
-        ownership = new InstrumentOwnership(instrument);
+        ownership = new InstrumentOwnership(currencyPair);
     }
 
     @Test

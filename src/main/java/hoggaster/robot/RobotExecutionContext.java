@@ -3,9 +3,7 @@ package hoggaster.robot;
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
-import hoggaster.depot.DbDepot;
-import hoggaster.depot.Depot;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.Condition;
 import hoggaster.rules.indicators.CandleStickField;
@@ -31,7 +29,7 @@ public class RobotExecutionContext {
 
     public final MarketUpdate marketUpdate;
 
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
 
     private final List<Condition> positiveBuyConditions = new ArrayList<>();
 
@@ -45,12 +43,12 @@ public class RobotExecutionContext {
 
     private final CandleService bidAskCandleService;
 
-    public RobotExecutionContext(MarketUpdate marketUpdate, Instrument instrument, TALibService taLibService, CandleService bidAskCandleService) {
+    public RobotExecutionContext(MarketUpdate marketUpdate, CurrencyPair currencyPair, TALibService taLibService, CandleService bidAskCandleService) {
         Preconditions.checkNotNull(marketUpdate);
         Preconditions.checkNotNull(taLibService);
         Preconditions.checkNotNull(bidAskCandleService);
         this.marketUpdate = marketUpdate;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.taLibService = taLibService;
         this.bidAskCandleService = bidAskCandleService;
     }
@@ -83,7 +81,7 @@ public class RobotExecutionContext {
      * @return The sma for the last value in the series.
      */
     public TAResult getSMA(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
-        List<Candle> candles = bidAskCandleService.getLatestCandles(instrument, granularity, dataPoints);
+        List<Candle> candles = bidAskCandleService.getLatestCandles(currencyPair, granularity, dataPoints);
         List<Double> values = candles.stream().map(bac -> bac.getValue(field)).collect(Collectors.toList());
         return taLibService.sma(values, periods);
     }
@@ -95,7 +93,7 @@ public class RobotExecutionContext {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", instrument=").append(instrument).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", currencyPair=").append(currencyPair).append(", positiveConditions=").append(positiveBuyConditions).append("]");
         return builder.toString();
     }
 
@@ -117,7 +115,7 @@ public class RobotExecutionContext {
      * @return A {@link TAResult}
      */
     public TAResult getRSI(CandleStickGranularity granularity, int periods, int dataPointsNeeded, CandleStickField field) {
-        List<Candle> candles = bidAskCandleService.getLatestCandles(instrument, granularity, dataPointsNeeded);
+        List<Candle> candles = bidAskCandleService.getLatestCandles(currencyPair, granularity, dataPointsNeeded);
         List<Double> values = candles.stream()
                 .map(candle -> candle.getValue(field))
                 .collect(Collectors.toList());

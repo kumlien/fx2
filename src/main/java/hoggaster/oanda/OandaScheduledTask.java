@@ -4,7 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.depot.DepotMonitorImpl;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
@@ -65,16 +65,16 @@ public class OandaScheduledTask {
 
 
     /**
-     * Fill the db with candles for the specified instrument and granularity.
+     * Fill the db with candles for the specified currencyPair and granularity.
      * Only needed at startup to get us up to date.
      */
     @PostConstruct
     void fetchAllHistoricData() {
-        RingBufferWorkProcessor<Tuple2<Instrument, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
-        Stream<Tuple2<Instrument, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
+        RingBufferWorkProcessor<Tuple2<CurrencyPair, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
+        Stream<Tuple2<CurrencyPair, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
 
-        // Consumer used to handle one instrument
-        Consumer<Tuple2<Instrument, CandleStickGranularity>> ic = t -> {
+        // Consumer used to handle one currencyPair
+        Consumer<Tuple2<CurrencyPair, CandleStickGranularity>> ic = t -> {
             try {
                 candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
             } catch (Exception e) {
@@ -88,8 +88,8 @@ public class OandaScheduledTask {
         instrumentStream.consume(ic);
         instrumentStream.consume(ic);
 
-        Arrays.asList(Instrument.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
-        Arrays.asList(Instrument.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
+        Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
+        Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
         publisher.onComplete();
     }
 
@@ -100,16 +100,16 @@ public class OandaScheduledTask {
     @Scheduled(fixedRate = 60000, initialDelay = 5000)
     void fetchInstruments() {
         try {
-            LOG.info("Start fetching instrument definitions");
+            LOG.info("Start fetching currencyPair definitions");
             Instruments availableInstruments = oanda.getInstrumentsForAccount(Integer.valueOf(oandaProps.getMainAccountId().trim()));
             // Only add the ones we have support for
             availableInstruments.getInstruments().forEach(i -> {
                 try {
-                    Instrument.valueOf(i.instrument); //throws if not found
+                    CurrencyPair.valueOf(i.instrument); //throws if not found
                     instrumentsForMainAccount.add(i);
-                    LOG.info("Fetched an instrument: {}", i);
+                    LOG.info("Fetched an currencyPair: {}", i);
                 } catch (IllegalArgumentException e) {
-                    LOG.warn("Missing Instrument enum for instrument {}", i.instrument);
+                    LOG.warn("Missing CurrencyPair enum for currencyPair {}", i.instrument);
                     instrumentsForMainAccount.remove(i.instrument);
                 }
             });
@@ -186,19 +186,19 @@ public class OandaScheduledTask {
      * Call the oanda api to get candles and put them on the eventbus.
      */
     private List<Candle> fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity granularity) throws UnsupportedEncodingException {
-        RingBufferWorkProcessor<Instrument> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
-        Stream<Instrument> instrumentStream = Streams.wrap(publisher);
+        RingBufferWorkProcessor<CurrencyPair> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
+        Stream<CurrencyPair> instrumentStream = Streams.wrap(publisher);
         final List<Candle> allCandles = new ArrayList<>();
 
-        // Consumer used to handle one instrument
-        Consumer<Instrument> ic = instrument -> {
+        // Consumer used to handle one currencyPair
+        Consumer<CurrencyPair> ic = instrument -> {
             try {
                 List<Candle> candles = candleService.fetchAndSaveLatestCandlesFromBroker(instrument, granularity, 1);
                 allCandles.addAll(candles);
                 candles.forEach(bac -> {
                     candleEventBus.notify("candles." + instrument, Event.wrap(bac));
                 });
-                LOG.debug("{} {} candles saved and sent to event bus for instrument {} ({})", candles.size(), granularity, instrument, candles.isEmpty() ? null : candles.get(0));
+                LOG.debug("{} {} candles saved and sent to event bus for currencyPair {} ({})", candles.size(), granularity, instrument, candles.isEmpty() ? null : candles.get(0));
             } catch (Exception e) {
                 LOG.error("Error fetching {} candles", granularity, e);
             }
@@ -208,7 +208,7 @@ public class OandaScheduledTask {
         instrumentStream.consume(ic);
         instrumentStream.consume(ic);
 
-        Arrays.asList(Instrument.values()).forEach(i -> publisher.onNext(i));
+        Arrays.asList(CurrencyPair.values()).forEach(i -> publisher.onNext(i));
         publisher.onComplete();
         return allCandles;
     }

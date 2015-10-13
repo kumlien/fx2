@@ -1,6 +1,6 @@
 package hoggaster.prices;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.oanda.responses.OandaPrice;
@@ -14,24 +14,24 @@ import java.time.Instant;
 public class Price extends MarketUpdate {
 
     private String id;
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
     public final Double bid;
     public final Double ask;
     public final Instant time;
     public final Broker broker;
 
     @PersistenceConstructor
-    public Price(String id, Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
+    public Price(String id, CurrencyPair currencyPair, Double bid, Double ask, Instant time, Broker broker) {
         this.id = id;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.bid = bid;
         this.ask = ask;
         this.time = time;
         this.broker = broker;
     }
 
-    public Price(Instrument instrument, Double bid, Double ask, Instant time, Broker broker) {
-        this.instrument = instrument;
+    public Price(CurrencyPair currencyPair, Double bid, Double ask, Instant time, Broker broker) {
+        this.currencyPair = currencyPair;
         this.bid = bid;
         this.ask = ask;
         this.time = time;
@@ -39,7 +39,7 @@ public class Price extends MarketUpdate {
     }
 
     public Price(OandaPrice p) {
-        this.instrument = Instrument.valueOf(p.instrument);
+        this.currencyPair = CurrencyPair.valueOf(p.instrument);
         this.bid = p.bid;
         this.ask = p.ask;
         this.time = p.time.toInstant();
@@ -49,7 +49,7 @@ public class Price extends MarketUpdate {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Price [id=").append(id).append(", instrument=").append(instrument).append(", bid=").append(bid).append(", ask=").append(ask).append(", time=").append(time).append(", broker=").append(broker).append("]");
+        builder.append("Price [id=").append(id).append(", currencyPair=").append(currencyPair).append(", bid=").append(bid).append(", ask=").append(ask).append(", time=").append(time).append(", broker=").append(broker).append("]");
         return builder.toString();
     }
 

@@ -1,13 +1,13 @@
 package hoggaster.depot;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 
 /**
  * Created by svante2 on 2015-10-11.
  */
 public interface Depot {
-    void sell(Instrument instrument, int requestedUnits, String robotId);
+    void sell(CurrencyPair currencyPair, int requestedUnits, String robotId);
 
-    void buy(Instrument instrument, int requestedUnits, MarketUpdate marketUpdate, String robotId);
+    void buy(CurrencyPair currencyPair, int requestedUnits, MarketUpdate marketUpdate, String robotId);
 }

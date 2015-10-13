@@ -15,7 +15,7 @@ public class OandaPrice {
 
     @JsonCreator
     public OandaPrice(
-            @JsonProperty(value = "instrument") String instrument,
+            @JsonProperty(value = "currencyPair") String instrument,
             @JsonProperty(value = "bid") Double bid,
             @JsonProperty(value = "ask") Double ask,
             @JsonProperty(value = "time") Date time,
@@ -30,7 +30,7 @@ public class OandaPrice {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Price [instrument=").append(instrument)
+        builder.append("Price [currencyPair=").append(instrument)
                 .append(", bid=").append(bid).append(", ask=").append(ask)
                 .append(", time=").append(time).append(", status=")
                 .append(status).append("]");

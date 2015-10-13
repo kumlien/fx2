@@ -1,6 +1,6 @@
 package hoggaster.rules;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.junit.Test;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,7 +20,7 @@ public class UriTest {
         Instant end = Instant.now();
         Integer periods = new Integer(10);
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resource)
-                .queryParam("instrument", Instrument.EUR_SEK)
+                .queryParam("currencyPair", CurrencyPair.EUR_SEK)
                 .queryParam("granularity", CandleStickGranularity.END_OF_DAY.oandaStyle);
 
         if (start != null) {

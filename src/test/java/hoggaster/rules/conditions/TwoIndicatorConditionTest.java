@@ -2,9 +2,7 @@ package hoggaster.rules.conditions;
 
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
-import hoggaster.depot.DbDepot;
-import hoggaster.depot.Depot;
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Comparator;
@@ -33,14 +31,14 @@ public class TwoIndicatorConditionTest {
 
     @Test
     public void testTriggerBuyOnOneMinuteCandle() {
-        Instrument instrument = Instrument.AUD_USD;
-        Candle candle = new Candle(instrument, Broker.OANDA, CandleStickGranularity.MINUTE, Instant.now(), 2.0, 2.1, 2.4, 2.45, 1.9, 2.0, 2.3, 2.35, 1000, true);
+        CurrencyPair currencyPair = CurrencyPair.AUD_USD;
+        Candle candle = new Candle(currencyPair, Broker.OANDA, CandleStickGranularity.MINUTE, Instant.now(), 2.0, 2.1, 2.4, 2.45, 1.9, 2.0, 2.3, 2.35, 1000, true);
         //DbDepot dbDepot = new DbDepot("USER_ID", "A test dbDepot", Broker.OANDA, "brokerDepotName", "13123", new BigDecimal(0.05), "USD");
 
         Indicator firstIndicator = new CandleIndicator(CandleStickGranularity.MINUTE, CandleStickField.CLOSE_BID);
         Indicator secondIndicator = new SimpleValueIndicator(2.0);
         TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, Side.BUY, MarketUpdateType.ONE_MINUTE_CANDLE);
-        RobotExecutionContext ctx = new RobotExecutionContext(candle, instrument, taLibService, candleService);
+        RobotExecutionContext ctx = new RobotExecutionContext(candle, currencyPair, taLibService, candleService);
         tic.setContext(ctx);
 
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();

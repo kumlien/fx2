@@ -1,6 +1,6 @@
 package hoggaster.candles;
 
-import hoggaster.domain.Instrument;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.rules.MarketUpdateType;
@@ -15,13 +15,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document
-@CompoundIndexes({@CompoundIndex(name = "instrument_granularity_time_idx", def = "{'instrument':1, 'granularity':1, 'time': 1}", unique = true)})
+@CompoundIndexes({@CompoundIndex(name = "instrument_granularity_time_idx", def = "{'currencyPair':1, 'granularity':1, 'time': 1}", unique = true)})
 public class Candle extends MarketUpdate {
 
     @Id
     private String id;
 
-    public final Instrument instrument;
+    public final CurrencyPair currencyPair;
     public final Broker brokerId;
     public final CandleStickGranularity granularity;
 
@@ -38,9 +38,9 @@ public class Candle extends MarketUpdate {
     public final Boolean complete;
 
     @PersistenceConstructor
-    Candle(String id, Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+    Candle(String id, CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
         this.id = id;
-        this.instrument = instrument;
+        this.currencyPair = currencyPair;
         this.brokerId = brokerId;
         this.granularity = granularity;
         this.time = time;
@@ -56,14 +56,14 @@ public class Candle extends MarketUpdate {
         this.complete = complete;
     }
 
-    public Candle(Instrument instrument, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
-        this(null, instrument, brokerId, granularity, time, openBid, openAsk, highBid, highAsk, lowBid, lowAsk, closeBid, closeAsk, volume, complete);
+    public Candle(CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+        this(null, currencyPair, brokerId, granularity, time, openBid, openAsk, highBid, highAsk, lowBid, lowAsk, closeBid, closeAsk, volume, complete);
         this.id = generateId();
     }
 
     // Ugly thing to use our own generated id
     private String generateId() {
-        return new StringBuilder().append(instrument.name()).append("|").append(granularity.name()).append("|").append(time.toString()).toString();
+        return new StringBuilder().append(currencyPair.name()).append("|").append(granularity.name()).append("|").append(time.toString()).toString();
     }
 
     public String getId() {
@@ -75,7 +75,7 @@ public class Candle extends MarketUpdate {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((granularity == null) ? 0 : granularity.hashCode());
-        result = prime * result + ((instrument == null) ? 0 : instrument.hashCode());
+        result = prime * result + ((currencyPair == null) ? 0 : currencyPair.hashCode());
         result = prime * result + ((time == null) ? 0 : time.hashCode());
         return result;
     }
@@ -91,7 +91,7 @@ public class Candle extends MarketUpdate {
         Candle other = (Candle) obj;
         if (granularity != other.granularity)
             return false;
-        if (instrument != other.instrument)
+        if (currencyPair != other.currencyPair)
             return false;
         if (time == null) {
             if (other.time != null)
@@ -104,7 +104,7 @@ public class Candle extends MarketUpdate {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("BidAskCandle [id=").append(getId()).append(", instrument=").append(instrument).append(", brokerId=").append(brokerId).append(", granularity=").append(granularity).append(", time=").append(time).append(", openBid=").append(openBid).append(", openAsk=").append(openAsk).append(", highBid=")
+        builder.append("BidAskCandle [id=").append(getId()).append(", currencyPair=").append(currencyPair).append(", brokerId=").append(brokerId).append(", granularity=").append(granularity).append(", time=").append(time).append(", openBid=").append(openBid).append(", openAsk=").append(openAsk).append(", highBid=")
                 .append(highBid).append(", highAsk=").append(highAsk).append(", lowBid=").append(lowBid).append(", lowAsk=").append(lowAsk).append(", closeBid=").append(closeBid).append(", closeAsk=").append(closeAsk).append(", volume=").append(volume).append(", complete=").append(complete).append("]");
         return builder.toString();
     }
