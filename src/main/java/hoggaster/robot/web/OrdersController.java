@@ -1,6 +1,6 @@
 package hoggaster.robot.web;
 
-import hoggaster.domain.OrderService;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.OandaOrderResponse;

@@ -4,7 +4,8 @@ import hoggaster.candles.CandleService;
 import hoggaster.depot.Depot;
 import hoggaster.depot.DepotImpl;
 import hoggaster.depot.DepotService;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.orders.OrderService;
+import hoggaster.prices.PriceService;
 import hoggaster.robot.Robot;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
@@ -45,10 +46,12 @@ public class RobotController {
 
     private final DepotService depotService;
 
+    private final PriceService priceService;
+
 
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotService depotService) {
+    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaOrderService") OrderService oandaOrderService, TALibService taLibService, CandleService candleService, DepotService depotService, PriceService priceService) {
         this.robotRegistry = robotRegistry;
         this.robotRepo = robotRepo;
         this.priceEventBus = priceEventBus;
@@ -56,6 +59,7 @@ public class RobotController {
         this.taLibService = taLibService;
         this.candleService = candleService;
         this.depotService = depotService;
+        this.priceService = priceService;
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -75,7 +79,7 @@ public class RobotController {
                 throw new IllegalArgumentException("No robot definition with id: " + robotId);
             }
 
-            Depot depot = new DepotImpl(definition.getDepotId(), oandaOrderService, depotService);
+            Depot depot = new DepotImpl(definition.getDepotId(), oandaOrderService, depotService, priceService);
 
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
             robot = new Robot(depot, definition, priceEventBus, ruleEngine, taLibService, candleService);

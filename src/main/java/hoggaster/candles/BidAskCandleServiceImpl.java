@@ -45,7 +45,7 @@ public class BidAskCandleServiceImpl implements CandleService {
         LOG.info("Will try to get candles for {} for granularity {} with {} data points", currencyPair, granularity, numberOfCandles);
         Pageable pageable = new PageRequest(0, numberOfCandles);
 
-        List<Candle> candles = repo.findByInstrumentAndGranularityOrderByTimeDesc(currencyPair, granularity, pageable);
+        List<Candle> candles = repo.findByCurrencyPairAndGranularityOrderByTimeDesc(currencyPair, granularity, pageable);
         LOG.info("Got a list: {}", candles.size());
         if (candles.size() < numberOfCandles) {
             LOG.info("Not all candles found in db ({} out of {}), will try to fetch the rest from oanda.", candles.size(), numberOfCandles);
@@ -76,7 +76,7 @@ public class BidAskCandleServiceImpl implements CandleService {
     @Override
     public int fetchAndSaveHistoricCandles(CurrencyPair currencyPair, CandleStickGranularity granularity) {
         Instant startDate = FIRST_CANDLE_DATE;
-        List<Candle> existingCandles = repo.findByInstrumentAndGranularityOrderByTimeDesc(currencyPair, granularity, new PageRequest(0, 1));
+        List<Candle> existingCandles = repo.findByCurrencyPairAndGranularityOrderByTimeDesc(currencyPair, granularity, new PageRequest(0, 1));
         if(existingCandles != null && !existingCandles.isEmpty()) {
             startDate = existingCandles.get(0).time;
             LOG.info("Found a saved entry for {}: {}, will use that start date ({})", currencyPair, granularity, startDate);

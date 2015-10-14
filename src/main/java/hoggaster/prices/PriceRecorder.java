@@ -21,18 +21,18 @@ import static reactor.spring.context.annotation.SelectorType.REGEX;
 public class PriceRecorder {
     private static final Logger LOG = LoggerFactory.getLogger(PriceRecorder.class);
 
-    private final PriceRepo priceRepo;
+    private final PriceService priceService;
 
     private final LongAdder counter = new LongAdder();
 
     @Autowired
-    public PriceRecorder(PriceRepo priceRepo, @Qualifier("priceEventBus") EventBus eventBus) {
-        this.priceRepo = priceRepo;
+    public PriceRecorder(PriceService priceService, @Qualifier("priceEventBus") EventBus eventBus) {
+        this.priceService = priceService;
     }
 
     @Selector(value = "prices.(.+)", type = REGEX, eventBus = "@priceEventBus")
     public void handleNewPrice(Event<Price> evt) {
         LOG.debug("Got a price event: {}", evt.getData());
-        priceRepo.save(evt.getData());
+        priceService.store(evt.getData());
     }
 }

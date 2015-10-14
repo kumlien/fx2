@@ -2,11 +2,14 @@ package hoggaster.depot;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.NoSuchCurrencyPairException;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import hoggaster.oanda.responses.OandaOrderResponse;
+import hoggaster.prices.Price;
+import hoggaster.prices.PriceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,8 @@ public class DepotImpl implements Depot {
 
     private final PriceService priceService;
 
-    public DepotImpl(String dbDepotId, OrderService orderService, DepotService depotService) {
+    public DepotImpl(String dbDepotId, OrderService orderService, DepotService depotService, PriceService priceService) {
+        this.priceService = priceService;
         Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depot with id '" + dbDepotId + "'");
         this.depotService = depotService;
         this.dbDepotId = dbDepotId;
@@ -72,9 +76,10 @@ public class DepotImpl implements Depot {
 
         //TODO Check for margin below 50%
         BigDecimal marginAvailable = dbDepot.getMarginAvailable();
+
+        //TODO For now we try to buy for 2% of available margin
         final BigDecimal maxAmountToBuyFor = marginAvailable.multiply(new BigDecimal(0.02));
 
-        //TODO For now we try to buy for 2% of depot value
         BigDecimal balance = dbDepot.getBalance();
 
 
@@ -101,9 +106,23 @@ public class DepotImpl implements Depot {
      *
      *
      */
-    public static int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio) {
-        CurrencyPair baseAndHome = CurrencyPair.ofBaseAndQuote(baseCurrency,homeCurrency);
-        get the price...
+    public int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio) {
+        CurrencyPair currencyPair = null;
+        boolean isInverse = false;
+        try {
+            currencyPair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
+        } catch (NoSuchCurrencyPairException e){
+            LOG.info("No currency pair found: {}, try with the inverse...", e.getMessage());
+            try {
+                currencyPair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
+            } catch (NoSuchCurrencyPairException ee) {
+                LOG.error("Unable to find a currency pair (not even the inverse one) for {} and {} ({}).", homeCurrency, baseCurrency, e.getMessage());
+                throw new RuntimeException(ee);
+            }
+            isInverse = true;
+        }
+        //get the price...
+        final Price lastPrice = priceService.getLatestPriceForCurrencyPair(currencyPair);
         return 0;
     }
 }

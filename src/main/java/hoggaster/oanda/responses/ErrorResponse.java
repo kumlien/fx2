@@ -1,4 +1,4 @@
-package hoggaster.domain;
+package hoggaster.oanda.responses;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -6,11 +6,14 @@ import hoggaster.domain.brokers.Broker;
 import hoggaster.oanda.responses.OandaPrice;
 import hoggaster.rules.MarketUpdateType;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
 @Document
+@CompoundIndexes({@CompoundIndex(name = "currencypair_time_idx", def = "{'currencyPair':1, 'time': 1}", unique = true)})
 public class Price extends MarketUpdate {
 
     private String id;

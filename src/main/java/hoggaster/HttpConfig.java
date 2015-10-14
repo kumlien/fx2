@@ -2,7 +2,7 @@ package hoggaster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
-import hoggaster.domain.ErrorResponse;
+import hoggaster.oanda.responses.ErrorResponse;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.exceptions.RateLimitException;
 import org.apache.http.impl.client.CloseableHttpClient;

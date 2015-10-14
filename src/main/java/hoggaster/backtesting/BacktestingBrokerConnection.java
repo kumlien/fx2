@@ -1,7 +1,7 @@
 package hoggaster.backtesting;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;

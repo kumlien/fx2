@@ -1,7 +1,8 @@
 package hoggaster.depot;
 
-import hoggaster.domain.OrderService;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.Broker;
+import hoggaster.prices.PriceService;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +26,13 @@ public class DepotImplTest extends TestCase {
     @Mock
     private DepotService depotService;
 
+    @Mock
+    private PriceService priceService;
+
     public void setUp() throws Exception {
         //DbDepot newDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
         DbDepot dbDepot = new DbDepot("USER_ID", "Test dbDepot", Broker.OANDA, "Primary ", "9678914", new BigDecimal(0.05), "USD", new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(0.0), new BigDecimal(1000.0), 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
-        depot = new DepotImpl(dbDepot.getId(), orderService, depotService);
+        depot = new DepotImpl(dbDepot.getId(), orderService, depotService, priceService);
 
 
     }

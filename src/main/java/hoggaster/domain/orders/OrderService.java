@@ -1,4 +1,4 @@
-package hoggaster.domain;
+package hoggaster.domain.orders;
 
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.oanda.responses.OandaOrderResponse;

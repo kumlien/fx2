@@ -63,7 +63,7 @@ public enum CurrencyPair {
     public static CurrencyPair[] EXOTICS = new CurrencyPair[] {EUR_TRY, USD_SEK, USD_NOK, USD_DKK, USD_ZAR, USD_HKD, USD_SGD};
 
     public static CurrencyPair ofBaseAndQuote(Currency base, Currency quote) {
-        return Lists.newArrayList(values()).parallelStream().filter(c -> c.baseCurrency == base && c.quoteCurrency == quote).findFirst().orElseThrow(() -> new IllegalArgumentException("No configured currency pair with base currency " + base.getCurrencyCode() + " and quote currency " + quote.getCurrencyCode()));
+        return Lists.newArrayList(values()).parallelStream().filter(c -> c.baseCurrency == base && c.quoteCurrency == quote).findFirst().orElseThrow(() -> new NoSuchCurrencyPairException("No configured currency pair with base currency " + base.getCurrencyCode() + " and quote currency " + quote.getCurrencyCode()));
     }
     public final Currency baseCurrency;
     public final Currency quoteCurrency;

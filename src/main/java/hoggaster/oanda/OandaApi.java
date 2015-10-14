@@ -3,7 +3,7 @@ package hoggaster.oanda;
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.HttpConfig;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.OrderService;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
@@ -133,7 +133,7 @@ public class OandaApi implements BrokerConnection, OrderService {
             throw new IllegalArgumentException("All three parameters start date, end date and count can't be specified");
         }
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles()).queryParam("currencyPair", currencyPair).queryParam("granularity", granularity.oandaStyle);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getCandles()).queryParam("instrument", currencyPair.name()).queryParam("granularity", granularity.oandaStyle);
 
         try {
             if (start != null) {

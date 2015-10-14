@@ -17,6 +17,6 @@ public interface CandleRepo extends MongoRepository<Candle, String> {
      * @param pageable
      * @return The list of candles
      */
-    List<Candle> findByInstrumentAndGranularityOrderByTimeDesc(CurrencyPair currencyPair, CandleStickGranularity granularity, Pageable pageable);
+    List<Candle> findByCurrencyPairAndGranularityOrderByTimeDesc(CurrencyPair currencyPair, CandleStickGranularity granularity, Pageable pageable);
 
 }

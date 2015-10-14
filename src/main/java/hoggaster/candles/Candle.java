@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document
-@CompoundIndexes({@CompoundIndex(name = "instrument_granularity_time_idx", def = "{'currencyPair':1, 'granularity':1, 'time': 1}", unique = true)})
+@CompoundIndexes({@CompoundIndex(name = "currencypair_granularity_time_idx", def = "{'currencyPair':1, 'granularity':1, 'time': 1}", unique = true)})
 public class Candle extends MarketUpdate {
 
     @Id
