@@ -18,6 +18,7 @@ import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 import reactor.fn.Consumer;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -191,12 +192,13 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void doSell() {
-        depot.sell(currencyPair, -1, this.id);
+        depot.sell(currencyPair, this.id);
 
     }
 
+    //TODO Read buy percentage from db
     private void doBuy(MarketUpdate marketUpdate) {
-        depot.buy(currencyPair, -1, marketUpdate, this.id);
+        depot.buy(currencyPair,new BigDecimal(0.2), marketUpdate, this.id);
 
     }
 

@@ -26,6 +26,7 @@ import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -75,6 +76,6 @@ public class BasicRobotTest {
         robot.start();
         Price price = new Price(CurrencyPair.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
-        Mockito.verify(depot).buy(CurrencyPair.USD_SEK, -1, price, robot.id);
+        Mockito.verify(depot).buy(CurrencyPair.USD_SEK, new BigDecimal(0.2), price, robot.id);
     }
 }

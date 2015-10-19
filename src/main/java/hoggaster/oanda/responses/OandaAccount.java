@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.brokers.BrokerDepot;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 
 public class OandaAccount {
@@ -12,7 +13,7 @@ public class OandaAccount {
 
     public final String accountId;
     public final String accountName;
-    public final String accountCurrency;
+    public final Currency accountCurrency;
     public final BigDecimal marginRate;
     public final BigDecimal balance;
     public final BigDecimal unrealizedPl;
@@ -23,7 +24,7 @@ public class OandaAccount {
     public final Integer openOrders;
 
     @JsonCreator
-    public OandaAccount(@JsonProperty(value = "accountId") String accountId, @JsonProperty(value = "accountName") String accountName, @JsonProperty(value = "accountCurrency") String accountCurrency, @JsonProperty(value = "marginRate") BigDecimal marginRate,
+    public OandaAccount(@JsonProperty(value = "accountId") String accountId, @JsonProperty(value = "accountName") String accountName, @JsonProperty(value = "accountCurrency") Currency accountCurrency, @JsonProperty(value = "marginRate") BigDecimal marginRate,
                         @JsonProperty(value = "balance") BigDecimal balance, @JsonProperty(value = "unrealizedPl") BigDecimal unrealizedPl, @JsonProperty(value = "realizedPl") BigDecimal realizedPl, @JsonProperty(value = "marginUsed") BigDecimal marginUsed,
                         @JsonProperty(value = "marginAvail") BigDecimal marginAvail, @JsonProperty(value = "openTrades") Integer openTrades, @JsonProperty(value = "openOrders") Integer openOrders) {
         this.accountId = accountId;

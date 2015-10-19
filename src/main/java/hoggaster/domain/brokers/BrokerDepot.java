@@ -1,6 +1,7 @@
 package hoggaster.domain.brokers;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 
 /**
  * Generic dbDepot on the broker side.
@@ -12,7 +13,7 @@ public class BrokerDepot {
 
     public final String id;
     public final String name;
-    public final String currency;
+    public final Currency currency;
     public final BigDecimal marginRate;
     public final BigDecimal balance;
     public final BigDecimal unrealizedPl;
@@ -22,7 +23,7 @@ public class BrokerDepot {
     public final Integer openTrades;
     public final Integer openOrders;
 
-    public BrokerDepot(String id, String name, String currency, BigDecimal marginRate, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvail, Integer openTrades, Integer openOrders) {
+    public BrokerDepot(String id, String name, Currency currency, BigDecimal marginRate, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvail, Integer openTrades, Integer openOrders) {
         this.id = id;
         this.name = name;
         this.currency = currency;

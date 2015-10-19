@@ -47,9 +47,9 @@ public class DepotImpl implements Depot {
 
 
     @Override
-    public void sell(CurrencyPair currencyPair, int requestedUnits, String robotId) {
+    public void sell(CurrencyPair currencyPair, String robotId) {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
-        LOG.info("We are told by robot {} to sell {}",robotId, currencyPair);
+        LOG.info("We are told by robot '{}' to sell {}",robotId, currencyPair);
         if (!dbDepot.ownThisInstrument(currencyPair)) {
             LOG.info("Nahh, we don't own {} yet...", currencyPair.name());
             return;
@@ -66,8 +66,8 @@ public class DepotImpl implements Depot {
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      */
-    public void buy(CurrencyPair currencyPair, int requestedUnits, MarketUpdate marketUpdate, String robotId) {
-        LOG.info("We are told by robot {} to buy {}",robotId, currencyPair);
+    public void buy(CurrencyPair currencyPair, BigDecimal percentageOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}",robotId, percentageOfAvailableMargin, currencyPair);
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         if (dbDepot.ownThisInstrument(currencyPair)) {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
@@ -76,6 +76,7 @@ public class DepotImpl implements Depot {
 
         //TODO Check for margin below 50%
         BigDecimal marginAvailable = dbDepot.getMarginAvailable();
+        //int maxUnits = calculateMaxUnitsWeCanBuy(Currency.getInstance(dbDepot.getCurrency()), )
 
         //TODO For now we try to buy for 2% of available margin
         final BigDecimal maxAmountToBuyFor = marginAvailable.multiply(new BigDecimal(0.02));
@@ -86,7 +87,8 @@ public class DepotImpl implements Depot {
         LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, 1000L, OrderSide.buy, OrderType.market, null, null);
         OandaOrderResponse response = orderService.sendOrder(order);
-        LOG.info("Order away and we got an response! {}", response);
+
+        LOG.info("Order away and we got n response! {}", response);
     }
 
 
@@ -106,7 +108,7 @@ public class DepotImpl implements Depot {
      *
      *
      */
-    public int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio) {
+    public static int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
         CurrencyPair currencyPair = null;
         boolean isInverse = false;
         try {

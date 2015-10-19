@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Currency;
 import java.util.Set;
 
 @Document(collection = "depot")
@@ -81,7 +82,7 @@ public class DbDepot {
      */
     private BigDecimal balance;
 
-    public String currency;
+    public Currency currency;
 
     private Boolean lastSyncOk;
 
@@ -89,7 +90,7 @@ public class DbDepot {
 
 
     @PersistenceConstructor
-    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, String currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
+    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
                    BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
@@ -109,7 +110,7 @@ public class DbDepot {
      * @param currency        The base currency for this dbDepot
      * @param lastSyncOk
      */
-    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, String currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -248,7 +249,7 @@ public class DbDepot {
     }
 
 
-    public String getCurrency() {
+    public Currency getCurrency() {
         return currency;
     }
 
