@@ -89,6 +89,29 @@ public class DbDepot {
     private Instant lastSynchronizedWithBroker;
 
 
+    /**
+     *
+     * @param id
+     * @param userId
+     * @param name
+     * @param broker
+     * @param ownerships
+     * @param transactions
+     * @param brokerId
+     * @param balance
+     * @param marginRate
+     * @param currency
+     * @param brokerDepotName
+     * @param unrealizedPl
+     * @param realizedPl
+     * @param marginUsed
+     * @param marginAvailable
+     * @param openTrades
+     * @param openOrders
+     * @param lastSynchronizedWithBroker
+     * @param lastSyncOk
+     * @param type
+     */
     @PersistenceConstructor
     public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
                    BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
@@ -98,17 +121,26 @@ public class DbDepot {
         this.ownerships = ownerships;
     }
 
+
     /**
-     * Create a new DbDepot.
      *
-     * @param userId          The id of the user owning this dbDepot
-     * @param name            Our internal name for this dbDepot
-     * @param broker          The broker to which this dbDepot is connected.
-     * @param brokerDepotName The name of this dbDepot/account on the broker side
-     * @param brokerId        The id of this dbDepot on the broker side
-     * @param marginRate      The margin rate for this dbDepot
-     * @param currency        The base currency for this dbDepot
+     * @param userId
+     * @param name
+     * @param broker
+     * @param brokerDepotName
+     * @param brokerId
+     * @param marginRate
+     * @param currency
+     * @param balance
+     * @param unrealizedPl
+     * @param realizedPl
+     * @param marginUsed
+     * @param marginAvailable
+     * @param openTrades
+     * @param openOrders
+     * @param lastSynchronizedWithBroker
      * @param lastSyncOk
+     * @param type
      */
     public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;

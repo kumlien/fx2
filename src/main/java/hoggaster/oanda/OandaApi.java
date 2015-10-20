@@ -193,7 +193,7 @@ public class OandaApi implements BrokerConnection, OrderService {
     @Timed
     public OandaOrderResponse sendOrder(OrderRequest request) {
         LOG.info("Sendning order to oanda: {}", request);
-        MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.lowerBound, request.upperBound);
+        MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
         // builder.queryParam("currencyPair", request.currencyPair)
         // .queryParam("units", request.units)

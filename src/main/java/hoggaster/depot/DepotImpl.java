@@ -1,5 +1,6 @@
 package hoggaster.depot;
 
+import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.NoSuchCurrencyPairException;
@@ -27,6 +28,7 @@ public class DepotImpl implements Depot {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotImpl.class);
+    private static final Double UPPER_BOUND_FACTOR = 1.01;
 
     private final String dbDepotId;
 
@@ -86,9 +88,20 @@ public class DepotImpl implements Depot {
 
         LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, 1000L, OrderSide.buy, OrderType.market, null, null);
+        order.setUpperBound(calculateUpperBound(marketUpdate));
         OandaOrderResponse response = orderService.sendOrder(order);
 
         LOG.info("Order away and we got n response! {}", response);
+    }
+
+    private static Double calculateUpperBound(MarketUpdate marketUpdate) {
+        if(marketUpdate instanceof Price) {
+            return ((Price) marketUpdate).ask * UPPER_BOUND_FACTOR;
+        }
+        if(marketUpdate instanceof Candle) {
+            return ((Candle) marketUpdate).closeAsk * UPPER_BOUND_FACTOR;
+        }
+        throw new RuntimeException("Mehhh..." + marketUpdate.getClass().getSimpleName());
     }
 
 

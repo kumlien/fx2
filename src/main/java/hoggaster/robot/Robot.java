@@ -172,9 +172,9 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
+        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) { //All buy conditions say buy!
             doBuy(candle);
-        } else if (ctx.getPositiveSellConditions().size() > 0) {
+        } else if (ctx.getPositiveSellConditions().size() > 0) { //At least one sell condition say sell!
             doSell();
         } else {
             LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
@@ -196,7 +196,7 @@ public class Robot implements Consumer<Event<?>> {
 
     }
 
-    //TODO Read buy percentage from db
+    //TODO Read buy percentage from db, hard code 20% for now
     private void doBuy(MarketUpdate marketUpdate) {
         depot.buy(currencyPair,new BigDecimal(0.2), marketUpdate, this.id);
 

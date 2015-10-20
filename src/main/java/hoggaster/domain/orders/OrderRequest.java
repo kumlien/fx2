@@ -29,18 +29,36 @@ public class OrderRequest {
     @JsonInclude(Include.NON_NULL)
     private Double stopLoss;
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OrderRequest{");
+        sb.append("externalDepotId='").append(externalDepotId).append('\'');
+        sb.append(", currencyPair=").append(currencyPair);
+        sb.append(", units=").append(units);
+        sb.append(", side=").append(side);
+        sb.append(", type=").append(type);
+        sb.append(", expiry=").append(expiry);
+        sb.append(", price=").append(price);
+        sb.append(", stopLoss=").append(stopLoss);
+        sb.append(", takeProfit=").append(takeProfit);
+        sb.append(", trailingStop=").append(trailingStop);
+        sb.append(", lowerBound=").append(lowerBound);
+        sb.append(", upperBound=").append(upperBound);
+        sb.append('}');
+        return sb.toString();
+    }
+
     @JsonInclude(Include.NON_NULL)
     private Double takeProfit;
 
     @JsonInclude(Include.NON_NULL)
     private Double trailingStop;
 
+    @JsonInclude(Include.NON_NULL)
+    private Double lowerBound;
 
     @JsonInclude(Include.NON_NULL)
-    public Double lowerBound;
-
-    @JsonInclude(Include.NON_NULL)
-    public Double upperBound;
+    private Double upperBound;
 
     @JsonCreator
     public OrderRequest(
@@ -90,5 +108,13 @@ public class OrderRequest {
 
     public Double getUpperBound() {
         return upperBound;
+    }
+
+    public void setUpperBound(Double upperBound) {
+        this.upperBound = upperBound;
+    }
+
+    public void setLowerBound(Double lowerBound) {
+        this.lowerBound = lowerBound;
     }
 }
