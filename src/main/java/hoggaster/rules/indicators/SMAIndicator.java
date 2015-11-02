@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.robot.RobotExecutionContext;
 
+import java.math.BigDecimal;
+
 /**
  * {@link Indicator} used to get a simple moving average value for a
  * {@link Candle} with the specified {@link CandleStickGranularity}.
@@ -37,7 +39,8 @@ public class SMAIndicator implements Indicator {
     }
 
     @Override
-    public Double value(RobotExecutionContext ctx) {
-        return ctx.getSMA(granularity, minimumNoOfDataPoints, field, periods).values.get(0);
+    //TODO Rounding and decimals... Change to Money maybe
+    public BigDecimal value(RobotExecutionContext ctx) {
+        return new BigDecimal(ctx.getSMA(granularity, minimumNoOfDataPoints, field, periods).values.get(0));
     }
 }

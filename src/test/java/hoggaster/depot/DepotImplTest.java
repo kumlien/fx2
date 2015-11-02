@@ -52,7 +52,7 @@ public class DepotImplTest extends TestCase {
     private PriceService priceService;
 
     @Captor
-    private ArgumentCaptor<OrderRequest> requestArgumentCaptor;
+    private ArgumentCaptor<OrderRequest> rac;
 
 
 
@@ -72,41 +72,28 @@ public class DepotImplTest extends TestCase {
 
     @Test
     public void testBuy() throws Exception {
-        Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), 10.0, 11.0, 20.0, 21.0, 5.0, 6.0, 18.0, 19.0, 1000, true);
+        Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
         depot.buy(cp, new BigDecimal(0.2), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 1l, OrderSide.buy, OrderType.market, Instant.now(), null);
-        expectedRequest.setUpperBound(candle.closeAsk * 1.01);
+        expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depot definition
 
-        verify(orderService).sendOrder(requestArgumentCaptor.capture());
-
-        assertEquals(expectedRequest.currencyPair, requestArgumentCaptor.getValue().currencyPair);
-        assertTrue(requestArgumentCaptor.getValue().expiry == null); //No expiry for market orders
-        assertEquals(expectedRequest.externalDepotId, requestArgumentCaptor.getValue().externalDepotId);
-        assertEquals(expectedRequest.price, null); //No price for a market order
+        verify(orderService).sendOrder(rac.capture());
+        OrderRequest request = rac.getValue();
+        assertEquals(expectedRequest.currencyPair, request.currencyPair);
+        assertTrue(request.expiry == null); //No expiry for market orders
+        assertEquals(expectedRequest.externalDepotId, request.externalDepotId);
+        assertEquals(expectedRequest.price, request.price); //No price for a market order
         assertEquals(expectedRequest.getLowerBound(), null); //No lower bound for a buy order
-        assertEquals(expectedRequest.getUpperBound(), requestArgumentCaptor.getValue().getUpperBound()); //
+        assertEquals(expectedRequest.getUpperBound(), request.getUpperBound()); //Upper bound should match
+        assertEquals(expectedRequest.getStopLoss(), request.getStopLoss());
+        assertEquals(expectedRequest.getTakeProfit(), request.getTakeProfit());
+        assertEquals(expectedRequest.units, request.units);
+
+        System.out.println(request);
 
     }
 
     public void testCalculateMaxUnitsWeCanBuy() throws Exception {
 
-    }
-
-    class OrderRequestArgMatcher extends ArgumentMatcher<OrderRequest> {
-
-        private final OrderRequest expected;
-
-        public OrderRequestArgMatcher(OrderRequest expectedRequest) {
-            this.expected = expectedRequest;
-        }
-
-        @Override
-        public boolean matches(Object req) {
-            OrderRequest actual = (OrderRequest) req;
-            System.out.println(actual);
-
-
-            return false;
-        }
     }
 }

@@ -66,12 +66,12 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework.web.servlet" level="warn"
+    <logger name="org.springframework.web.servlet" level="debug"
             additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="info">
+    <root level="debug">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>

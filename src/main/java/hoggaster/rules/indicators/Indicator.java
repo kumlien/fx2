@@ -2,6 +2,8 @@ package hoggaster.rules.indicators;
 
 import hoggaster.robot.RobotExecutionContext;
 
+import java.math.BigDecimal;
+
 
 /**
  * This interface represents some kind of indicator, a very basic indicator would
@@ -10,5 +12,5 @@ import hoggaster.robot.RobotExecutionContext;
  */
 public interface Indicator {
 
-    Double value(RobotExecutionContext ctx);
+    BigDecimal value(RobotExecutionContext ctx);
 }

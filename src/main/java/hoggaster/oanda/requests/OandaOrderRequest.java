@@ -5,6 +5,7 @@ import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import org.springframework.util.LinkedMultiValueMap;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @SuppressWarnings("serial")
@@ -16,9 +17,9 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
             OrderSide side,
             OrderType type,
             Instant expiry,
-            Double price,
-            Double lowerBound,
-            Double upperBound) {
+            BigDecimal price,
+            BigDecimal lowerBound,
+            BigDecimal upperBound) {
         add("currencyPair", currencyPair.name());
         add("units", String.valueOf(units));
         add("side", side.name());
@@ -37,3 +38,4 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
         }
     }
 }
+

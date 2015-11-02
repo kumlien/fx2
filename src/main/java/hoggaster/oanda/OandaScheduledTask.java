@@ -68,7 +68,7 @@ public class OandaScheduledTask {
      * Fill the db with candles for the specified currencyPair and granularity.
      * Only needed at startup to get us up to date.
      */
-    @PostConstruct
+    //@PostConstruct
     void fetchAllHistoricData() {
         RingBufferWorkProcessor<Tuple2<CurrencyPair, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
         Stream<Tuple2<CurrencyPair, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
@@ -76,7 +76,9 @@ public class OandaScheduledTask {
         // Consumer used to handle one currencyPair
         Consumer<Tuple2<CurrencyPair, CandleStickGranularity>> ic = t -> {
             try {
+                LOG.info("innan...");
                 candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
+                LOG.info("efter...");
             } catch (Exception e) {
                 LOG.error("Error fetching {} candles", t, e);
             }

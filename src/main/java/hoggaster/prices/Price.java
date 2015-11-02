@@ -10,7 +10,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.function.Function;
 
 @Document
 @CompoundIndexes({@CompoundIndex(name = "currencypair_time_idx", def = "{'currencyPair':1, 'time': 1}", unique = true)})
@@ -18,13 +20,13 @@ public class Price extends MarketUpdate {
 
     private String id;
     public final CurrencyPair currencyPair;
-    public final Double bid;
-    public final Double ask;
+    public final BigDecimal bid;
+    public final BigDecimal ask;
     public final Instant time;
     public final Broker broker;
 
     @PersistenceConstructor
-    public Price(String id, CurrencyPair currencyPair, Double bid, Double ask, Instant time, Broker broker) {
+    public Price(String id, CurrencyPair currencyPair, BigDecimal bid, BigDecimal ask, Instant time, Broker broker) {
         this.id = id;
         this.currencyPair = currencyPair;
         this.bid = bid;
@@ -33,7 +35,7 @@ public class Price extends MarketUpdate {
         this.broker = broker;
     }
 
-    public Price(CurrencyPair currencyPair, Double bid, Double ask, Instant time, Broker broker) {
+    public Price(CurrencyPair currencyPair, BigDecimal bid, BigDecimal ask, Instant time, Broker broker) {
         this.currencyPair = currencyPair;
         this.bid = bid;
         this.ask = ask;
@@ -59,5 +61,11 @@ public class Price extends MarketUpdate {
     @Override
     public MarketUpdateType getType() {
         return MarketUpdateType.PRICE;
+    }
+
+    @Override
+    public Function<BigDecimal, BigDecimal> calcUpperBound() {
+        //return (BigDecimal bd) -> bd.multiply(
+        return null;
     }
 }

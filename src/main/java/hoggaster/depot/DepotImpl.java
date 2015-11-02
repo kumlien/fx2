@@ -28,7 +28,7 @@ public class DepotImpl implements Depot {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotImpl.class);
-    private static final Double UPPER_BOUND_FACTOR = 1.01;
+    private static final BigDecimal UPPER_BOUND_FACTOR = new BigDecimal("1.01");
 
     private final String dbDepotId;
 
@@ -94,12 +94,13 @@ public class DepotImpl implements Depot {
         LOG.info("Order away and we got n response! {}", response);
     }
 
-    private static Double calculateUpperBound(MarketUpdate marketUpdate) {
+
+    private static BigDecimal calculateUpperBound(MarketUpdate marketUpdate) {
         if(marketUpdate instanceof Price) {
-            return ((Price) marketUpdate).ask * UPPER_BOUND_FACTOR;
+            return ((Price) marketUpdate).ask.multiply(UPPER_BOUND_FACTOR);
         }
         if(marketUpdate instanceof Candle) {
-            return ((Candle) marketUpdate).closeAsk * UPPER_BOUND_FACTOR;
+            return ((Candle) marketUpdate).closeAsk.multiply(UPPER_BOUND_FACTOR);
         }
         throw new RuntimeException("Mehhh..." + marketUpdate.getClass().getSimpleName());
     }

@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.function.Function;
 
 /*
  * The bid price represents the maximum price that a buyer or buyers are willing to pay for a security.
@@ -30,19 +32,19 @@ public class Candle extends MarketUpdate {
     public final CandleStickGranularity granularity;
 
     public final Instant time;
-    public final Double openBid;
-    public final Double openAsk;
-    public final Double highBid;
-    public final Double highAsk;
-    public final Double lowBid;
-    public final Double lowAsk;
-    public final Double closeBid;
-    public final Double closeAsk;
+    public final BigDecimal openBid;
+    public final BigDecimal openAsk;
+    public final BigDecimal highBid;
+    public final BigDecimal highAsk;
+    public final BigDecimal lowBid;
+    public final BigDecimal lowAsk;
+    public final BigDecimal closeBid;
+    public final BigDecimal closeAsk;
     public final Integer volume;
     public final Boolean complete;
 
     @PersistenceConstructor
-    Candle(String id, CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+    Candle(String id, CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, BigDecimal openBid, BigDecimal openAsk, BigDecimal highBid, BigDecimal highAsk, BigDecimal lowBid, BigDecimal lowAsk, BigDecimal closeBid, BigDecimal closeAsk, Integer volume, Boolean complete) {
         this.id = id;
         this.currencyPair = currencyPair;
         this.brokerId = brokerId;
@@ -60,7 +62,7 @@ public class Candle extends MarketUpdate {
         this.complete = complete;
     }
 
-    public Candle(CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, Double openBid, Double openAsk, Double highBid, Double highAsk, Double lowBid, Double lowAsk, Double closeBid, Double closeAsk, Integer volume, Boolean complete) {
+    public Candle(CurrencyPair currencyPair, Broker brokerId, CandleStickGranularity granularity, Instant time, BigDecimal openBid, BigDecimal openAsk, BigDecimal highBid, BigDecimal highAsk, BigDecimal lowBid, BigDecimal lowAsk, BigDecimal closeBid, BigDecimal closeAsk, Integer volume, Boolean complete) {
         this(null, currencyPair, brokerId, granularity, time, openBid, openAsk, highBid, highAsk, lowBid, lowAsk, closeBid, closeAsk, volume, complete);
         this.id = generateId();
     }
@@ -118,7 +120,12 @@ public class Candle extends MarketUpdate {
         return granularity.type;
     }
 
-    public Double getValue(CandleStickField field) {
+    @Override
+    public Function<BigDecimal, BigDecimal> calcUpperBound() {
+        return null;
+    }
+
+    public BigDecimal getValue(CandleStickField field) {
         switch (field) {
             case CLOSE_ASK:
                 return closeAsk;

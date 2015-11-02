@@ -3,8 +3,10 @@ package hoggaster.talib;
 import com.google.common.base.Preconditions;
 import com.tictactec.ta.lib.RetCode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
 /**

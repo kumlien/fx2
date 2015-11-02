@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public class OrderRequest {
@@ -22,7 +23,7 @@ public class OrderRequest {
 
     public final Instant expiry;
 
-    public final Double price;
+    public final BigDecimal price;
 
 
     //Optional fields
@@ -49,16 +50,16 @@ public class OrderRequest {
     }
 
     @JsonInclude(Include.NON_NULL)
-    private Double takeProfit;
+    private BigDecimal takeProfit;
 
     @JsonInclude(Include.NON_NULL)
-    private Double trailingStop;
+    private BigDecimal trailingStop;
 
     @JsonInclude(Include.NON_NULL)
-    private Double lowerBound;
+    private BigDecimal lowerBound;
 
     @JsonInclude(Include.NON_NULL)
-    private Double upperBound;
+    private BigDecimal upperBound;
 
     @JsonCreator
     public OrderRequest(
@@ -68,7 +69,7 @@ public class OrderRequest {
             @JsonProperty("side") OrderSide side,
             @JsonProperty("type") OrderType type,
             @JsonProperty(value = "expiry", required = false) Instant expiry,
-            @JsonProperty(value = "price", required = false) Double price) {
+            @JsonProperty(value = "price", required = false) BigDecimal price) {
         this.externalDepotId = externalDepotId;
         this.currencyPair = currencyPair;
         this.units = units;
@@ -86,35 +87,35 @@ public class OrderRequest {
         this.stopLoss = stopLoss;
     }
 
-    public Double getTakeProfit() {
+    public BigDecimal getTakeProfit() {
         return takeProfit;
     }
 
-    public void setTakeProfit(Double takeProfit) {
+    public void setTakeProfit(BigDecimal takeProfit) {
         this.takeProfit = takeProfit;
     }
 
-    public Double getTrailingStop() {
+    public BigDecimal getTrailingStop() {
         return trailingStop;
     }
 
-    public void setTrailingStop(Double trailingStop) {
+    public void setTrailingStop(BigDecimal trailingStop) {
         this.trailingStop = trailingStop;
     }
 
-    public Double getLowerBound() {
+    public BigDecimal getLowerBound() {
         return lowerBound;
     }
 
-    public Double getUpperBound() {
+    public BigDecimal getUpperBound() {
         return upperBound;
     }
 
-    public void setUpperBound(Double upperBound) {
+    public void setUpperBound(BigDecimal upperBound) {
         this.upperBound = upperBound;
     }
 
-    public void setLowerBound(Double lowerBound) {
+    public void setLowerBound(BigDecimal lowerBound) {
         this.lowerBound = lowerBound;
     }
 }

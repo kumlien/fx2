@@ -3,6 +3,9 @@ package hoggaster.rules.indicators;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.talib.TAResult;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  * {@link Indicator} used to get an rsi value from a set of candle stick values.
  */
@@ -38,8 +41,8 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public Double value(RobotExecutionContext ctx) {
+    public BigDecimal value(RobotExecutionContext ctx) {
         TAResult result = ctx.getRSI(granularity, periods, dataPointsNeeded, field);
-        return result.values.get(indexOfInterest);
+        return new BigDecimal(result.values.get(indexOfInterest), MathContext.DECIMAL32);
     }
 }

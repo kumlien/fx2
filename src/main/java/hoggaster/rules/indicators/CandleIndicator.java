@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.robot.RobotExecutionContext;
 
+import java.math.BigDecimal;
+
 
 /**
  * Indicator which gets it's value from a {@link Candle}.
@@ -28,7 +30,7 @@ public class CandleIndicator implements Indicator {
     }
 
     @Override
-    public Double value(RobotExecutionContext ctx) {
+    public BigDecimal value(RobotExecutionContext ctx) {
         Preconditions.checkArgument(ctx != null);
         Preconditions.checkArgument(ctx.marketUpdate != null);
         Preconditions.checkArgument(ctx.marketUpdate.getType().isCandle());

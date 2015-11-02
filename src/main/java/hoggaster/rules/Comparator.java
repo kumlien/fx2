@@ -1,17 +1,18 @@
 package hoggaster.rules;
 
+import java.math.BigDecimal;
 import java.util.function.BiFunction;
 
-public enum Comparator implements BiFunction<Double, Double, Boolean> {
-    LESS_THAN("<", (l, r) -> l < r),
-    LESS_OR_EQUAL_THAN("<=", (l, r) -> l <= r),
-    GREATER_THAN(">", (l, r) -> l > r),
-    GREATER_OR_EQUAL_THAN(">=", (l, r) -> l >= r);
+public enum Comparator implements BiFunction<BigDecimal, BigDecimal, Boolean> {
+    LESS_THAN("<", (l, r) -> l.compareTo(r) < 0),
+    LESS_OR_EQUAL_THAN("<=", (l, r) -> l.compareTo(r) <= 0),
+    GREATER_THAN(">", (l, r) -> l.compareTo(r) > 0),
+    GREATER_OR_EQUAL_THAN(">=", (l, r) -> l.compareTo(r) >= 0);
 
     private final String symbol;
-    private final BiFunction<Double, Double, Boolean> biFunction;
+    private final BiFunction<BigDecimal, BigDecimal, Boolean> biFunction;
 
-    private Comparator(final String symbol, final BiFunction<Double, Double, Boolean> biFunction) {
+    private Comparator(final String symbol, final BiFunction<BigDecimal, BigDecimal, Boolean> biFunction) {
         this.symbol = symbol;
         this.biFunction = biFunction;
     }
@@ -21,7 +22,7 @@ public enum Comparator implements BiFunction<Double, Double, Boolean> {
     }
 
     @Override
-    public Boolean apply(Double t, Double u) {
+    public Boolean apply(BigDecimal t, BigDecimal u) {
         return biFunction.apply(t, u);
     }
 }

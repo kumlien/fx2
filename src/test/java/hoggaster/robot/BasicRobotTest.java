@@ -66,7 +66,7 @@ public class BasicRobotTest {
 
     @Test
     public void testSimpleBuyOnPrice() {
-        SimpleValueIndicator svi = new SimpleValueIndicator(2.0); //First indicator
+        SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2.0")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
         //Let's compare them in a condition, putting an operator between them
         TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 2, Side.BUY, MarketUpdateType.PRICE);
@@ -74,7 +74,7 @@ public class BasicRobotTest {
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
         Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();
-        Price price = new Price(CurrencyPair.USD_SEK, 1.99, 2.01, Instant.now(), Broker.OANDA);
+        Price price = new Price(CurrencyPair.USD_SEK, new BigDecimal("1.99"), new BigDecimal("2.01"), Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
         Mockito.verify(depot).buy(CurrencyPair.USD_SEK, new BigDecimal(0.2), price, robot.id);
     }

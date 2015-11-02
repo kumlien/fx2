@@ -22,18 +22,18 @@ public class CompoundIndicator implements Indicator {
     }
 
     @Override
-    public Double value(RobotExecutionContext ctx) {
-        BigDecimal first = new BigDecimal(firstIndicator.value(ctx));
-        BigDecimal second = new BigDecimal(secondIndicator.value(ctx));
+    public BigDecimal value(RobotExecutionContext ctx) {
+        BigDecimal first = firstIndicator.value(ctx);
+        BigDecimal second = secondIndicator.value(ctx);
         switch (operator) {
             case ADD:
-                return first.add(second).doubleValue();
+                return first.add(second);
             case DIVIDE:
-                return first.divide(second).doubleValue();
+                return first.divide(second);
             case MULTIPLY:
-                return first.multiply(second).doubleValue();
+                return first.multiply(second);
             case SUBTRACT:
-                return first.subtract(second).doubleValue();
+                return first.subtract(second);
             default:
                 throw new RuntimeException("wtf...: " + operator);
         }

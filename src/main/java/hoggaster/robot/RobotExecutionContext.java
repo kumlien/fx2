@@ -12,6 +12,7 @@ import hoggaster.rules.indicators.RSIIndicator;
 import hoggaster.talib.TALibService;
 import hoggaster.talib.TAResult;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class RobotExecutionContext {
      */
     public TAResult getSMA(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
         List<Candle> candles = bidAskCandleService.getLatestCandles(currencyPair, granularity, dataPoints);
-        List<Double> values = candles.stream().map(bac -> bac.getValue(field)).collect(Collectors.toList());
+        List<Double> values = candles.stream().map(bac -> bac.getValue(field)).map(BigDecimal::doubleValue).collect(Collectors.toList());
         return taLibService.sma(values, periods);
     }
 
@@ -118,6 +119,7 @@ public class RobotExecutionContext {
         List<Candle> candles = bidAskCandleService.getLatestCandles(currencyPair, granularity, dataPointsNeeded);
         List<Double> values = candles.stream()
                 .map(candle -> candle.getValue(field))
+                .map(BigDecimal::doubleValue)
                 .collect(Collectors.toList());
         return taLibService.rsi(values, periods);
     }

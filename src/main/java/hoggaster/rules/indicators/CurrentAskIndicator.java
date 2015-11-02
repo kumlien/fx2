@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import hoggaster.prices.Price;
 import hoggaster.robot.RobotExecutionContext;
 
+import java.math.BigDecimal;
+
 import static hoggaster.rules.MarketUpdateType.PRICE;
 
 /**
@@ -15,7 +17,7 @@ import static hoggaster.rules.MarketUpdateType.PRICE;
 public class CurrentAskIndicator implements Indicator {
 
     @Override
-    public Double value(RobotExecutionContext ctx) {
+    public BigDecimal value(RobotExecutionContext ctx) {
         Preconditions.checkArgument(ctx != null);
         Preconditions.checkArgument(ctx.marketUpdate != null);
         Preconditions.checkArgument(ctx.marketUpdate.getType() == PRICE, "This indicator can only handle Price updates, not " + ctx.marketUpdate.getType());

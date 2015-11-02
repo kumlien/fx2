@@ -3,6 +3,7 @@ package hoggaster.oanda.responses;
 import com.fasterxml.jackson.annotation.*;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,21 +22,21 @@ public class OandaBidAskCandle {
     @JsonProperty("time")
     private String time;
     @JsonProperty("openBid")
-    private Double openBid;
+    private BigDecimal openBid;
     @JsonProperty("openAsk")
-    private Double openAsk;
+    private BigDecimal openAsk;
     @JsonProperty("highBid")
-    private Double highBid;
+    private BigDecimal highBid;
     @JsonProperty("highAsk")
-    private Double highAsk;
+    private BigDecimal highAsk;
     @JsonProperty("lowBid")
-    private Double lowBid;
+    private BigDecimal lowBid;
     @JsonProperty("lowAsk")
-    private Double lowAsk;
+    private BigDecimal lowAsk;
     @JsonProperty("closeBid")
-    private Double closeBid;
+    private BigDecimal closeBid;
     @JsonProperty("closeAsk")
-    private Double closeAsk;
+    private BigDecimal closeAsk;
     @JsonProperty("volume")
     private Integer volume;
     @JsonProperty("complete")
@@ -63,7 +64,7 @@ public class OandaBidAskCandle {
      * @return The openBid
      */
     @JsonProperty("openBid")
-    public Double getOpenBid() {
+    public BigDecimal getOpenBid() {
         return openBid;
     }
 
@@ -71,7 +72,7 @@ public class OandaBidAskCandle {
      * @param openBid The openBid
      */
     @JsonProperty("openBid")
-    public void setOpenBid(Double openBid) {
+    public void setOpenBid(BigDecimal openBid) {
         this.openBid = openBid;
     }
 
@@ -79,7 +80,7 @@ public class OandaBidAskCandle {
      * @return The openAsk
      */
     @JsonProperty("openAsk")
-    public Double getOpenAsk() {
+    public BigDecimal getOpenAsk() {
         return openAsk;
     }
 
@@ -87,7 +88,7 @@ public class OandaBidAskCandle {
      * @param openAsk The openAsk
      */
     @JsonProperty("openAsk")
-    public void setOpenAsk(Double openAsk) {
+    public void setOpenAsk(BigDecimal openAsk) {
         this.openAsk = openAsk;
     }
 
@@ -95,7 +96,7 @@ public class OandaBidAskCandle {
      * @return The highBid
      */
     @JsonProperty("highBid")
-    public Double getHighBid() {
+    public BigDecimal getHighBid() {
         return highBid;
     }
 
@@ -103,7 +104,7 @@ public class OandaBidAskCandle {
      * @param highBid The highBid
      */
     @JsonProperty("highBid")
-    public void setHighBid(Double highBid) {
+    public void setHighBid(BigDecimal highBid) {
         this.highBid = highBid;
     }
 
@@ -111,7 +112,7 @@ public class OandaBidAskCandle {
      * @return The highAsk
      */
     @JsonProperty("highAsk")
-    public Double getHighAsk() {
+    public BigDecimal getHighAsk() {
         return highAsk;
     }
 
@@ -119,7 +120,7 @@ public class OandaBidAskCandle {
      * @param highAsk The highAsk
      */
     @JsonProperty("highAsk")
-    public void setHighAsk(Double highAsk) {
+    public void setHighAsk(BigDecimal highAsk) {
         this.highAsk = highAsk;
     }
 
@@ -127,7 +128,7 @@ public class OandaBidAskCandle {
      * @return The lowBid
      */
     @JsonProperty("lowBid")
-    public Double getLowBid() {
+    public BigDecimal getLowBid() {
         return lowBid;
     }
 
@@ -135,7 +136,7 @@ public class OandaBidAskCandle {
      * @param lowBid The lowBid
      */
     @JsonProperty("lowBid")
-    public void setLowBid(Double lowBid) {
+    public void setLowBid(BigDecimal lowBid) {
         this.lowBid = lowBid;
     }
 
@@ -143,7 +144,7 @@ public class OandaBidAskCandle {
      * @return The lowAsk
      */
     @JsonProperty("lowAsk")
-    public Double getLowAsk() {
+    public BigDecimal getLowAsk() {
         return lowAsk;
     }
 
@@ -151,7 +152,7 @@ public class OandaBidAskCandle {
      * @param lowAsk The lowAsk
      */
     @JsonProperty("lowAsk")
-    public void setLowAsk(Double lowAsk) {
+    public void setLowAsk(BigDecimal lowAsk) {
         this.lowAsk = lowAsk;
     }
 
@@ -159,7 +160,7 @@ public class OandaBidAskCandle {
      * @return The closeBid
      */
     @JsonProperty("closeBid")
-    public Double getCloseBid() {
+    public BigDecimal getCloseBid() {
         return closeBid;
     }
 
@@ -167,7 +168,7 @@ public class OandaBidAskCandle {
      * @param closeBid The closeBid
      */
     @JsonProperty("closeBid")
-    public void setCloseBid(Double closeBid) {
+    public void setCloseBid(BigDecimal closeBid) {
         this.closeBid = closeBid;
     }
 
@@ -175,7 +176,7 @@ public class OandaBidAskCandle {
      * @return The closeAsk
      */
     @JsonProperty("closeAsk")
-    public Double getCloseAsk() {
+    public BigDecimal getCloseAsk() {
         return closeAsk;
     }
 
@@ -183,7 +184,7 @@ public class OandaBidAskCandle {
      * @param closeAsk The closeAsk
      */
     @JsonProperty("closeAsk")
-    public void setCloseAsk(Double closeAsk) {
+    public void setCloseAsk(BigDecimal closeAsk) {
         this.closeAsk = closeAsk;
     }
 
