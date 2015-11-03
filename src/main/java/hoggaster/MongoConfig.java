@@ -1,5 +1,6 @@
 package hoggaster;
 
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Currency;
 
 @Configuration
 @EnableMongoRepositories
@@ -21,9 +23,18 @@ public class MongoConfig extends AbstractMongoConfiguration {
     public CustomConversions customConversions() {
         return new CustomConversions(Arrays.asList(
                 new InstantToLongConverter(), new LongToInstantConverter(),
+                new DbObjectToCurrencyConverter(),
                 new LocalDateToStringConverter(), new StringToLocalDateConverter()));
     }
 
+
+    public class DbObjectToCurrencyConverter implements Converter<DBObject, Currency> {
+
+        @Override
+        public Currency convert(DBObject source) {
+            return Currency.getInstance((String) source.get("currencyCode"));
+        }
+    }
 
     public class InstantToLongConverter implements Converter<Instant, Long> {
         @Override
@@ -32,10 +43,10 @@ public class MongoConfig extends AbstractMongoConfiguration {
         }
     }
 
-    public class LongToInstantConverter implements Converter<Long, Instant> {
+    public class LongToInstantConverter implements Converter<DBObject, Instant> {
         @Override
-        public Instant convert(Long source) {
-            return Instant.ofEpochMilli(source);
+        public Instant convert(DBObject source) {
+            return Instant.ofEpochSecond((Long)source.get("seconds"), (Integer)source.get("nanos"));
         }
     }
 

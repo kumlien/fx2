@@ -1,6 +1,8 @@
 package it;
 
 import hoggaster.Application;
+import hoggaster.JSR310Config;
+import hoggaster.MongoConfig;
 import hoggaster.depot.DbDepot;
 import hoggaster.depot.DepotService;
 import hoggaster.domain.brokers.Broker;
@@ -16,7 +18,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
+@SpringApplicationConfiguration(classes = {Application.class, MongoConfig.class})
 public class DbDepotServiceTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DbDepotServiceTest.class);
@@ -28,11 +30,15 @@ public class DbDepotServiceTest {
     /**
      */
     @Test
-    @Ignore
-    public void testCreatePellesDepot() throws InterruptedException {
+    public void testCreatePellesDepot() throws Exception {
         User user = Mockito.mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
-        DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", Broker.OANDA, "9678914", DbDepot.Type.DEMO);
-        LOG.info("DbDepot created: {}", dbDepot);
+        try {
+            DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", Broker.OANDA, "9678914", DbDepot.Type.DEMO);
+            LOG.info("DbDepot created: {}", dbDepot);
+        } catch (Exception e) {
+            LOG.info("error...", e);
+            throw e;
+        }
     }
 }
