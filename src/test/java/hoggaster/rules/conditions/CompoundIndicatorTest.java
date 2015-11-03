@@ -18,15 +18,15 @@ public class CompoundIndicatorTest {
         Indicator i2 = new SimpleValueIndicator(new BigDecimal(10.0));
         CompoundIndicator ci = new CompoundIndicator(i1, i2, CompoundIndicator.Operator.ADD);
         BigDecimal value = ci.value(null);
-        Assert.assertTrue(value.equals(new BigDecimal("20.0")));
+        Assert.assertTrue(value.compareTo(new BigDecimal("20.0")) == 0);
     }
 
     @Test
     public void testAddTwoDecimal() {
-        Indicator i1 = new SimpleValueIndicator(new BigDecimal(10.4511111));
-        Indicator i2 = new SimpleValueIndicator(new BigDecimal(10.4922222));
+        Indicator i1 = new SimpleValueIndicator(new BigDecimal(10.4511111, MathContext.DECIMAL32));
+        Indicator i2 = new SimpleValueIndicator(new BigDecimal(10.4922222, MathContext.DECIMAL32));
         CompoundIndicator ci = new CompoundIndicator(i1, i2, CompoundIndicator.Operator.ADD);
         BigDecimal value = ci.value(null);
-        Assert.assertTrue(value.equals(new BigDecimal("20.94")));
+        Assert.assertTrue(value.compareTo(new BigDecimal("20.94333")) == 0);
     }
 }

@@ -28,6 +28,11 @@ public interface DepotService {
 
     void deleteDepot(DbDepot dbDepot);
 
+    /**
+     * Get a depot by id
+     * @param id
+     * @return The DbDepot or null if not found.
+     */
     DbDepot findDepotById(String id);
 
     List<DbDepot> findAll();
