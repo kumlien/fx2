@@ -22,7 +22,8 @@ public class MongoConfig extends AbstractMongoConfiguration {
     @Override
     public CustomConversions customConversions() {
         return new CustomConversions(Arrays.asList(
-                new InstantToLongConverter(), new LongToInstantConverter(),
+                //new InstantToLongConverter(),
+                new DBObjectToInstantConverter(),
                 new DbObjectToCurrencyConverter(),
                 new LocalDateToStringConverter(), new StringToLocalDateConverter()));
     }
@@ -43,7 +44,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
         }
     }
 
-    public class LongToInstantConverter implements Converter<DBObject, Instant> {
+    public class DBObjectToInstantConverter implements Converter<DBObject, Instant> {
         @Override
         public Instant convert(DBObject source) {
             return Instant.ofEpochSecond((Long)source.get("seconds"), (Integer)source.get("nanos"));
