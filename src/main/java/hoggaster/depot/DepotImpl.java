@@ -68,26 +68,25 @@ public class DepotImpl implements Depot {
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      */
-    public void buy(CurrencyPair currencyPair, BigDecimal percentageOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
-        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}",robotId, percentageOfAvailableMargin, currencyPair);
+    public void buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}",robotId, partOfAvailableMargin, currencyPair);
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         if (dbDepot.ownThisInstrument(currencyPair)) {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
             return;
         }
+        LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
 
         //TODO Check for margin below 50%
-        BigDecimal marginAvailable = dbDepot.getMarginAvailable();
-        //int maxUnits = calculateMaxUnitsWeCanBuy(Currency.getInstance(dbDepot.getCurrency()), )
+        BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot.getCurrency(), currencyPair.baseCurrency, dbDepot.getMarginAvailable(), dbDepot.getMarginRate(), priceService);
 
-        //TODO For now we try to buy for 2% of available margin
-        final BigDecimal maxAmountToBuyFor = marginAvailable.multiply(new BigDecimal(0.02));
+        final BigDecimal realUnits = maxUnits.multiply(partOfAvailableMargin);
+        LOG.info("The number of units we will buy ({} * {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
         BigDecimal balance = dbDepot.getBalance();
 
 
-        LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
-        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, 1000L, OrderSide.buy, OrderType.market, null, null);
+        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
         order.setUpperBound(calculateUpperBound(marketUpdate));
         OandaOrderResponse response = orderService.sendOrder(order);
 
@@ -108,6 +107,7 @@ public class DepotImpl implements Depot {
 
     /**
      * This calculation uses the following formula:
+     *
      * Margin Available * (margin ratio) / ({BASE}/{HOME Currency} Exchange Rate)
      * For example, suppose:
      * Home Currency: USD
@@ -122,15 +122,29 @@ public class DepotImpl implements Depot {
      *
      *
      */
-    public static int calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
-        CurrencyPair currencyPair = null;
+    public static BigDecimal calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
+        LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, marginAvailable, marginRatio);
+        BigDecimal xRate = getCurrentRate(homeCurrency, baseCurrency, priceService);
+        LOG.info("The x-change rate for {}/{} is currently {}", baseCurrency, homeCurrency, xRate);
+
+        BigDecimal totalAmount = marginAvailable.divide(marginRatio);
+        LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
+        BigDecimal totalUnits = totalAmount.divide(xRate);
+        LOG.info("Total units we can buy ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
+
+        return totalUnits;
+    }
+
+    private static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
+        if(homeCurrency == baseCurrency) return new BigDecimal("1");
+        CurrencyPair baseAndHomePair = null;
         boolean isInverse = false;
         try {
-            currencyPair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
+            baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
         } catch (NoSuchCurrencyPairException e){
             LOG.info("No currency pair found: {}, try with the inverse...", e.getMessage());
             try {
-                currencyPair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
+                baseAndHomePair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
             } catch (NoSuchCurrencyPairException ee) {
                 LOG.error("Unable to find a currency pair (not even the inverse one) for {} and {} ({}).", homeCurrency, baseCurrency, e.getMessage());
                 throw new RuntimeException(ee);
@@ -138,7 +152,7 @@ public class DepotImpl implements Depot {
             isInverse = true;
         }
         //get the price...
-        final Price lastPrice = priceService.getLatestPriceForCurrencyPair(currencyPair);
-        return 0;
+        final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
+        return lastPriceForBaseAndHome.bid;
     }
 }

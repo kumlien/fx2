@@ -32,12 +32,12 @@ import static org.mockito.Mockito.verify;
 public class DepotImplTest extends TestCase {
 
     public static final String EXTERNAL_DEPOT_ID = "9678914";
-    public static final BigDecimal MARGIN_RATE = new BigDecimal(0.05);
-    public static final BigDecimal UNREALIZED_PL = new BigDecimal(0.0);
-    public static final BigDecimal REALIZED_PL = new BigDecimal(0.0);
-    public static final BigDecimal MARGIN_USED = new BigDecimal(0.0);
-    public static final BigDecimal MARGIN_AVAILABLE = new BigDecimal(100000.0);
-    public static final BigDecimal BALANCE = new BigDecimal(100000);
+    public static final BigDecimal MARGIN_RATE = new BigDecimal("0.05");
+    public static final BigDecimal UNREALIZED_PL = new BigDecimal("0.0");
+    public static final BigDecimal REALIZED_PL = new BigDecimal("0.0");
+    public static final BigDecimal MARGIN_USED = new BigDecimal("0.0");
+    public static final BigDecimal MARGIN_AVAILABLE = new BigDecimal("100000.0");
+    public static final BigDecimal BALANCE = new BigDecimal("100000");
     public static final String DEPOT_ID = "Test dbDepot";
     public static final CurrencyPair cp = CurrencyPair.USD_SEK;
     private Depot depot;
@@ -73,8 +73,8 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuy() throws Exception {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
-        depot.buy(cp, new BigDecimal(0.2), candle, "robot_id");
-        OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 1l, OrderSide.buy, OrderType.market, Instant.now(), null);
+        depot.buy(cp, new BigDecimal("0.02"), candle, "robot_id");
+        OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000l, OrderSide.buy, OrderType.market, Instant.now(), null);
         expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depot definition
 
         verify(orderService).sendOrder(rac.capture());
