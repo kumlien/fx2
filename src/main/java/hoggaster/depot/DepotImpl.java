@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Currency;
 import java.util.Objects;
 
@@ -122,14 +123,14 @@ public class DepotImpl implements Depot {
      *
      *
      */
-    public static BigDecimal calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
+    static BigDecimal calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
         LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, marginAvailable, marginRatio);
         BigDecimal xRate = getCurrentRate(homeCurrency, baseCurrency, priceService);
         LOG.info("The x-change rate for {}/{} is currently {}", baseCurrency, homeCurrency, xRate);
 
-        BigDecimal totalAmount = marginAvailable.divide(marginRatio);
+        BigDecimal totalAmount = marginAvailable.divide(marginRatio, MathContext.DECIMAL32);
         LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
-        BigDecimal totalUnits = totalAmount.divide(xRate);
+        BigDecimal totalUnits = totalAmount.divide(xRate, MathContext.DECIMAL32);
         LOG.info("Total units we can buy ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
 
         return totalUnits;
@@ -137,7 +138,7 @@ public class DepotImpl implements Depot {
 
     private static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
         if(homeCurrency == baseCurrency) return new BigDecimal("1");
-        CurrencyPair baseAndHomePair = null;
+        CurrencyPair baseAndHomePair;
         boolean isInverse = false;
         try {
             baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
@@ -153,6 +154,9 @@ public class DepotImpl implements Depot {
         }
         //get the price...
         final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
+        if(isInverse) {
+            throw new RuntimeException("Fix me!");
+        }
         return lastPriceForBaseAndHome.bid;
     }
 }
