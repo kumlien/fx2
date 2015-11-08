@@ -19,9 +19,9 @@ import java.util.Currency;
 public class JSR310Config {
 
 
-    @Bean
-    public ObjectMapper jacksonObjectMapper() {
-        return new ObjectMapper().disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    public void jacksonObjectMapper(ObjectMapper om) {
+        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     /**
@@ -34,6 +34,7 @@ public class JSR310Config {
 
     @Bean
     public SimpleModule customSerializers(ObjectMapper jacksonObjectMapper) {
+        jacksonObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         SimpleModule testModule = new SimpleModule("MyModule", VERSION);
         testModule.addDeserializer(Currency.class, new CurrencyDeserializer());

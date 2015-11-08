@@ -112,21 +112,57 @@ public class DepotImplTest extends TestCase {
      * Units = (100 * 20) / 1.584
      * Units = 1262
      */
-
     @Test
-    public void testCalculateMaxUnitsWeCanBuy() throws Exception {
+    public void testCalculateMaxUnitsWeCanBuy1() throws Exception {
         Currency homeCurrency = Currency.getInstance("USD");
         Currency baseCurrency = Currency.getInstance("GBP");
-        CurrencyPair cp = CurrencyPair.GBP_USD;
+        CurrencyPair cpToBuy = CurrencyPair.GBP_CHF;
+        CurrencyPair cpBaseOverHome = CurrencyPair.GBP_USD;
         BigDecimal marginAvailable = new BigDecimal("100");
         BigDecimal marginRation = new BigDecimal("0.05");
         BigDecimal bid = new BigDecimal("1.584");
         BigDecimal ask = new BigDecimal("1.600");
         Long expectedUnits = 1262L;
-        Price price = new Price(cp, bid, ask, Instant.now(), Broker.OANDA);
-        when(priceService.getLatestPriceForCurrencyPair(eq(cp))).thenReturn(price);
+        Price baseOverHomePrice = new Price(cpBaseOverHome, bid, ask, Instant.now(), Broker.OANDA);
+        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHome))).thenReturn(baseOverHomePrice);
 
         BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(homeCurrency, baseCurrency, marginAvailable, marginRation, priceService);
         assertTrue(expectedUnits == units.longValue());
     }
+
+
+
+    /**
+     * This calculation uses the following formula:
+     *
+     * Margin Available * (margin ratio) / ({BASE}/{HOME Currency} Exchange Rate)
+     * For example, suppose:
+     * Home Currency: EUR
+     * Currency Pair: USD/CHF
+     * Margin Available: 100
+     * Margin Ratio : 20:1
+     * Base / Home Currency: USD/EUR = 0.9309 (inverse is 1.0742)
+     *
+     * Then,
+     * Units = (100 * 20) / 0.9309
+     * Units = 2148
+     */
+    @Test
+    public void testCalculateMaxUnitsWeCanBuyInverse() throws Exception {
+        Currency homeCurrency = Currency.getInstance("EUR");
+        Currency baseCurrency = Currency.getInstance("USD");
+        CurrencyPair cpToBuy = CurrencyPair.USD_CHF;
+        CurrencyPair cpBaseOverHomeInverse = CurrencyPair.EUR_USD;
+        BigDecimal marginAvailable = new BigDecimal("100");
+        BigDecimal marginRation = new BigDecimal("0.05");
+        BigDecimal bid = new BigDecimal("1.0742");
+        BigDecimal ask = new BigDecimal("1.100");
+        long expectedUnits = 2148L;
+        Price baseOverHomePrice = new Price(cpBaseOverHomeInverse, bid, ask, Instant.now(), Broker.OANDA);
+        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHomeInverse))).thenReturn(baseOverHomePrice);
+
+        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(homeCurrency, baseCurrency, marginAvailable, marginRation, priceService);
+        assertEquals(expectedUnits,units.longValue());
+    }
+
 }

@@ -126,7 +126,7 @@ public class DepotImpl implements Depot {
     static BigDecimal calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
         LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, marginAvailable, marginRatio);
         BigDecimal xRate = getCurrentRate(homeCurrency, baseCurrency, priceService);
-        LOG.info("The x-change rate for {}/{} is currently {}", baseCurrency, homeCurrency, xRate);
+        LOG.info("The x-change rate for {}_{} is currently {}", baseCurrency, homeCurrency, xRate);
 
         BigDecimal totalAmount = marginAvailable.divide(marginRatio, MathContext.DECIMAL32);
         LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
@@ -143,19 +143,20 @@ public class DepotImpl implements Depot {
         try {
             baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
         } catch (NoSuchCurrencyPairException e){
-            LOG.info("No currency pair found: {}, try with the inverse...", e.getMessage());
+            LOG.info("No currency pair found for {}_{}, try with the inverse...",baseCurrency, homeCurrency, e.getMessage());
             try {
                 baseAndHomePair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
             } catch (NoSuchCurrencyPairException ee) {
                 LOG.error("Unable to find a currency pair (not even the inverse one) for {} and {} ({}).", homeCurrency, baseCurrency, e.getMessage());
                 throw new RuntimeException(ee);
             }
+            LOG.info("Found currency pair {}, will use that one in lookup and use inverse x-rate", baseAndHomePair);
             isInverse = true;
         }
         //get the price...
         final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
         if(isInverse) {
-            throw new RuntimeException("Fix me!");
+            return BigDecimal.ONE.divide(lastPriceForBaseAndHome.bid, MathContext.DECIMAL32);
         }
         return lastPriceForBaseAndHome.bid;
     }
