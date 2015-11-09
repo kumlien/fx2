@@ -1,7 +1,7 @@
 package hoggaster;
 
-import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.oanda.OandaApi;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.OandaResourcesProperties;
