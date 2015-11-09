@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.transaction.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
@@ -73,8 +72,6 @@ public class DbDepot {
 
     private Set<InstrumentOwnership> ownerships = Sets.newHashSet();
 
-    private Set<Transaction> transactions = Sets.newHashSet();
-
     /**
      * The amount of cash in your account.
      * Your balance changes when you realize a profit or loss on your positions, earn/pay interest, or deposit/withdraw funds.
@@ -96,7 +93,6 @@ public class DbDepot {
      * @param name
      * @param broker
      * @param ownerships
-     * @param transactions
      * @param brokerId
      * @param balance
      * @param marginRate
@@ -113,17 +109,15 @@ public class DbDepot {
      * @param type
      */
     @PersistenceConstructor
-    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, Set<Transaction> transactions, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
+    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
                    BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
-        this.transactions = transactions;
         this.ownerships = ownerships;
     }
 
 
     /**
-     *
      * @param userId
      * @param name
      * @param broker
@@ -270,14 +264,6 @@ public class DbDepot {
         }
 
         return changed;
-    }
-
-    public Set<Transaction> getTransactions() {
-        return transactions;
-    }
-
-    public void setTransactions(Set<Transaction> transactions) {
-        this.transactions = transactions;
     }
 
 

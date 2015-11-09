@@ -11,6 +11,8 @@ import hoggaster.domain.orders.OrderType;
 import hoggaster.oanda.responses.OandaOrderResponse;
 import hoggaster.prices.Price;
 import hoggaster.prices.PriceService;
+import hoggaster.transaction.Transaction;
+import hoggaster.transaction.TransactionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,8 +92,8 @@ public class DepotImpl implements Depot {
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
         order.setUpperBound(calculateUpperBound(marketUpdate));
         OandaOrderResponse response = orderService.sendOrder(order);
-
-        LOG.info("Order away and we got n response! {}", response);
+        LOG.info("Order away and we got a response! {}", response);
+        //TODO save order/trade here...
     }
 
 

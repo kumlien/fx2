@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import hoggaster.user.User;
 import hoggaster.user.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,7 @@ public class UserController {
     }
 
 
+    @ApiOperation(value = "create a new user", code = 201)
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(CREATED)
     public UserResource createUser(@RequestBody @Valid CreateUserRequest request) {
@@ -52,12 +55,14 @@ public class UserController {
         return new UserResource(user);
     }
 
-    @RequestMapping
-    public Resources<UserResource> getUsers() {
-        return new Resources<>(userService.findAll().stream().map(UserResource::new).collect(Collectors.toList()));
+    @ApiOperation(value = "Get (links to) all users")
+    @RequestMapping(method = RequestMethod.GET)
+    public Resources<UserLink> getUsers() {
+        return new Resources<>(userService.findAll().stream().map(UserLink::new).collect(Collectors.toList()));
     }
 
-    @RequestMapping("/{id}")
+    @ApiOperation(value = "Get the user with the specified username")
+    @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public UserResource getUserByUsername(@PathVariable String id) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "The provided username is null or empty");
         User user = userService.getUserByUsername(id).orElseThrow(() -> new UserNotFoundException(id));
@@ -66,16 +71,16 @@ public class UserController {
 
 
     class UserResource extends ResourceSupport {
-
-        private final User user;
-
+        public final User user;
         UserResource(User user) {
             this.user = user;
             this.add(linkTo(UserController.class, user.username).slash(user.username).withSelfRel());
         }
+    }
 
-        public User getUser() {
-            return user;
+    class UserLink extends ResourceSupport {
+        UserLink(User user) {
+            this.add(linkTo(UserController.class, user.username).slash(user.username).withRel("user"));
         }
     }
 

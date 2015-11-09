@@ -61,7 +61,7 @@ public class OandaOrderResponse {
                 @JsonProperty("id") Long id,
                 @JsonProperty("units") Long units,
                 @JsonProperty("side") OrderSide side,
-                @JsonProperty("takeProfie") Long takeProfit,
+                @JsonProperty("takeProfit") Long takeProfit,
                 @JsonProperty("stopLoss") Long stopLoss,
                 @JsonProperty("trailingStop") Long trailingStop) {
             super(id, units, side);

@@ -15,12 +15,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.io.UnsupportedEncodingException;
 
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableScheduling
+@EnableSwagger2
 public class Application {
 
     public static void main(String[] args) {

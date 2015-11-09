@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Document
@@ -13,26 +14,26 @@ public class Transaction {
     @Id
     private String id;
 
-    private final String depotId;
+    public final String depotId;
 
-    private final Instant time;
+    public final Instant time;
 
-    private final TransactionType type;
+    public final TransactionType type;
 
-    private final CurrencyPair currencyPair;
+    public final CurrencyPair currencyPair;
 
-    private final Double quantity;
+    public final BigDecimal quantity;
 
-    private final Double price;
+    public final BigDecimal price;
 
-    private final Double commision;
+    public final BigDecimal commision;
 
-    private final Double sum;
+    public final BigDecimal sum;
 
-    private final String currency;
+    public final String currency;
 
     @PersistenceConstructor
-    public Transaction(String id, String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, Double quantity, Double price, Double commision, Double sum, String currency) {
+    public Transaction(String id, String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, BigDecimal quantity, BigDecimal price, BigDecimal commision, BigDecimal sum, String currency) {
         this.id = id;
         this.depotId = depotId;
         this.time = time;
@@ -45,7 +46,7 @@ public class Transaction {
         this.currency = currency;
     }
 
-    public Transaction(String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, Double quantity, Double price, Double commision, Double sum, String currency) {
+    public Transaction(String depotId, Instant time, TransactionType type, CurrencyPair currencyPair, BigDecimal quantity, BigDecimal price, BigDecimal commision, BigDecimal sum, String currency) {
         this.depotId = depotId;
         this.time = time;
         this.type = type;
@@ -55,5 +56,21 @@ public class Transaction {
         this.commision = commision;
         this.sum = sum;
         this.currency = currency;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "id='" + id + '\'' +
+                ", depotId='" + depotId + '\'' +
+                ", time=" + time +
+                ", type=" + type +
+                ", currencyPair=" + currencyPair +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", commision=" + commision +
+                ", sum=" + sum +
+                ", currency='" + currency + '\'' +
+                '}';
     }
 }
