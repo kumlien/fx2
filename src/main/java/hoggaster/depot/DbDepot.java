@@ -70,7 +70,7 @@ public class DbDepot {
      */
     public final String brokerId;
 
-    private Set<InstrumentOwnership> ownerships = Sets.newHashSet();
+    private Set<Position> positions = Sets.newHashSet();
 
     /**
      * The amount of cash in your account.
@@ -92,7 +92,7 @@ public class DbDepot {
      * @param userId
      * @param name
      * @param broker
-     * @param ownerships
+     * @param positions
      * @param brokerId
      * @param balance
      * @param marginRate
@@ -109,11 +109,11 @@ public class DbDepot {
      * @param type
      */
     @PersistenceConstructor
-    public DbDepot(String id, String userId, String name, Broker broker, Set<InstrumentOwnership> ownerships, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
+    public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
                    BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
-        this.ownerships = ownerships;
+        this.positions = positions;
     }
 
 
@@ -160,8 +160,8 @@ public class DbDepot {
         return findByInstrument(currencyPair) != null;
     }
 
-    private InstrumentOwnership findByInstrument(CurrencyPair currencyPair) {
-        return ownerships.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(null);
+    private Position findByInstrument(CurrencyPair currencyPair) {
+        return positions.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(null);
     }
 
     public Broker getBroker() {
@@ -177,20 +177,18 @@ public class DbDepot {
     }
 
     /**
-     * TODO Should be the responsibility of the dbDepot to carry out the trade (using services of course)
-     * <p>
      * Signal a that we bought something
-     * Add to set of {@link InstrumentOwnership} if not already present
+     * Add to set of {@link Position} if not already present
      *
      * @param currencyPair
      * @param quantity
      * @param pricePerShare
      */
     public void bought(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare) {
-        synchronized (ownerships) {
-            InstrumentOwnership io = findByInstrument(currencyPair);
+        synchronized (positions) {
+            Position io = findByInstrument(currencyPair);
             if (io == null) {
-                io = new InstrumentOwnership(currencyPair);
+                io = new Position(currencyPair);
             }
             io.add(quantity, pricePerShare);
         }

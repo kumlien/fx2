@@ -1,5 +1,6 @@
 package hoggaster.depot;
 
+import hoggaster.depot.DbDepot.Type;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.user.User;
 
@@ -24,7 +25,7 @@ public interface DepotService {
      *
      * @return The newly created dbDepot with synchronized values from the Broker
      */
-    DbDepot createDepot(User user, String name, Broker broker, String brokerId, DbDepot.Type type);
+    DbDepot createDepot(User user, String name, Broker broker, String brokerId, Type type);
 
     void deleteDepot(DbDepot dbDepot);
 
@@ -37,5 +38,7 @@ public interface DepotService {
 
     List<DbDepot> findAll();
 
+
+    DbDepot save(DbDepot dbDepot);
 
 }

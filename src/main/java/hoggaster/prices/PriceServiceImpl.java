@@ -1,8 +1,12 @@
 package hoggaster.prices;
 
 import hoggaster.domain.CurrencyPair;
+import org.apache.juli.logging.Log;
+import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -12,6 +16,8 @@ import java.time.Instant;
  */
 @Service
 public class PriceServiceImpl implements PriceService {
+
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PriceServiceImpl.class);
 
     private final PriceRepo priceRepo;
 
@@ -32,6 +38,11 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public Price store(Price price) {
-        return priceRepo.save(price);
+        try {
+            return priceRepo.save(price);
+        } catch (DuplicateKeyException e) {
+            LOG.debug("Unable to save price {} due to allready present", price);
+            return price;
+        }
     }
 }

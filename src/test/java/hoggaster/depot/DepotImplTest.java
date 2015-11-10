@@ -65,7 +65,7 @@ public class DepotImplTest extends TestCase {
                 EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
         Mockito.when(depotService.findDepotById(eq(DEPOT_ID))).thenReturn(dbDepot);
-        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp,0.0, Instant.now(), null, null, null, null));
+
         depot = new DepotImpl(dbDepot.getId(), orderService, depotService, priceService);
     }
 
@@ -77,9 +77,12 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuy() throws Exception {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
+        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp,19.0, Instant.now(), null, null, null, null));
+
         depot.buy(cp, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
         expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depot definition
+
 
         verify(orderService).sendOrder(rac.capture());
         OrderRequest request = rac.getValue();

@@ -69,4 +69,9 @@ public class DepotServiceImpl implements  DepotService {
     public List<DbDepot> findAll() {
         return depotRepo.findAll();
     }
+
+    @Override
+    public DbDepot save(DbDepot dbDepot) {
+        return depotRepo.save(dbDepot);
+    }
 }

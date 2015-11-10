@@ -3,6 +3,7 @@ package hoggaster.depot;
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
 import org.slf4j.Logger;
+import org.springframework.data.annotation.PersistenceConstructor;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -10,9 +11,9 @@ import java.math.MathContext;
 /**
  * Represents the ownership of an currencyPair
  */
-public class InstrumentOwnership {
+public class Position {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(InstrumentOwnership.class);
+    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Position.class);
 
     public static MathContext MATH_CONTEXT = MathContext.DECIMAL64;
 
@@ -22,10 +23,17 @@ public class InstrumentOwnership {
 
     private BigDecimal averagePricePerShare;
 
-    public InstrumentOwnership(CurrencyPair currencyPair) {
+    public Position(CurrencyPair currencyPair) {
         this.currencyPair = currencyPair;
         quantity = new BigDecimal(0);
         averagePricePerShare = new BigDecimal(0l);
+    }
+
+    @PersistenceConstructor
+    Position(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal averagePricePerShare) {
+        this.currencyPair = currencyPair;
+        this.quantity = quantity;
+        this.averagePricePerShare = averagePricePerShare;
     }
 
     public CurrencyPair getCurrencyPair() {

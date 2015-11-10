@@ -1,6 +1,6 @@
 package hoggaster.user;
 
-import hoggaster.depot.InstrumentOwnership;
+import hoggaster.depot.Position;
 import hoggaster.domain.CurrencyPair;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,15 +10,15 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 
 
-public class InstrumentOwnershipTest {
+public class PositionTest {
 
-    InstrumentOwnership ownership;
+    Position ownership;
 
     CurrencyPair currencyPair = CurrencyPair.AUD_USD;
 
     @Before
     public void init() {
-        ownership = new InstrumentOwnership(currencyPair);
+        ownership = new Position(currencyPair);
     }
 
     @Test

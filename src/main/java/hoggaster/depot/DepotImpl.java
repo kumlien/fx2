@@ -98,6 +98,8 @@ public class DepotImpl implements Depot {
         OandaOrderResponse response = orderService.sendOrder(order);
         LOG.info("Order away and we got a response! {}", response);
 
+        dbDepot.bought(currencyPair, realUnits, new BigDecimal(response.price, MathContext.DECIMAL32));
+        depotService.save(dbDepot);
         //TODO save order/trade here..
     }
 
