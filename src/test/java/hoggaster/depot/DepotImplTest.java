@@ -60,10 +60,12 @@ public class DepotImplTest extends TestCase {
 
     @Before
     public void setUp() throws Exception {
-        //DbDepot newDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now());
-        DbDepot dbDepot = new DbDepot(DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(), Sets.newHashSet(), EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary", UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+        DbDepot dbDepot = new DbDepot(
+                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary",
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
         Mockito.when(depotService.findDepotById(eq(DEPOT_ID))).thenReturn(dbDepot);
-        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp,0.0, Instant.now(), null, null, null));
+        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp,0.0, Instant.now(), null, null, null, null));
         depot = new DepotImpl(dbDepot.getId(), orderService, depotService, priceService);
     }
 
@@ -119,14 +121,21 @@ public class DepotImplTest extends TestCase {
         CurrencyPair cpToBuy = CurrencyPair.GBP_CHF;
         CurrencyPair cpBaseOverHome = CurrencyPair.GBP_USD;
         BigDecimal marginAvailable = new BigDecimal("100");
-        BigDecimal marginRation = new BigDecimal("0.05");
+        BigDecimal marginRatio = new BigDecimal("0.05");
         BigDecimal bid = new BigDecimal("1.584");
         BigDecimal ask = new BigDecimal("1.600");
         Long expectedUnits = 1262L;
         Price baseOverHomePrice = new Price(cpBaseOverHome, bid, ask, Instant.now(), Broker.OANDA);
         when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHome))).thenReturn(baseOverHomePrice);
 
-        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(homeCurrency, baseCurrency, marginAvailable, marginRation, priceService);
+
+        DbDepot dbDepot = new DbDepot(
+                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+
+
+        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, priceService);
         assertTrue(expectedUnits == units.longValue());
     }
 
@@ -154,14 +163,19 @@ public class DepotImplTest extends TestCase {
         CurrencyPair cpToBuy = CurrencyPair.USD_CHF;
         CurrencyPair cpBaseOverHomeInverse = CurrencyPair.EUR_USD;
         BigDecimal marginAvailable = new BigDecimal("100");
-        BigDecimal marginRation = new BigDecimal("0.05");
+        BigDecimal marginRatio = new BigDecimal("0.05");
         BigDecimal bid = new BigDecimal("1.0742");
         BigDecimal ask = new BigDecimal("1.100");
         long expectedUnits = 2148L;
         Price baseOverHomePrice = new Price(cpBaseOverHomeInverse, bid, ask, Instant.now(), Broker.OANDA);
         when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHomeInverse))).thenReturn(baseOverHomePrice);
 
-        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(homeCurrency, baseCurrency, marginAvailable, marginRation, priceService);
+        DbDepot dbDepot = new DbDepot(
+                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+
+        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, priceService);
         assertEquals(expectedUnits,units.longValue());
     }
 

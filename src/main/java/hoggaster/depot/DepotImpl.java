@@ -80,20 +80,24 @@ public class DepotImpl implements Depot {
         }
         LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
 
+        BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot, currencyPair.baseCurrency, priceService);
+
+        final BigDecimal realUnits = maxUnits.multiply(partOfAvailableMargin, MathContext.DECIMAL32);
+
         //TODO Check for margin below 50%
-        BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot.getCurrency(), currencyPair.baseCurrency, dbDepot.getMarginAvailable(), dbDepot.getMarginRate(), priceService);
+        final BigDecimal marginAvailable = dbDepot.getMarginAvailable();
 
-        final BigDecimal realUnits = maxUnits.multiply(partOfAvailableMargin);
+
+
+
         LOG.info("The number of units we will buy ({} * {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
-
-        BigDecimal balance = dbDepot.getBalance();
-
 
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
         order.setUpperBound(calculateUpperBound(marketUpdate));
         OandaOrderResponse response = orderService.sendOrder(order);
         LOG.info("Order away and we got a response! {}", response);
-        //TODO save order/trade here...
+
+        //TODO save order/trade here..
     }
 
 
@@ -122,20 +126,39 @@ public class DepotImpl implements Depot {
      * Then,
      * Units = (100 * 20) / 1.584
      * Units = 1262
-     *
-     *
      */
-    static BigDecimal calculateMaxUnitsWeCanBuy(Currency homeCurrency, Currency baseCurrency, BigDecimal marginAvailable, BigDecimal marginRatio, PriceService priceService) {
-        LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, marginAvailable, marginRatio);
+    static BigDecimal calculateMaxUnitsWeCanBuy(DbDepot dbDepot, Currency baseCurrency, PriceService priceService) {
+        Currency homeCurrency = dbDepot.currency;
+        BigDecimal marginRatio = dbDepot.getMarginRate();
+        LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, dbDepot.getMarginAvailable(), marginRatio);
         BigDecimal xRate = getCurrentRate(homeCurrency, baseCurrency, priceService);
         LOG.info("The x-change rate for {}_{} is currently {}", baseCurrency, homeCurrency, xRate);
 
-        BigDecimal totalAmount = marginAvailable.divide(marginRatio, MathContext.DECIMAL32);
+        BigDecimal totalAmount = dbDepot.getMarginAvailable().divide(marginRatio, MathContext.DECIMAL32);
         LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
         BigDecimal totalUnits = totalAmount.divide(xRate, MathContext.DECIMAL32);
         LOG.info("Total units we can buy ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
 
         return totalUnits;
+    }
+
+
+    /**
+     * Current requirement says that a new order must not push the (available margin / margin ration) below
+     * 50% of balance
+     * See ticket 19 on github.
+     *
+     * @return Number of units we can buy after checking the requirement mentioned above.
+     */
+    static BigDecimal capUnitsBasedOnBalanceRequirement(DbDepot dbDepot, BigDecimal totalAmount) {
+        final BigDecimal balance = dbDepot.getBalance();
+        final BigDecimal newMarginAvailable = dbDepot.getMarginAvailable().subtract(totalAmount, MathContext.DECIMAL32);
+        final BigDecimal marginAvailableByBalance = newMarginAvailable.divide(balance, MathContext.DECIMAL32);
+        LOG.info("Margin available in percent of balance will be {}%", marginAvailableByBalance);
+
+
+
+        return BigDecimal.ZERO;
     }
 
     private static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {

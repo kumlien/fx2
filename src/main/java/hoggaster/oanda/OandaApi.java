@@ -211,7 +211,7 @@ public class OandaApi implements BrokerConnection, OrderService {
         ResponseEntity<OandaOrderResponse> orderResponse = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAllPrices");
-                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaOrderResponse.class);
+                    return restTemplate.exchange(uri, HttpMethod.POST, defaultHttpEntity, OandaOrderResponse.class);
                 });
         LOG.info("Received order response: {}", orderResponse.getBody());
         return orderResponse.getBody();
