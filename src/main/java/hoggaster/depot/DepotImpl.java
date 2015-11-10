@@ -32,6 +32,7 @@ public class DepotImpl implements Depot {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotImpl.class);
     private static final BigDecimal UPPER_BOUND_FACTOR = new BigDecimal("1.01");
+    private static final BigDecimal MARGIN_BALANCE_THRESHOLD = new BigDecimal("0.5");
 
     private final String dbDepotId;
 
@@ -78,17 +79,17 @@ public class DepotImpl implements Depot {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
             return;
         }
-        LOG.info("Ooops, we should buy since we don't own any {} yet!", currencyPair.name());
-
-        BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot, currencyPair.baseCurrency, priceService);
-
+        LOG.info("We should buy since we don't own any {} yet!", currencyPair.name());
+        BigDecimal xRate = getCurrentRate(dbDepot.currency, currencyPair.baseCurrency, priceService);
+        BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot, currencyPair.baseCurrency, xRate);
         final BigDecimal realUnits = maxUnits.multiply(partOfAvailableMargin, MathContext.DECIMAL32);
 
         //TODO Check for margin below 50%
-        final BigDecimal marginAvailable = dbDepot.getMarginAvailable();
-
-
-
+        BigDecimal newMarginAsPartOfBalance = getNewMarginAsPartOfBalance(dbDepot, realUnits.multiply(xRate, MathContext.DECIMAL32).multiply(dbDepot.getMarginRate(), MathContext.DECIMAL32));
+        if(newMarginAsPartOfBalance.compareTo(MARGIN_BALANCE_THRESHOLD) < 0 ) {
+            LOG.warn("Sorry, no buy since the margin/current balance would drop below the specified threshold (units: {}, xRate: {}, threshold: {}, current balance: {}", realUnits, xRate, MARGIN_BALANCE_THRESHOLD, dbDepot.getBalance());
+            return;
+        }
 
         LOG.info("The number of units we will buy ({} * {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
@@ -127,12 +128,10 @@ public class DepotImpl implements Depot {
      * Units = (100 * 20) / 1.584
      * Units = 1262
      */
-    static BigDecimal calculateMaxUnitsWeCanBuy(DbDepot dbDepot, Currency baseCurrency, PriceService priceService) {
+    static BigDecimal calculateMaxUnitsWeCanBuy(DbDepot dbDepot, Currency baseCurrency, BigDecimal xRate) {
         Currency homeCurrency = dbDepot.currency;
         BigDecimal marginRatio = dbDepot.getMarginRate();
         LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, dbDepot.getMarginAvailable(), marginRatio);
-        BigDecimal xRate = getCurrentRate(homeCurrency, baseCurrency, priceService);
-        LOG.info("The x-change rate for {}_{} is currently {}", baseCurrency, homeCurrency, xRate);
 
         BigDecimal totalAmount = dbDepot.getMarginAvailable().divide(marginRatio, MathContext.DECIMAL32);
         LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
@@ -148,20 +147,22 @@ public class DepotImpl implements Depot {
      * 50% of balance
      * See ticket 19 on github.
      *
-     * @return Number of units we can buy after checking the requirement mentioned above.
+     * @return The margin available divided by balance given the specified amount is used as margin.
      */
-    static BigDecimal capUnitsBasedOnBalanceRequirement(DbDepot dbDepot, BigDecimal totalAmount) {
+    static BigDecimal getNewMarginAsPartOfBalance(DbDepot dbDepot, BigDecimal marginAmountNeeded) {
+        LOG.info("Margin amount needed for this trade is {}", marginAmountNeeded);
         final BigDecimal balance = dbDepot.getBalance();
-        final BigDecimal newMarginAvailable = dbDepot.getMarginAvailable().subtract(totalAmount, MathContext.DECIMAL32);
-        final BigDecimal marginAvailableByBalance = newMarginAvailable.divide(balance, MathContext.DECIMAL32);
-        LOG.info("Margin available in percent of balance will be {}%", marginAvailableByBalance);
+        LOG.info("Current balance is {}", balance);
+        final BigDecimal newMarginAvailable = dbDepot.getMarginAvailable().subtract(marginAmountNeeded, MathContext.DECIMAL32);
+        LOG.info("New margin available after transaction would be {}", newMarginAvailable);
+        final BigDecimal marginAvailableDividedByBalance = newMarginAvailable.divide(balance, MathContext.DECIMAL32);
 
+        LOG.info("Margin available divided by balance will be {} after this transaction", marginAvailableDividedByBalance);
 
-
-        return BigDecimal.ZERO;
+        return marginAvailableDividedByBalance;
     }
 
-    private static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
+    static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
         if(homeCurrency == baseCurrency) return new BigDecimal("1");
         CurrencyPair baseAndHomePair;
         boolean isInverse = false;

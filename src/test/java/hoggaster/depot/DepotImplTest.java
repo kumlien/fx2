@@ -99,6 +99,14 @@ public class DepotImplTest extends TestCase {
     }
 
 
+    @Test
+    public void testBuyBreakMarginRule() throws Exception {
+        Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
+        depot.buy(cp, new BigDecimal("0.51"), candle, "robot_id");
+        Mockito.verifyZeroInteractions(orderService);
+    }
+
+
     /**
      * This calculation uses the following formula:
      *
@@ -134,8 +142,8 @@ public class DepotImplTest extends TestCase {
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
 
-
-        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, priceService);
+        BigDecimal currentRate = DepotImpl.getCurrentRate(dbDepot.currency, baseCurrency, priceService);
+        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, currentRate);
         assertTrue(expectedUnits == units.longValue());
     }
 
@@ -174,8 +182,8 @@ public class DepotImplTest extends TestCase {
                 DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
-
-        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, priceService);
+        BigDecimal currentRate = DepotImpl.getCurrentRate(dbDepot.currency, baseCurrency, priceService);
+        BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, currentRate);
         assertEquals(expectedUnits,units.longValue());
     }
 

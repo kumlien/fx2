@@ -2,6 +2,7 @@ package hoggaster.prices;
 
 import hoggaster.domain.CurrencyPair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -31,6 +32,6 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public Price store(Price price) {
-        return null;
+        return priceRepo.save(price);
     }
 }
