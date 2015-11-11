@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class Accounts {
+public class OandaAccounts {
 
     private final List<OandaAccount> accounts;
 
     @JsonCreator
-    protected Accounts(@JsonProperty(value = "accounts") List<OandaAccount> accounts) {
+    protected OandaAccounts(@JsonProperty(value = "accounts") List<OandaAccount> accounts) {
         this.accounts = accounts;
     }
 
@@ -20,6 +20,6 @@ public class Accounts {
 
     @Override
     public String toString() {
-        return "Accounts [accounts=" + accounts + "]";
+        return "OandaAccounts [accounts=" + accounts + "]";
     }
 }

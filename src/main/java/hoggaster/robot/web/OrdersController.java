@@ -19,14 +19,11 @@ public class OrdersController {
 
     private static final Logger LOG = LoggerFactory.getLogger(OrdersController.class);
 
-    private final BrokerConnection oandaApi;
-
     private final OrderService oandaOrderService;
 
 
     @Autowired
-    public OrdersController(@Qualifier("OandaBrokerConnection") BrokerConnection oandaApi, @Qualifier("OandaOrderService") OrderService oandaOrderService) {
-        this.oandaApi = oandaApi;
+    public OrdersController(@Qualifier("OandaOrderService") OrderService oandaOrderService) {
         this.oandaOrderService = oandaOrderService;
     }
 

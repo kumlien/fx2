@@ -126,7 +126,7 @@ public class OandaScheduledTask {
     }
 
 
-    @Scheduled(cron = "*/5 * * * * *")
+    //@Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
         try {
             if (instrumentsForMainAccount == null) {
@@ -149,7 +149,7 @@ public class OandaScheduledTask {
     /*
      * Get the one minute candles wtf is this method doing in this class??
      */
-    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
+    //@Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
         LOG.info("About to fetch one minute candles");

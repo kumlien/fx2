@@ -1,5 +1,6 @@
 package hoggaster.backtesting;
 
+import hoggaster.depot.Position;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.Broker;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 
@@ -29,13 +31,18 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     }
 
     @Override
+    public List<Position> getPositions(String depotId) {
+        return null;
+    }
+
+    @Override
     public Instruments getInstrumentsForAccount(Integer mainAccountId) throws UnsupportedEncodingException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Accounts getAccounts() {
+    public OandaAccounts getAccounts() {
         // TODO Auto-generated method stub
         return null;
     }

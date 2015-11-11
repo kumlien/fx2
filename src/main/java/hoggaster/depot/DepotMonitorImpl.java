@@ -2,6 +2,7 @@ package hoggaster.depot;
 
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
+import hoggaster.oanda.responses.OandaPositions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,13 +57,15 @@ public class DepotMonitorImpl implements DepotMonitor {
     public DbDepot syncDepot(DbDepot dbDepot) {
         LOG.info("Start syncing dbDepot {}", dbDepot);
         BrokerDepot depotFromBroker = broker.getDepot(dbDepot.getBrokerId());
+        final List<Position> positions = broker.getPositions(dbDepot.brokerId);
+
         if (depotFromBroker == null) {
             LOG.error("Unable to fetch matching dbDepot from broker: {}", dbDepot);
             dbDepot.setLastSyncOk(false);
         } else {
             dbDepot.setLastSyncOk(true);
             dbDepot.setLastSynchronizedWithBroker(Instant.now());
-            dbDepot.updateWithValuesFrom(depotFromBroker);
+            dbDepot.updateWithValuesFrom(depotFromBroker, positions);
         }
         depotRepo.save(dbDepot);
         return dbDepot;

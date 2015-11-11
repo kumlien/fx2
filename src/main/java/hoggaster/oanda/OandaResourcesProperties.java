@@ -19,6 +19,16 @@ public class OandaResourcesProperties {
 
     private String orders;
 
+    private String positions;
+
+    public String getPositions() {
+        return positions;
+    }
+
+    public void setPositions(String positions) {
+        this.positions = positions;
+    }
+
 
     public String getAccounts() {
         return accounts;

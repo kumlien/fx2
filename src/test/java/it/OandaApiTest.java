@@ -27,14 +27,9 @@ import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-//@WebAppConfiguration
-//@IntegrationTest("server.port:0")
 public class OandaApiTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaApiTest.class);
-
-    //@Value("${local.server.port}")
-    int port;
 
     @Autowired
     @Qualifier("OandaBrokerConnection")
@@ -44,7 +39,7 @@ public class OandaApiTest {
     CandleService candleService;
 
     @Test
-    @Ignore
+
     public void testGetBidAskCandles() throws InterruptedException, UnsupportedEncodingException {
         Instant end = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         OandaBidAskCandlesResponse midPointCandles = oanda.getBidAskCandles(CurrencyPair.EUR_USD, CandleStickGranularity.END_OF_DAY, new Integer(10), null, end, false);

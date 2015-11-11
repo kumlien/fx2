@@ -7,6 +7,8 @@ import hoggaster.user.User;
 import java.util.List;
 
 /**
+ * Service dealing with our internal DbDepot:s
+ *
  * Created by svante on 15-09-22.
  */
 public interface DepotService {

@@ -2,6 +2,7 @@ package hoggaster.user;
 
 import hoggaster.depot.Position;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.orders.OrderSide;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,7 @@ public class PositionTest {
 
     @Before
     public void init() {
-        position = new Position(currencyPair);
+        position = new Position(currencyPair, OrderSide.buy);
     }
 
     @Test

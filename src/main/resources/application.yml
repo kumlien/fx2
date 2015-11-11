@@ -12,6 +12,7 @@ oanda:
   candles: ${oanda.restApiUrl}/candles
   prices: ${oanda.restApiUrl}/prices
   orders: ${oanda.resources.account}/orders
+  positions: ${oanda.resources.account}/positions
   
 ig:
  restApiUrl: https://demo-api.ig.com/gateway/deal/

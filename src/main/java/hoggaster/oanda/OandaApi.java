@@ -2,6 +2,7 @@ package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.HttpConfig;
+import hoggaster.depot.Position;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
@@ -9,12 +10,13 @@ import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.oanda.requests.OandaOrderRequest;
-import hoggaster.oanda.responses.Accounts;
+import hoggaster.oanda.responses.OandaAccounts;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaAccount;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
 import hoggaster.oanda.responses.OandaInstrument;
 import hoggaster.oanda.responses.OandaOrderResponse;
+import hoggaster.oanda.responses.OandaPositions;
 import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;
@@ -37,7 +39,11 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Access point to oanda
@@ -74,14 +80,14 @@ public class OandaApi implements BrokerConnection, OrderService {
      */
     @Override
     @Timed
-    public Accounts getAccounts() {
+    public OandaAccounts getAccounts() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccounts());
         String uri = builder.buildAndExpand("").toUriString();
 
-        ResponseEntity<Accounts> accounts = oandaRetryTemplate
+        ResponseEntity<OandaAccounts> accounts = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccounts");
-                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, Accounts.class);
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaAccounts.class);
                 });
         LOG.info("Found {} accounts", accounts.getBody().getAccounts().size());
         accounts.getBody().getAccounts().forEach(a -> LOG.info("Account: {}", a));
@@ -101,6 +107,24 @@ public class OandaApi implements BrokerConnection, OrderService {
                 });
         LOG.info("Found {} account", account.getBody());
         return account.getBody().toBrokerDepot();
+    }
+
+    @Override
+    @Timed
+    public List<Position> getPositions(String depotId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPositions());
+        String uri = builder.buildAndExpand(depotId).toUriString();
+        LOG.info("Get positions from oanda with account id {} using uri {}", depotId, uri);
+        ResponseEntity<OandaPositions> positions = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getPositions");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaPositions.class);
+                });
+        LOG.info("Found {} ", positions.getBody());
+        return positions.getBody().positions
+                .stream()
+                .map(p -> new Position(p.instrument, p.side, p.units, p.avgPrice))
+                .collect(toList());
     }
 
     /**

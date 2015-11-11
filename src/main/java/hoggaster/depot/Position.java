@@ -1,7 +1,9 @@
 package hoggaster.depot;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.orders.OrderSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -20,24 +22,29 @@ public class Position {
 
     public final CurrencyPair currencyPair;
 
+    public final OrderSide side;
+
     private BigDecimal quantity;
 
     private BigDecimal averagePricePerShare;
 
-    public Position(CurrencyPair currencyPair) {
+    public Position(CurrencyPair currencyPair, OrderSide side) {
         this.currencyPair = currencyPair;
+        this.side = side;
         quantity = new BigDecimal(0);
         averagePricePerShare = new BigDecimal(0l);
     }
 
     @PersistenceConstructor
-    Position(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal averagePricePerShare) {
+    public Position(CurrencyPair currencyPair, OrderSide side, BigDecimal quantity, BigDecimal averagePricePerShare) {
         this.currencyPair = currencyPair;
+        this.side = side;
         this.quantity = quantity;
         this.averagePricePerShare = averagePricePerShare;
     }
 
     public Position(Position original) {
+        this.side = original.side;
         this.currencyPair = original.getCurrencyPair();
         this.quantity = original.quantity;
         this.averagePricePerShare = original.averagePricePerShare;
@@ -94,5 +101,21 @@ public class Position {
 
     public BigDecimal getAveragePricePerShare() {
         return averagePricePerShare;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Position position = (Position) o;
+        return currencyPair == position.currencyPair &&
+                side == position.side &&
+                Objects.equal(quantity, position.quantity) &&
+                Objects.equal(averagePricePerShare, position.averagePricePerShare);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(currencyPair, side, quantity, averagePricePerShare);
     }
 }

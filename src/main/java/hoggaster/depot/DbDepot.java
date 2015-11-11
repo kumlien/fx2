@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
+import hoggaster.domain.orders.OrderSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
@@ -16,6 +17,8 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Document(collection = "depot")
@@ -213,7 +216,7 @@ public class DbDepot {
         synchronized (positions) {
             Position io = getPositionByInstrumentInternal(currencyPair);
             if (io == null) {
-                io = new Position(currencyPair);
+                io = new Position(currencyPair, OrderSide.buy);
                 positions.add(io);
             }
             io.add(quantity, pricePerShare);
@@ -229,9 +232,10 @@ public class DbDepot {
      * Update our values with the values from the BrokerDepot
      *
      * @param brokerDepot
+     * @param positions
      * @return true if any fields were changed
      */
-    public boolean updateWithValuesFrom(BrokerDepot brokerDepot) {
+    public boolean updateWithValuesFrom(BrokerDepot brokerDepot, List<Position> positions) {
         boolean changed = false;
         if (balance.compareTo(brokerDepot.balance) != 0) {
             LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
@@ -285,6 +289,21 @@ public class DbDepot {
             LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;
+        }
+
+        if(this.positions == null) {
+            this.positions = new HashSet<>();
+        }
+
+
+        if(this.positions.size() != positions.size() ||
+                positions.stream()
+                        .filter(newPosition -> !this.positions.contains(newPosition))
+                        .count() > 0) {
+            changed = true;
+            LOG.info("Position(s) are out of sync, let's update them");
+            this.positions.clear();
+            this.positions.addAll(positions);
         }
 
         return changed;
