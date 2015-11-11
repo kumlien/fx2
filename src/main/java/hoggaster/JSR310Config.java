@@ -36,18 +36,17 @@ public class JSR310Config {
     public SimpleModule customSerializers(ObjectMapper jacksonObjectMapper) {
         jacksonObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        SimpleModule testModule = new SimpleModule("MyModule", VERSION);
-        testModule.addDeserializer(Currency.class, new CurrencyDeserializer());
-        testModule.addSerializer(Currency.class, new CurrencySerializer()); // assuming serializer declares correct class to bind to
-        return testModule;
+        SimpleModule module = new SimpleModule("fx2", VERSION);
+        module.addDeserializer(Currency.class, new CurrencyDeserializer());
+        module.addSerializer(Currency.class, new CurrencySerializer()); // assuming serializer declares correct class to bind to
+        return module;
     }
 
     public final static Version VERSION = VersionUtil.parseVersion(
-            "0.0.1", "hoggaster", "custom-stuff"
+            "0.0.1", "fx2", "custom-stuff"
     );
 
     public static class CurrencySerializer extends StdSerializer<Currency> {
-
         protected CurrencySerializer() {
             super(Currency.class);
         }
@@ -59,7 +58,6 @@ public class JSR310Config {
     }
 
     public static class CurrencyDeserializer extends StdScalarDeserializer<Currency> {
-
         protected CurrencyDeserializer() {
             super(Currency.class);
         }

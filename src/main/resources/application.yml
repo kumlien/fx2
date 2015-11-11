@@ -11,7 +11,7 @@ oanda:
   instruments: ${oanda.restApiUrl}/instruments
   candles: ${oanda.restApiUrl}/candles
   prices: ${oanda.restApiUrl}/prices
-  orders: ${oanda.resources.accounts}/orders
+  orders: ${oanda.resources.account}/orders
   
 ig:
  restApiUrl: https://demo-api.ig.com/gateway/deal/

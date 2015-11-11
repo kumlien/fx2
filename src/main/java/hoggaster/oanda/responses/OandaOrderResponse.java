@@ -1,11 +1,13 @@
 package hoggaster.oanda.responses;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,14 +16,18 @@ public class OandaOrderResponse {
     public final CurrencyPair currencyPair;
     public final Instant time;
     public final Double price;
+
+    @JsonIgnore
     public final Optional<TradeOpened> tradeOpened;
+
+    @JsonIgnore
     public final Optional<OrderOpened> orderOpened;
     public final Optional<List<Trade>> tradesClosed; //In case of a sell order
     public final Optional<List<Trade>> tradesReduced; //In case of a sell order
 
     @JsonCreator
     public OandaOrderResponse(
-            @JsonProperty(value = "currencyPair", required = true) CurrencyPair currencyPair,
+            @JsonProperty(value = "instrument", required = true) CurrencyPair currencyPair,
             @JsonProperty(value = "price", required = true) Double price,
             @JsonProperty(value = "time", required = true) Instant time,
             @JsonProperty("tradeOpened") TradeOpened tradeOpened,
@@ -35,6 +41,22 @@ public class OandaOrderResponse {
         this.orderOpened = Optional.ofNullable(orderOpened);
         this.tradesClosed = Optional.ofNullable(tradesClosed);
         this.tradesReduced = Optional.ofNullable(tradesReduced);
+    }
+
+    public TradeOpened getTradeOpened() {
+        return tradeOpened.isPresent() ? tradeOpened.get() : null;
+    }
+
+    public OrderOpened getOrderOpened() {
+        return orderOpened.isPresent() ? orderOpened.get() : null;
+    }
+
+    public List<Trade> getTradesClosed() {
+        return tradesClosed.isPresent() ? tradesClosed.get() : new ArrayList<>();
+    }
+
+    public List<Trade> getTradesReduced() {
+        return tradesReduced.isPresent() ? tradesReduced.get() : new ArrayList<>();
     }
 
 
@@ -169,6 +191,8 @@ public class OandaOrderResponse {
         public void setExpiry(Long expiry) {
             this.expiry = expiry;
         }
+
+
 
     }
 

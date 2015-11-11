@@ -20,7 +20,7 @@ public class OandaOrderRequest extends LinkedMultiValueMap<String, String> {
             BigDecimal price,
             BigDecimal lowerBound,
             BigDecimal upperBound) {
-        add("currencyPair", currencyPair.name());
+        add("instrument", currencyPair.name());
         add("units", String.valueOf(units));
         add("side", side.name());
         add("type", type.name());

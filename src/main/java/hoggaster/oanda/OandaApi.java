@@ -3,18 +3,28 @@ package hoggaster.oanda;
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.HttpConfig;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.orders.OrderService;
 import hoggaster.oanda.requests.OandaOrderRequest;
-import hoggaster.oanda.responses.*;
+import hoggaster.oanda.responses.Accounts;
+import hoggaster.oanda.responses.Instruments;
+import hoggaster.oanda.responses.OandaAccount;
+import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
+import hoggaster.oanda.responses.OandaInstrument;
+import hoggaster.oanda.responses.OandaOrderResponse;
+import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -195,23 +205,13 @@ public class OandaApi implements BrokerConnection, OrderService {
         LOG.info("Sendning order to oanda: {}", request);
         MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
-        // builder.queryParam("currencyPair", request.currencyPair)
-        // .queryParam("units", request.units)
-        // .queryParam("side", request.side)
-        // .queryParam("type", request.type);
-        // if(null != request.expiry) {
-        // builder.queryParam("expiry", request.expiry);
-        // }
-        // if(null != request.price) {
-        // builder.queryParam("price", request.price).toUriString();
-        // }
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
         LOG.info("Sending order to oanda: {}", uri);
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
         ResponseEntity<OandaOrderResponse> orderResponse = oandaRetryTemplate
                 .execute(context -> {
-                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAllPrices");
-                    return restTemplate.exchange(uri, HttpMethod.POST, defaultHttpEntity, OandaOrderResponse.class);
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "sendOrder");
+                    return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaOrderResponse.class);
                 });
         LOG.info("Received order response: {}", orderResponse.getBody());
         return orderResponse.getBody();

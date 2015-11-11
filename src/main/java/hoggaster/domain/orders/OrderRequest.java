@@ -21,6 +21,7 @@ public class OrderRequest {
 
     public final OrderType type;
 
+    @JsonInclude(Include.NON_NULL)
     public final Instant expiry;
 
     public final BigDecimal price;
@@ -29,25 +30,6 @@ public class OrderRequest {
     //Optional fields
     @JsonInclude(Include.NON_NULL)
     private Double stopLoss;
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("OrderRequest{");
-        sb.append("externalDepotId='").append(externalDepotId).append('\'');
-        sb.append(", currencyPair=").append(currencyPair);
-        sb.append(", units=").append(units);
-        sb.append(", side=").append(side);
-        sb.append(", type=").append(type);
-        sb.append(", expiry=").append(expiry);
-        sb.append(", price=").append(price);
-        sb.append(", stopLoss=").append(stopLoss);
-        sb.append(", takeProfit=").append(takeProfit);
-        sb.append(", trailingStop=").append(trailingStop);
-        sb.append(", lowerBound=").append(lowerBound);
-        sb.append(", upperBound=").append(upperBound);
-        sb.append('}');
-        return sb.toString();
-    }
 
     @JsonInclude(Include.NON_NULL)
     private BigDecimal takeProfit;
@@ -117,5 +99,24 @@ public class OrderRequest {
 
     public void setLowerBound(BigDecimal lowerBound) {
         this.lowerBound = lowerBound;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OrderRequest{");
+        sb.append("externalDepotId='").append(externalDepotId).append('\'');
+        sb.append(", currencyPair=").append(currencyPair);
+        sb.append(", units=").append(units);
+        sb.append(", side=").append(side);
+        sb.append(", type=").append(type);
+        sb.append(", expiry=").append(expiry);
+        sb.append(", price=").append(price);
+        sb.append(", stopLoss=").append(stopLoss);
+        sb.append(", takeProfit=").append(takeProfit);
+        sb.append(", trailingStop=").append(trailingStop);
+        sb.append(", lowerBound=").append(lowerBound);
+        sb.append(", upperBound=").append(upperBound);
+        sb.append('}');
+        return sb.toString();
     }
 }
