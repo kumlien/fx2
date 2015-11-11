@@ -104,11 +104,12 @@ public class DbDepotServiceTest {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
+        DbDepot dbDepot = null;
         CurrencyPair cp = CurrencyPair.AUD_JPY;
         BrokerDepot brokerDepot = new BrokerDepot(externalDepotId,"fake depot", Currency.getInstance("USD"), BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO, BigDecimal.ZERO,0,0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
-            DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", Broker.OANDA, externalDepotId, DbDepot.Type.DEMO);
+            dbDepot = depotService.createDepot(user, "DummyDepot", Broker.OANDA, externalDepotId, DbDepot.Type.DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
             dbDepot.bought(cp, BigDecimal.TEN, BigDecimal.ONE);
             depotService.save(dbDepot);
@@ -125,6 +126,10 @@ public class DbDepotServiceTest {
         } catch (Exception e) {
             LOG.info("error...", e);
             throw e;
+        } finally {
+            if(dbDepot != null) {
+                depotService.deleteDepot(dbDepot);
+            }
         }
     }
 }

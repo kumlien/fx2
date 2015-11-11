@@ -189,10 +189,6 @@ public class DbDepot {
         return positions.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(null);
     }
 
-    private Position getPositionByInstrumentOrNew(CurrencyPair currencyPair) {
-        return positions.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(new Position(currencyPair));
-    }
-
     public Broker getBroker() {
         return broker;
     }
@@ -215,11 +211,11 @@ public class DbDepot {
      */
     public void bought(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare) {
         synchronized (positions) {
-            Position io = getPositionByInstrumentOrNew(currencyPair);
-            //if (io == null) {
-               // io = new Position(currencyPair);
+            Position io = getPositionByInstrumentInternal(currencyPair);
+            if (io == null) {
+                io = new Position(currencyPair);
                 positions.add(io);
-            //}
+            }
             io.add(quantity, pricePerShare);
         }
     }
