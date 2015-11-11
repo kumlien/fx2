@@ -3,6 +3,7 @@ package hoggaster.depot;
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.PersistenceConstructor;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.math.MathContext;
  */
 public class Position {
 
-    private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Position.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Position.class);
 
     public static MathContext MATH_CONTEXT = MathContext.DECIMAL64;
 
@@ -36,12 +37,18 @@ public class Position {
         this.averagePricePerShare = averagePricePerShare;
     }
 
+    public Position(Position original) {
+        this.currencyPair = original.getCurrencyPair();
+        this.quantity = original.quantity;
+        this.averagePricePerShare = original.averagePricePerShare;
+    }
+
     public CurrencyPair getCurrencyPair() {
         return currencyPair;
     }
 
-    public Double getQuantity() {
-        return quantity.doubleValue();
+    public BigDecimal getQuantity() {
+        return quantity;
     }
 
 
@@ -51,7 +58,7 @@ public class Position {
      * @param incomingQuantity
      * @param incomingPPS
      */
-    public Double add(BigDecimal incomingQuantity, BigDecimal incomingPPS) {
+    public BigDecimal add(BigDecimal incomingQuantity, BigDecimal incomingPPS) {
         Preconditions.checkArgument(incomingQuantity != null, "Quantity can't be null");
         Preconditions.checkArgument(incomingQuantity.doubleValue() > 0, "Quantity must be > 0");
         Preconditions.checkArgument(incomingPPS != null, "Price per share can't be null");
@@ -67,7 +74,7 @@ public class Position {
             this.quantity = newTotalQty;
         }
         LOG.info("After adding, the quantity is {} and averagePPS is {}", this.quantity, getAveragePricePerShare());
-        return quantity.doubleValue();
+        return quantity;
     }
 
     /**
@@ -85,7 +92,7 @@ public class Position {
         return this.quantity;
     }
 
-    public Double getAveragePricePerShare() {
-        return averagePricePerShare.doubleValue();
+    public BigDecimal getAveragePricePerShare() {
+        return averagePricePerShare;
     }
 }

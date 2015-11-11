@@ -1,5 +1,6 @@
 package hoggaster.depot;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
@@ -12,6 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.Set;
 
@@ -157,11 +160,37 @@ public class DbDepot {
     }
 
     public boolean ownThisInstrument(CurrencyPair currencyPair) {
-        return findByInstrument(currencyPair) != null;
+        return getPositionByInstrumentInternal(currencyPair) != null;
     }
 
-    private Position findByInstrument(CurrencyPair currencyPair) {
+    /**
+     * Get (a copy of) the position for the specified CurrencyPair
+     *
+     * @param currencyPair
+     * @return A Position or null if not found.
+     */
+    public Position getPositionByInstrument(CurrencyPair currencyPair) {
+        Preconditions.checkArgument(currencyPair != null, "The currencyParameter must be specfied");
+        final Position original = getPositionByInstrumentInternal(currencyPair);
+        if (original == null) return null;
+        return new Position(original);
+    }
+
+    /**
+     * Get a read only view of the current positions.
+     *
+     * @return The current positions.
+     */
+    public Collection<Position> getPositions() {
+        return Collections.unmodifiableCollection(positions);
+    }
+
+    private Position getPositionByInstrumentInternal(CurrencyPair currencyPair) {
         return positions.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(null);
+    }
+
+    private Position getPositionByInstrumentOrNew(CurrencyPair currencyPair) {
+        return positions.stream().filter(io -> io.getCurrencyPair() == currencyPair).findFirst().orElse(new Position(currencyPair));
     }
 
     public Broker getBroker() {
@@ -186,10 +215,11 @@ public class DbDepot {
      */
     public void bought(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare) {
         synchronized (positions) {
-            Position io = findByInstrument(currencyPair);
-            if (io == null) {
-                io = new Position(currencyPair);
-            }
+            Position io = getPositionByInstrumentOrNew(currencyPair);
+            //if (io == null) {
+               // io = new Position(currencyPair);
+                positions.add(io);
+            //}
             io.add(quantity, pricePerShare);
         }
     }
