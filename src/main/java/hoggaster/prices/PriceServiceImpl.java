@@ -1,15 +1,12 @@
 package hoggaster.prices;
 
 import hoggaster.domain.CurrencyPair;
-import org.apache.juli.logging.Log;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by svante.kumlien on 14.10.15.
@@ -17,32 +14,18 @@ import java.time.Instant;
 @Service
 public class PriceServiceImpl implements PriceService {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PriceServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PriceServiceImpl.class);
 
-    private final PriceRepo priceRepo;
+    private final Map<CurrencyPair, Price> cache = new ConcurrentHashMap<>();
 
-    @Autowired
-    public PriceServiceImpl(PriceRepo priceRepo) {
-        this.priceRepo = priceRepo;
-    }
 
     @Override
     public Price getLatestPriceForCurrencyPair(CurrencyPair currencyPair) {
-        return priceRepo.findByCurrencyPairOrderByTimeDesc(currencyPair);
+        return cache.get(currencyPair);
     }
 
     @Override
-    public Price getLatestPriceForCurrencyPairAfterDate(CurrencyPair currencyPair, Instant instant) {
-        return null;
-    }
-
-    @Override
-    public Price store(Price price) {
-        try {
-            return priceRepo.save(price);
-        } catch (DuplicateKeyException e) {
-            LOG.debug("Unable to save price {} due to allready present", price);
-            return price;
-        }
+    public void store(Price price) {
+        cache.put(price.currencyPair, price);
     }
 }
