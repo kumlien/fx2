@@ -9,6 +9,9 @@ import hoggaster.domain.CurrencyPair;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+/**
+ * A order request, right now hard coded to provide what oanda needs.
+ */
 public class OrderRequest {
 
     public final String externalDepotId;

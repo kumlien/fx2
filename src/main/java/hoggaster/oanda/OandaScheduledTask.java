@@ -3,13 +3,13 @@ package hoggaster.oanda;
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
-import hoggaster.depot.DepotMonitorImpl;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.depot.DepotMonitorImpl;
+import hoggaster.domain.prices.Price;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
 import hoggaster.oanda.responses.OandaPrices;
-import hoggaster.prices.Price;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,9 +107,9 @@ public class OandaScheduledTask {
                 try {
                     CurrencyPair.valueOf(i.instrument); //throws if not found
                     instrumentsForMainAccount.add(i);
-                    LOG.info("Fetched an currencyPair: {}", i);
+                    LOG.debug("Fetched a currencyPair: {}", i);
                 } catch (IllegalArgumentException e) {
-                    LOG.warn("Missing CurrencyPair enum for currencyPair {}", i.instrument);
+                    LOG.debug("Missing CurrencyPair enum for currencyPair {}", i.instrument);
                     instrumentsForMainAccount.remove(i.instrument);
                 }
             });

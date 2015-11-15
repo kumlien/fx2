@@ -4,46 +4,61 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.trades.Trade;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class OandaOrderResponse {
+/**
+ * The response returned from an order request sent to Oanda
+ */
+public class OandaOrderResponse implements OrderResponse {
 
-    public final CurrencyPair currencyPair;
-    public final Instant time;
-    public final Double price;
+    private final CurrencyPair currencyPair;
+    private final Instant time;
+    private final BigDecimal price;
 
     @JsonIgnore
-    public final Optional<TradeOpened> tradeOpened;
+    private final Optional<OandaTradeOpened> tradeOpened;
 
     @JsonIgnore
-    public final Optional<OrderOpened> orderOpened;
-    public final Optional<List<Trade>> tradesClosed; //In case of a sell order
-    public final Optional<List<Trade>> tradesReduced; //In case of a sell order
+    private final Optional<OrderOpened> orderOpened;
+    private final Optional<List<OandaTrade>> tradesClosed;
+    private final Optional<List<OandaTrade>> tradesReduced;
+
+    private final Optional<Trade> openedTrade;
 
     @JsonCreator
     public OandaOrderResponse(
             @JsonProperty(value = "instrument", required = true) CurrencyPair currencyPair,
-            @JsonProperty(value = "price", required = true) Double price,
+            @JsonProperty(value = "price", required = true) BigDecimal price,
             @JsonProperty(value = "time", required = true) Instant time,
-            @JsonProperty("tradeOpened") TradeOpened tradeOpened,
+            @JsonProperty("tradeOpened") OandaTradeOpened oandaTradeOpened,
             @JsonProperty("orderOpened") OrderOpened orderOpened,
-            @JsonProperty("tradesClosed") List<Trade> tradesClosed,
-            @JsonProperty("tradesReduced") List<Trade> tradesReduced) {
+            @JsonProperty("tradesClosed") List<OandaTrade> tradesClosed,
+            @JsonProperty("tradesReduced") List<OandaTrade> tradesReduced) {
         this.currencyPair = currencyPair;
         this.price = price;
         this.time = time;
-        this.tradeOpened = Optional.ofNullable(tradeOpened);
+        this.tradeOpened = Optional.ofNullable(oandaTradeOpened);
         this.orderOpened = Optional.ofNullable(orderOpened);
         this.tradesClosed = Optional.ofNullable(tradesClosed);
         this.tradesReduced = Optional.ofNullable(tradesReduced);
+
+        if(tradeOpened.isPresent()) {
+           openedTrade = Optional.of(new Trade(Broker.OANDA, oandaTradeOpened.id, oandaTradeOpened.units, oandaTradeOpened.side, currencyPair, time, price, oandaTradeOpened.takeProfit, oandaTradeOpened.stopLoss, oandaTradeOpened.trailingStop));
+        } else {
+            openedTrade = Optional.empty();
+        }
     }
 
-    public TradeOpened getTradeOpened() {
+    public OandaTradeOpened getTradeOpened() {
         return tradeOpened.isPresent() ? tradeOpened.get() : null;
     }
 
@@ -51,24 +66,29 @@ public class OandaOrderResponse {
         return orderOpened.isPresent() ? orderOpened.get() : null;
     }
 
-    public List<Trade> getTradesClosed() {
+    public List<OandaTrade> getTradesClosed() {
         return tradesClosed.isPresent() ? tradesClosed.get() : new ArrayList<>();
     }
 
-    public List<Trade> getTradesReduced() {
+    public List<OandaTrade> getTradesReduced() {
         return tradesReduced.isPresent() ? tradesReduced.get() : new ArrayList<>();
     }
 
+    @Override
+    public Optional<Trade> getOpenedTrade() {
+        return openedTrade;
+    }
 
-    public static class Trade {
+
+    public static class OandaTrade {
         public final Long id;
-        public final Long units;
+        public final BigDecimal units;
         public final OrderSide side;
 
         @JsonCreator
-        public Trade(
+        public OandaTrade(
                 @JsonProperty("id") Long id,
-                @JsonProperty("units") Long units,
+                @JsonProperty("units") BigDecimal units,
                 @JsonProperty("side") OrderSide side) {
             this.id = id;
             this.units = units;
@@ -77,19 +97,19 @@ public class OandaOrderResponse {
     }
 
 
-    public static class TradeOpened extends Trade {
-        public final Long takeProfit;
-        public final Long stopLoss;
-        public final Long trailingStop;
+    public static class OandaTradeOpened extends OandaTrade {
+        public final BigDecimal takeProfit;
+        public final BigDecimal stopLoss;
+        public final BigDecimal trailingStop;
 
         @JsonCreator
-        public TradeOpened(
+        public OandaTradeOpened(
                 @JsonProperty("id") Long id,
-                @JsonProperty("units") Long units,
+                @JsonProperty("units") BigDecimal units,
                 @JsonProperty("side") OrderSide side,
-                @JsonProperty("takeProfit") Long takeProfit,
-                @JsonProperty("stopLoss") Long stopLoss,
-                @JsonProperty("trailingStop") Long trailingStop) {
+                @JsonProperty("takeProfit") BigDecimal takeProfit,
+                @JsonProperty("stopLoss") BigDecimal stopLoss,
+                @JsonProperty("trailingStop") BigDecimal trailingStop) {
             super(id, units, side);
             this.takeProfit = takeProfit;
             this.stopLoss = stopLoss;
@@ -99,7 +119,7 @@ public class OandaOrderResponse {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            builder.append("TradeOpened [id=").append(id).append(", units=")
+            builder.append("OandaTradeOpened [id=").append(id).append(", units=")
                     .append(units).append(", side=").append(side)
                     .append(", takeProfit=").append(takeProfit)
                     .append(", stopLoss=").append(stopLoss)
@@ -191,9 +211,6 @@ public class OandaOrderResponse {
         public void setExpiry(Long expiry) {
             this.expiry = expiry;
         }
-
-
-
     }
 
 

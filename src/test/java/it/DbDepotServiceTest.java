@@ -1,26 +1,18 @@
 package it;
 
-import hoggaster.Application;
-import hoggaster.JSR310Config;
 import hoggaster.MongoConfig;
-import hoggaster.depot.DbDepot;
-import hoggaster.depot.Depot;
-import hoggaster.depot.DepotRepo;
-import hoggaster.depot.DepotService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.oanda.OandaApi;
-import hoggaster.user.User;
-import org.junit.Assert;
-import org.junit.Before;
+import hoggaster.domain.depot.DbDepot;
+import hoggaster.domain.depot.DepotRepo;
+import hoggaster.domain.depot.DepotService;
+import hoggaster.domain.user.User;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +22,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.math.BigDecimal;
 import java.util.Currency;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

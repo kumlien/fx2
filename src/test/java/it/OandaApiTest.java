@@ -39,7 +39,7 @@ public class OandaApiTest {
     CandleService candleService;
 
     @Test
-
+    @Ignore
     public void testGetBidAskCandles() throws InterruptedException, UnsupportedEncodingException {
         Instant end = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         OandaBidAskCandlesResponse midPointCandles = oanda.getBidAskCandles(CurrencyPair.EUR_USD, CandleStickGranularity.END_OF_DAY, new Integer(10), null, end, false);

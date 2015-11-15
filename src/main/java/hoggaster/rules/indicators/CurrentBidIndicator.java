@@ -1,13 +1,12 @@
 package hoggaster.rules.indicators;
 
 import com.google.common.base.Preconditions;
-import hoggaster.prices.Price;
+import hoggaster.domain.prices.Price;
 import hoggaster.robot.RobotExecutionContext;
-import hoggaster.rules.MarketUpdateType;
 
 import java.math.BigDecimal;
 
-import static hoggaster.rules.MarketUpdateType.*;
+import static hoggaster.rules.MarketUpdateType.PRICE;
 
 /**
  * Indicator used to get the current bid value.

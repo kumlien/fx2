@@ -1,12 +1,12 @@
 package hoggaster.robot;
 
 import hoggaster.candles.CandleService;
-import hoggaster.depot.Depot;
-import hoggaster.depot.DepotService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.prices.Price;
+import hoggaster.domain.depot.Depot;
+import hoggaster.domain.depot.DepotService;
+import hoggaster.domain.prices.Price;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.conditions.Side;

@@ -4,13 +4,12 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
-                %d{dd/MM/yy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+                %d{dd/MM/yy HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
             </Pattern>
         </layout>
     </appender>
 
-    <appender name="FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- file>fx2.log</file -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
@@ -24,8 +23,7 @@
         </encoder>
     </appender>
 
-    <appender name="TRANSACTION_LOG"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="TRANSACTION_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
             <fileNamePattern>transactions.%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -38,8 +36,7 @@
         </encoder>
     </appender>
 
-    <appender name="DECISION_LOG"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="DECISION_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
             <fileNamePattern>decision.%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -52,8 +49,7 @@
         </encoder>
     </appender>
 
-    <appender name="OANDA_LOG"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="OANDA_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
             <fileNamePattern>oanda.%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -66,12 +62,11 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework.web.servlet" level="debug"
-            additivity="false">
+    <logger name="org.springframework.web.servlet" level="info" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>
