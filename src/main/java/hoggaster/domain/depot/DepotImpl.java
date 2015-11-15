@@ -9,6 +9,7 @@ import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.trades.TradeService;
+import hoggaster.oanda.exceptions.TradingHaltedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import java.util.Objects;
 /**
  * Used to handle logic for a depot.
  * Not so found of this approach, splitting persistent stuff and business logic
- *
+ * <p>
  * Created by svante2 on 2015-10-11.
  */
 public class DepotImpl implements Depot {
@@ -54,7 +55,7 @@ public class DepotImpl implements Depot {
     @Override
     public void sell(CurrencyPair currencyPair, String robotId) {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
-        LOG.info("We are told by robot '{}' to sell {}",robotId, currencyPair);
+        LOG.info("We are told by robot '{}' to sell {}", robotId, currencyPair);
         if (!dbDepot.ownThisInstrument(currencyPair)) {
             LOG.info("Nahh, we don't own {} yet...", currencyPair.name());
             return;
@@ -72,7 +73,7 @@ public class DepotImpl implements Depot {
      * Fourth -
      */
     public void buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
-        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}",robotId, partOfAvailableMargin, currencyPair);
+        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}", robotId, partOfAvailableMargin, currencyPair);
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         if (dbDepot.ownThisInstrument(currencyPair)) {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
@@ -85,7 +86,7 @@ public class DepotImpl implements Depot {
 
         //TODO Check for margin below 50%
         BigDecimal newMarginAsPartOfBalance = getNewMarginAsPartOfBalance(dbDepot, realUnits.multiply(xRate, MathContext.DECIMAL32).multiply(dbDepot.getMarginRate(), MathContext.DECIMAL32));
-        if(newMarginAsPartOfBalance.compareTo(MARGIN_BALANCE_THRESHOLD) < 0 ) {
+        if (newMarginAsPartOfBalance.compareTo(MARGIN_BALANCE_THRESHOLD) < 0) {
             LOG.warn("Sorry, no buy since the margin/current balance would drop below the specified threshold (units: {}, xRate: {}, threshold: {}, current balance: {}", realUnits, xRate, MARGIN_BALANCE_THRESHOLD, dbDepot.getBalance());
             return;
         }
@@ -94,27 +95,32 @@ public class DepotImpl implements Depot {
 
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
         order.setUpperBound(calculateUpperBound(marketUpdate));
-        OrderResponse response = orderService.sendOrder(order);
-        LOG.info("Order away and we got a response! {}", response);
-        if(response.getOpenedTrade().isPresent()) {
-            Trade newTrade = response.getOpenedTrade().get();
-            LOG.info("Trade opened: {}", newTrade);
-            dbDepot.bought(currencyPair, newTrade.units, newTrade.openPrice);
-        } else {
-            LOG.warn("No trade opened, better check open orders!");
+        try {
+            OrderResponse response = orderService.sendOrder(order);
+            LOG.info("Order away and we got a response! {}", response);
+            if (response.getOpenedTrade().isPresent()) {
+                Trade newTrade = response.getOpenedTrade().get();
+                LOG.info("Trade opened: {}", newTrade);
+                dbDepot.bought(currencyPair, newTrade.units, newTrade.openPrice);
+            } else {
+                LOG.warn("No trade opened, better check open orders!");
+            }
+            depotService.save(dbDepot);
+        } catch (TradingHaltedException the) {
+            LOG.info("No order placed since the trading is halted for {} ({})", currencyPair, the.getMessage());
         }
 
 
-        depotService.save(dbDepot);
+
         //TODO save order/trade here..
     }
 
 
     private static BigDecimal calculateUpperBound(MarketUpdate marketUpdate) {
-        if(marketUpdate instanceof Price) {
+        if (marketUpdate instanceof Price) {
             return ((Price) marketUpdate).ask.multiply(UPPER_BOUND_FACTOR);
         }
-        if(marketUpdate instanceof Candle) {
+        if (marketUpdate instanceof Candle) {
             return ((Candle) marketUpdate).closeAsk.multiply(UPPER_BOUND_FACTOR);
         }
         throw new RuntimeException("Mehhh..." + marketUpdate.getClass().getSimpleName());
@@ -123,7 +129,7 @@ public class DepotImpl implements Depot {
 
     /**
      * This calculation uses the following formula:
-     *
+     * <p>
      * Margin Available * (margin ratio) / ({BASE}/{HOME Currency} Exchange Rate)
      * For example, suppose:
      * Home Currency: USD
@@ -131,7 +137,7 @@ public class DepotImpl implements Depot {
      * Margin Available: 100
      * Margin Ratio : 20:1
      * Base / Home Currency: GBP/USD = 1.584
-     *
+     * <p>
      * Then,
      * Units = (100 * 20) / 1.584
      * Units = 1262
@@ -142,7 +148,7 @@ public class DepotImpl implements Depot {
         LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, dbDepot.getMarginAvailable(), marginRatio);
 
         BigDecimal totalAmount = dbDepot.getMarginAvailable().divide(marginRatio, MathContext.DECIMAL32);
-        LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}",homeCurrency, totalAmount.longValue());
+        LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}", homeCurrency, totalAmount.longValue());
         BigDecimal totalUnits = totalAmount.divide(xRate, MathContext.DECIMAL32);
         LOG.info("Total units we can buy ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
 
@@ -171,13 +177,13 @@ public class DepotImpl implements Depot {
     }
 
     static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
-        if(homeCurrency == baseCurrency) return new BigDecimal("1");
+        if (homeCurrency == baseCurrency) return new BigDecimal("1");
         CurrencyPair baseAndHomePair;
         boolean isInverse = false;
         try {
             baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
-        } catch (NoSuchCurrencyPairException e){
-            LOG.info("No currency pair found for {}_{}, try with the inverse...",baseCurrency, homeCurrency, e.getMessage());
+        } catch (NoSuchCurrencyPairException e) {
+            LOG.info("No currency pair found for {}_{}, try with the inverse...", baseCurrency, homeCurrency, e.getMessage());
             try {
                 baseAndHomePair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
             } catch (NoSuchCurrencyPairException ee) {
@@ -189,7 +195,7 @@ public class DepotImpl implements Depot {
         }
         //get the price...
         final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
-        if(isInverse) {
+        if (isInverse) {
             return BigDecimal.ONE.divide(lastPriceForBaseAndHome.bid, MathContext.DECIMAL32);
         }
         return lastPriceForBaseAndHome.bid;

@@ -1,6 +1,7 @@
 package hoggaster.web;
 
 import hoggaster.domain.user.web.UserNotFoundException;
+import hoggaster.oanda.exceptions.TradingHaltedException;
 import org.springframework.hateoas.VndErrors;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,5 +39,10 @@ public class ControllerErrorHandler {
         return new VndErrors("error", ex.getMessage());
     }
 
-
+    @ResponseBody
+    @ExceptionHandler(TradingHaltedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    VndErrors tradingHaltedExceptionHandler(TradingHaltedException ex) {
+        return new VndErrors("error", ex.getMessage());
+    }
 }

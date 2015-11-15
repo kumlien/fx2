@@ -214,11 +214,10 @@ public class OandaApi implements BrokerConnection, OrderService {
     @Override
     @Timed
     public OandaOrderResponse sendOrder(OrderRequest request) {
-        LOG.info("Sendning order to oanda: {}", request);
         MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
-        LOG.info("Sending order to oanda: {}", uri);
+        LOG.info("Sendning order to {}: {}", uri, request);
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
         ResponseEntity<OandaOrderResponse> orderResponse = oandaRetryTemplate
                 .execute(context -> {

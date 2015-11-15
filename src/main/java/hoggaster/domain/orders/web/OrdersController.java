@@ -29,8 +29,10 @@ public class OrdersController {
     @RequestMapping(method = RequestMethod.POST)
     public OandaOrderResponse placeOrder(@RequestBody OrderRequest request) {
         LOG.info("Sending order to broker: {}", request);
+
         OandaOrderResponse result = oandaOrderService.sendOrder(request);
         LOG.info("Got response: {}", result);
         return result;
+
     }
 }

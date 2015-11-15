@@ -2,9 +2,10 @@ package hoggaster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
-import hoggaster.oanda.responses.ErrorResponse;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.exceptions.RateLimitException;
+import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.oanda.responses.ErrorResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
@@ -23,6 +24,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
+import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
@@ -42,21 +44,21 @@ public class HttpConfig {
     public static final int BACK_OFF_PERIOD = 2000;
     public static final int MAX_ATTEMPTS = 3;
     public static final String OANDA_CALL_CTX_ATTR = "oanda.call";
-    private static Logger LOG = LoggerFactory.getLogger(Application.class);
+    private static Logger LOG = LoggerFactory.getLogger(HttpConfig.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean(name = "oandaRetryTemplate")
-    public RetryTemplate oandaRetryTemplate() {
+    public RetryTemplate oandaRetryTemplate(SimpleRetryPolicy retryPolicy, BackOffPolicy backOffPolicy) {
         final RetryTemplate retryTemplate = new RetryTemplate();
-        retryTemplate.setRetryPolicy(simpleRetryPolicy());
-        retryTemplate.setBackOffPolicy(fixedBackoffPolicy());
+        retryTemplate.setRetryPolicy(retryPolicy);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
         retryTemplate.registerListener(new LoggingRetryListener());
         return retryTemplate;
     }
 
     @Bean
-    public SimpleRetryPolicy simpleRetryPolicy() {
+    public SimpleRetryPolicy retryPolicy() {
         final Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
         retryableExceptions.put(HttpServerErrorException.class, true);
         retryableExceptions.put(ResourceAccessException.class, true);
@@ -66,7 +68,7 @@ public class HttpConfig {
     }
 
     @Bean
-    public FixedBackOffPolicy fixedBackoffPolicy() {
+    public FixedBackOffPolicy backoffPolicy() {
         final FixedBackOffPolicy backoffPolicy = new FixedBackOffPolicy();
         backoffPolicy.setBackOffPeriod(BACK_OFF_PERIOD);
         return backoffPolicy;
@@ -82,14 +84,13 @@ public class HttpConfig {
         @Override
         public <T, E extends Throwable> void close(final RetryContext context, final RetryCallback<T, E> callback, final Throwable throwable) {
             if (throwable != null) {
-                LOG.info("Final {} retry attempt failed, exception will be propagated.", context.getAttribute(OANDA_CALL_CTX_ATTR), throwable);
+                LOG.info("Final {} retry attempt failed, exception will be propagated.", context.getAttribute(OANDA_CALL_CTX_ATTR));
             }
         }
 
         @Override
         public <T, E extends Throwable> void onError(final RetryContext context, final RetryCallback<T, E> callback, final Throwable throwable) {
-            LOG.info("{} call failed with {}, retryCount is {}", context.getAttribute(OANDA_CALL_CTX_ATTR), throwable.getClass().getSimpleName(),
-                    context.getRetryCount());
+            LOG.info("{} call failed with {}, retryCount is {}", context.getAttribute(OANDA_CALL_CTX_ATTR), throwable.getClass().getSimpleName(),context.getRetryCount());
         }
     }
 
@@ -108,12 +109,12 @@ public class HttpConfig {
             public void handleError(ClientHttpResponse response) throws IOException {
                 if (response.getBody() != null) {
                     String body = CharStreams.toString(new InputStreamReader(response.getBody()));
-                    LOG.error("Received a {} from oanda with body {}", response.getRawStatusCode(), body);
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
-                    if(errorResponse.code == 68) {
-                        throw new RateLimitException(errorResponse.message);
+                    switch(errorResponse.code) {
+                        case 24: throw new TradingHaltedException(errorResponse.message);
+                        case 68: throw new RateLimitException(errorResponse.message);
+                        default: LOG.warn("Unhandled error code from Oanda: {} ({})", errorResponse.code, errorResponse.message);
                     }
-                    throw new RuntimeException(errorResponse.toString()); //TODO Own exception
                 }
                 super.handleError(response);
             }
