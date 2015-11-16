@@ -1,5 +1,6 @@
 package hoggaster.domain.trades;
 
+import com.google.common.base.MoreObjects;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.orders.OrderSide;
@@ -23,9 +24,9 @@ public class Trade {
 
     private TradeStatus status;
 
-    private final String depotId;
+    public final String depotId;
 
-    private final String robotId;
+    public final String robotId;
 
     public final Broker broker;
 
@@ -104,13 +105,38 @@ public class Trade {
         this(null, TradeStatus.OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, null, null, null, null, null);
     }
 
-    public Trade(Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair currencyPair, Instant time, BigDecimal price, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop) {
-        this(null, null, broker, brokerId, units, side, currencyPair, time, price, takeProfit, stopLoss, trailingStop);
-    }
 
 
     public String getId() {
         return id;
     }
 
+    public TradeStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .add("status", status)
+                .add("depotId", depotId)
+                .add("robotId", robotId)
+                .add("broker", broker)
+                .add("brokerId", brokerId)
+                .add("units", units)
+                .add("side", side)
+                .add("instrument", instrument)
+                .add("openTime", openTime)
+                .add("openPrice", openPrice)
+                .add("takeProfit", takeProfit)
+                .add("stopLoss", stopLoss)
+                .add("trailingStop", trailingStop)
+                .add("trailingAmount", trailingAmount)
+                .add("closePrice", closePrice)
+                .add("gainPerUnit", gainPerUnit)
+                .add("totalGain", totalGain)
+                .add("closeTime", closeTime)
+                .toString();
+    }
 }

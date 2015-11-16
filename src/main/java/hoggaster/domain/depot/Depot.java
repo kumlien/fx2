@@ -2,6 +2,7 @@ package hoggaster.domain.depot;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
+import hoggaster.domain.orders.OrderResponse;
 
 import java.math.BigDecimal;
 
@@ -24,5 +25,5 @@ public interface Depot {
      * @param marketUpdate
      * @param robotId
      */
-    void buy(CurrencyPair currencyPair, BigDecimal percentageOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
+    OrderResponse buy(CurrencyPair currencyPair, BigDecimal percentageOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
 }

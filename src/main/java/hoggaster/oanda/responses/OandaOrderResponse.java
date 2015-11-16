@@ -32,8 +32,6 @@ public class OandaOrderResponse implements OrderResponse {
     private final Optional<List<OandaTrade>> tradesClosed;
     private final Optional<List<OandaTrade>> tradesReduced;
 
-    private final Optional<Trade> openedTrade;
-
     @JsonCreator
     public OandaOrderResponse(
             @JsonProperty(value = "instrument", required = true) CurrencyPair currencyPair,
@@ -51,15 +49,7 @@ public class OandaOrderResponse implements OrderResponse {
         this.tradesClosed = Optional.ofNullable(tradesClosed);
         this.tradesReduced = Optional.ofNullable(tradesReduced);
 
-        if(tradeOpened.isPresent()) {
-           openedTrade = Optional.of(new Trade(Broker.OANDA, oandaTradeOpened.id, oandaTradeOpened.units, oandaTradeOpened.side, currencyPair, time, price, oandaTradeOpened.takeProfit, oandaTradeOpened.stopLoss, oandaTradeOpened.trailingStop));
-        } else {
-            openedTrade = Optional.empty();
-        }
-    }
 
-    public OandaTradeOpened getTradeOpened() {
-        return tradeOpened.isPresent() ? tradeOpened.get() : null;
     }
 
     public OrderOpened getOrderOpened() {
@@ -75,8 +65,18 @@ public class OandaOrderResponse implements OrderResponse {
     }
 
     @Override
-    public Optional<Trade> getOpenedTrade() {
-        return openedTrade;
+    public boolean tradeWasOpened() {
+        return tradeOpened.isPresent();
+    }
+
+    @Override
+    public Optional<Trade> getOpenedTrade(String depotId, String robotId) {
+        if(tradeOpened.isPresent()) {
+            OandaTradeOpened ot = tradeOpened.get();
+            return Optional.of(new Trade(depotId, robotId, Broker.OANDA, ot.id, ot.units, ot.side, currencyPair, time, price, ot.takeProfit, ot.stopLoss, ot.trailingStop));
+        } else {
+            return Optional.empty();
+        }
     }
 
 

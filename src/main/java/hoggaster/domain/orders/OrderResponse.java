@@ -6,7 +6,9 @@ import java.util.Optional;
 
 public interface OrderResponse {
 
-    Optional<Trade> getOpenedTrade();
+    boolean tradeWasOpened();
+
+    Optional<Trade> getOpenedTrade(String depotId, String robotId);
 
 
 }

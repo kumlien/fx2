@@ -71,13 +71,15 @@ public class DepotImpl implements Depot {
      * Second - Calculate the value of the order in the depot currency (dollar for us). For now we aim to buy for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
+     *
+     * TODO Refac MarketUpdate -> BigDecimal ('trigger price' or something along those lines)
      */
-    public void buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+    public OrderResponse buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
         LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}", robotId, partOfAvailableMargin, currencyPair);
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         if (dbDepot.ownThisInstrument(currencyPair)) {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
-            return;
+            return null;
         }
         LOG.info("We should buy since we don't own any {} yet!", currencyPair.name());
         BigDecimal xRate = getCurrentRate(dbDepot.currency, currencyPair.baseCurrency, priceService);
@@ -88,20 +90,22 @@ public class DepotImpl implements Depot {
         BigDecimal newMarginAsPartOfBalance = getNewMarginAsPartOfBalance(dbDepot, realUnits.multiply(xRate, MathContext.DECIMAL32).multiply(dbDepot.getMarginRate(), MathContext.DECIMAL32));
         if (newMarginAsPartOfBalance.compareTo(MARGIN_BALANCE_THRESHOLD) < 0) {
             LOG.warn("Sorry, no buy since the margin/current balance would drop below the specified threshold (units: {}, xRate: {}, threshold: {}, current balance: {}", realUnits, xRate, MARGIN_BALANCE_THRESHOLD, dbDepot.getBalance());
-            return;
+            return null;
         }
 
         LOG.info("The number of units we will buy ({} * {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
         order.setUpperBound(calculateUpperBound(marketUpdate));
+        OrderResponse response = null;
         try {
-            OrderResponse response = orderService.sendOrder(order);
+            response = orderService.sendOrder(order);
             LOG.info("Order away and we got a response! {}", response);
-            if (response.getOpenedTrade().isPresent()) {
-                Trade newTrade = response.getOpenedTrade().get();
-                LOG.info("Trade opened: {}", newTrade);
+            if (response.tradeWasOpened()) {
+                Trade newTrade = response.getOpenedTrade(dbDepotId, robotId).get();
                 dbDepot.bought(currencyPair, newTrade.units, newTrade.openPrice);
+                tradeService.saveNewTrade(newTrade);
+                LOG.info("Trade opened: {}", newTrade);
             } else {
                 LOG.warn("No trade opened, better check open orders!");
             }
@@ -110,7 +114,7 @@ public class DepotImpl implements Depot {
             LOG.info("No order placed since the trading is halted for {} ({})", currencyPair, the.getMessage());
         }
 
-
+        return response;
 
         //TODO save order/trade here..
     }

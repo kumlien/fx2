@@ -7,7 +7,7 @@ import java.util.Collection;
  */
 public interface TradeService {
 
-    Trade createNewTrade(Trade trade);
+    Trade saveNewTrade(Trade trade);
 
     void updateTrade(Trade trade);
 
