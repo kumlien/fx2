@@ -300,7 +300,7 @@ public class DbDepot {
                         .filter(newPosition -> !this.positions.contains(newPosition))
                         .count() > 0) {
             changed = true;
-            LOG.info("Position(s) are out of sync, let's update them");
+            LOG.info("Positions updated with new values for dbDepot {}: {} -> {}", id, this.positions, positions);
             this.positions.clear();
             this.positions.addAll(positions);
         }

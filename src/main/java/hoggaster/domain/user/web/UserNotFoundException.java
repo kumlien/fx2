@@ -5,7 +5,7 @@ package hoggaster.domain.user.web;
  */
 public class UserNotFoundException extends RuntimeException {
 
-    UserNotFoundException(String username) {
+    public UserNotFoundException(String username) {
         super("No user found with username '" + username + "'");
     }
 }

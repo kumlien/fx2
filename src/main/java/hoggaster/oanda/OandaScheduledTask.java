@@ -97,7 +97,7 @@ public class OandaScheduledTask {
     /**
      * Fetch all instruments available for the main account and update the list we use when fetching prices.
      */
-    @Scheduled(fixedRate = 60000, initialDelay = 5000)
+    @Scheduled(fixedRate = 300000, initialDelay = 5000)
     void fetchInstruments() {
         try {
             LOG.info("Start fetching currencyPair definitions");
@@ -126,7 +126,7 @@ public class OandaScheduledTask {
     }
 
 
-    //@Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
         try {
             if (instrumentsForMainAccount == null) {
