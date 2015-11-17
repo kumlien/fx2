@@ -1,5 +1,6 @@
 package hoggaster.domain.depot;
 
+import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Currency;
 import java.util.Objects;
 
@@ -28,8 +31,17 @@ public class DepotImpl implements Depot {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotImpl.class);
+
+    //Use this factor to calculate upper bound for buy orders
     private static final BigDecimal UPPER_BOUND_FACTOR = new BigDecimal("1.01");
+
+    //Don't buy if margin would go below this threshold as part of balance
     private static final BigDecimal MARGIN_BALANCE_THRESHOLD = new BigDecimal("0.5");
+
+    //Never spend more thant 5% of current available margin
+    private static final BigDecimal MAX_PART_OF_MARGIN_TO_SPEND = new BigDecimal("0.05");
+
+    private static final Duration MAX_TIME_SINCE_LAST_DEPOT_SYNC = Duration.ofMinutes(5);
 
     private final String dbDepotId;
 
@@ -73,15 +85,31 @@ public class DepotImpl implements Depot {
      * Fourth -
      *
      * TODO Refac MarketUpdate -> BigDecimal ('trigger price' or something along those lines)
+     * TODO Throw exceptions instead of returning null
      */
     public OrderResponse buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
         LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}", robotId, partOfAvailableMargin, currencyPair);
+        Preconditions.checkArgument(currencyPair != null, "The currency pair must not be null");
+        Preconditions.checkArgument(partOfAvailableMargin != null, "The partOfAvailableMargin must not be null");
+        Preconditions.checkArgument(partOfAvailableMargin.compareTo(BigDecimal.ZERO) > 0, "The partOfAvailableMargin must not be > 0");
+        Preconditions.checkArgument(partOfAvailableMargin.compareTo(MAX_PART_OF_MARGIN_TO_SPEND) <= 0, "The partOfAvailableMargin must not be > " + MAX_PART_OF_MARGIN_TO_SPEND);
+
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
+        //Don't allow the trade if the last sync is too old
+        if(dbDepot.getLastSynchronizedWithBroker() == null || dbDepot.getLastSynchronizedWithBroker().isBefore(Instant.now().minus(MAX_TIME_SINCE_LAST_DEPOT_SYNC))) {
+            LOG.warn("Unable to buy since the depot hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
+            return null;
+        }
+
+        if(!dbDepot.getLastSyncOk()) {
+            LOG.warn("Unable to buy since the last sync attempt (at {}) with the broker ({}) was unsuccessful", dbDepot.getLastSynchronizedWithBroker(), dbDepot.broker);
+            return null;
+        }
+
         if (dbDepot.ownThisInstrument(currencyPair)) {
             LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
             return null;
         }
-        LOG.info("We should buy since we don't own any {} yet!", currencyPair.name());
         BigDecimal xRate = getCurrentRate(dbDepot.currency, currencyPair.baseCurrency, priceService);
         BigDecimal maxUnits = calculateMaxUnitsWeCanBuy(dbDepot, currencyPair.baseCurrency, xRate);
         final BigDecimal realUnits = maxUnits.multiply(partOfAvailableMargin, MathContext.DECIMAL32);
@@ -93,15 +121,17 @@ public class DepotImpl implements Depot {
             return null;
         }
 
-        LOG.info("The number of units we will buy ({} * {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
+        LOG.info("The number of units we will buy (maxUnits: {} * partOfAvailableMaring: {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
-        order.setUpperBound(calculateUpperBound(marketUpdate));
+        if(marketUpdate != null) {
+            order.setUpperBound(calculateUpperBound(marketUpdate));
+        }
         OrderResponse response = null;
         try {
             response = orderService.sendOrder(order);
             LOG.info("Order away and we got a response! {}", response);
-            if (response.tradeWasOpened()) {
+            if (response != null && response.tradeWasOpened()) {
                 Trade newTrade = response.getOpenedTrade(dbDepotId, robotId).get();
                 dbDepot.bought(currencyPair, newTrade.units, newTrade.openPrice);
                 tradeService.saveNewTrade(newTrade);
@@ -115,8 +145,6 @@ public class DepotImpl implements Depot {
         }
 
         return response;
-
-        //TODO save order/trade here..
     }
 
 
@@ -181,7 +209,7 @@ public class DepotImpl implements Depot {
     }
 
     static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
-        if (homeCurrency == baseCurrency) return new BigDecimal("1");
+        if (homeCurrency == baseCurrency) return BigDecimal.ONE;
         CurrencyPair baseAndHomePair;
         boolean isInverse = false;
         try {
@@ -197,6 +225,7 @@ public class DepotImpl implements Depot {
             LOG.info("Found currency pair {}, will use that one in lookup and use inverse x-rate", baseAndHomePair);
             isInverse = true;
         }
+
         //get the price...
         final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
         if (isInverse) {

@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by svante.kumlien on 14.10.15.
+ *
+ * TODO If not found in cache, look up from some broker
  */
 @Service
 public class PriceServiceImpl implements PriceService {

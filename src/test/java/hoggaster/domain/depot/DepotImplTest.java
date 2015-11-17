@@ -64,11 +64,13 @@ public class DepotImplTest extends TestCase {
     @Captor
     private ArgumentCaptor<OrderRequest> rac;
 
+    DbDepot dbDepot;
+
 
 
     @Before
     public void setUp() throws Exception {
-        DbDepot dbDepot = new DbDepot(
+        dbDepot = new DbDepot(
                 DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
@@ -112,8 +114,8 @@ public class DepotImplTest extends TestCase {
 
     @Test
     public void testBuyBreakMarginRule() throws Exception {
-        Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
-        depot.buy(cp, new BigDecimal("0.51"), candle, "robot_id");
+        dbDepot.setMarginAvailable(BigDecimal.ZERO);
+        depot.buy(cp, new BigDecimal("0.05"), null, "robot_id");
         Mockito.verifyZeroInteractions(orderService);
     }
 
