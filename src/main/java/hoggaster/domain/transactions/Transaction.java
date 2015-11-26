@@ -1,4 +1,4 @@
-package hoggaster.domain.transaction;
+package hoggaster.domain.transactions;
 
 import hoggaster.domain.CurrencyPair;
 import org.springframework.data.annotation.Id;

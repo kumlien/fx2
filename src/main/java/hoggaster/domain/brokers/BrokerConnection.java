@@ -2,7 +2,7 @@ package hoggaster.domain.brokers;
 
 import com.codahale.metrics.annotation.Timed;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depot.Position;
+import hoggaster.domain.depots.Position;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 

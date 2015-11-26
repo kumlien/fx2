@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,9 +27,6 @@ public class DepotMonitorImpl implements DepotMonitor {
     private final DepotRepo depotRepo;
 
     private final BrokerConnection broker;
-
-    //TODO Define (per dbDepot)
-    private static final BigDecimal MIN_MARGIN_AVAILABLE = new BigDecimal(1000);
 
     @Autowired
     public DepotMonitorImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection broker) {
@@ -56,12 +52,12 @@ public class DepotMonitorImpl implements DepotMonitor {
     public DbDepot syncDepot(DbDepot dbDepot) {
         LOG.info("Start syncing dbDepot {}", dbDepot);
         BrokerDepot depotFromBroker = broker.getDepot(dbDepot.getBrokerId());
-        final List<Position> positions = broker.getPositions(dbDepot.brokerId);
-
         if (depotFromBroker == null) {
             LOG.error("Unable to fetch matching dbDepot from broker: {}", dbDepot);
             dbDepot.setLastSyncOk(false);
         } else {
+            final List<Position> positions = broker.getPositions(dbDepot.brokerId);
+            //final List<Trade> openTrades = broker.getOpenTrades(dbDepot.brokerId);
             dbDepot.setLastSyncOk(true);
             dbDepot.setLastSynchronizedWithBroker(Instant.now());
             dbDepot.updateWithValuesFrom(depotFromBroker, positions);

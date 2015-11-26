@@ -5,10 +5,11 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.depot.DbDepot;
-import hoggaster.domain.depot.DepotRepo;
-import hoggaster.domain.depot.DepotService;
-import hoggaster.domain.user.User;
+import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.depots.DepotRepo;
+import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.users.User;
+import hoggaster.oanda.OandaProperties;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@EnableConfigurationProperties(value = {OandaProperties.class})
 @SpringApplicationConfiguration(classes = {DbDepotServiceTest.class, MongoConfig.class})
 @Configuration
 @ComponentScan(basePackageClasses = {DepotService.class})
@@ -47,10 +50,13 @@ public class DbDepotServiceTest {
     @Autowired
     private BrokerConnection brokerConnection;
 
+    @Autowired
+    OandaProperties properties;
+
 
     @Bean(name = "OandaBrokerConnection")
     public BrokerConnection brokerConnection() {
-        return mock(BrokerConnection.class);
+       return mock(BrokerConnection.class);
     }
 
 
@@ -61,8 +67,11 @@ public class DbDepotServiceTest {
     public void testCreatePellesDepot() throws Exception {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
+        String brokerId = "9678914";
+        BrokerDepot brokerDepot = new BrokerDepot(brokerId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        when(brokerConnection.getDepot(eq(brokerId))).thenReturn(brokerDepot);
         try {
-            DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", Broker.OANDA, "9678914", DbDepot.Type.DEMO);
+            DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", Broker.OANDA, brokerId, DbDepot.Type.DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
         } catch (Exception e) {
             LOG.info("error...", e);
@@ -76,7 +85,7 @@ public class DbDepotServiceTest {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
-        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId,"fake depot", Currency.getInstance("USD"), BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO, BigDecimal.ZERO,0,0);
+        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
             DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", Broker.OANDA, externalDepotId, DbDepot.Type.DEMO);
@@ -96,7 +105,7 @@ public class DbDepotServiceTest {
         String externalDepotId = "123123123";
         DbDepot dbDepot = null;
         CurrencyPair cp = CurrencyPair.AUD_JPY;
-        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId,"fake depot", Currency.getInstance("USD"), BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO, BigDecimal.ZERO,0,0);
+        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
             dbDepot = depotService.createDepot(user, "DummyDepot", Broker.OANDA, externalDepotId, DbDepot.Type.DEMO);
@@ -117,7 +126,7 @@ public class DbDepotServiceTest {
             LOG.info("error...", e);
             throw e;
         } finally {
-            if(dbDepot != null) {
+            if (dbDepot != null) {
                 depotService.deleteDepot(dbDepot);
             }
         }

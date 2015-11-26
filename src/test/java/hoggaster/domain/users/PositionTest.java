@@ -1,7 +1,7 @@
-package hoggaster.domain.user;
+package hoggaster.domain.users;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depot.Position;
+import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderSide;
 import org.junit.Assert;
 import org.junit.Before;

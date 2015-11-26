@@ -5,7 +5,7 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.depot.DepotMonitorImpl;
+import hoggaster.domain.depots.DepotMonitorImpl;
 import hoggaster.domain.prices.Price;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;

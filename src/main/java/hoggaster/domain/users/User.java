@@ -1,4 +1,4 @@
-package hoggaster.domain.user;
+package hoggaster.domain.users;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;

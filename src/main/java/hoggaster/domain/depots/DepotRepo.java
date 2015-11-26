@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

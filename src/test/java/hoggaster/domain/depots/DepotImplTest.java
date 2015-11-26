@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import com.google.common.collect.Sets;
 import hoggaster.candles.Candle;
@@ -71,7 +71,7 @@ public class DepotImplTest extends TestCase {
     @Before
     public void setUp() throws Exception {
         dbDepot = new DbDepot(
-                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                DEPOT_ID, "USER_ID", "The depots name", Broker.OANDA, Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
         Mockito.when(depotService.findDepotById(eq(DEPOT_ID))).thenReturn(dbDepot);
@@ -91,7 +91,7 @@ public class DepotImplTest extends TestCase {
 
         depot.sendOrder(cp, OrderSide.buy, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
-        expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depot definition
+        expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depots definition
 
 
         verify(orderService).sendOrder(rac.capture());
@@ -151,7 +151,7 @@ public class DepotImplTest extends TestCase {
 
 
         DbDepot dbDepot = new DbDepot(
-                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                DEPOT_ID, "USER_ID", "The depots name", Broker.OANDA, Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
 
@@ -192,7 +192,7 @@ public class DepotImplTest extends TestCase {
         when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHomeInverse))).thenReturn(baseOverHomePrice);
 
         DbDepot dbDepot = new DbDepot(
-                DEPOT_ID, "USER_ID", "The depot name", Broker.OANDA, Sets.newHashSet(),
+                DEPOT_ID, "USER_ID", "The depots name", Broker.OANDA, Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
         BigDecimal currentRate = DepotImpl.getCurrentRate(dbDepot.currency, baseCurrency, priceService);

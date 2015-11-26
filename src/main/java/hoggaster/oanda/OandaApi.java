@@ -6,7 +6,7 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.depot.Position;
+import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.oanda.requests.OandaOrderRequest;

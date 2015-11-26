@@ -1,9 +1,9 @@
 package hoggaster.robot.web;
 
 import hoggaster.candles.CandleService;
-import hoggaster.domain.depot.Depot;
-import hoggaster.domain.depot.DepotImpl;
-import hoggaster.domain.depot.DepotService;
+import hoggaster.domain.depots.Depot;
+import hoggaster.domain.depots.DepotImpl;
+import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;

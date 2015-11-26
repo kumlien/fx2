@@ -1,4 +1,4 @@
-package hoggaster.domain.depot.web;
+package hoggaster.domain.depots.web;
 
 import org.springframework.web.bind.annotation.RestController;
 

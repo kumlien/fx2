@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;

@@ -1,12 +1,15 @@
 package hoggaster.util;
-import java.util.*;
-import java.io.Serializable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigDecimal;
-import static java.math.BigDecimal.ZERO;
 import java.math.RoundingMode;
+import java.util.Collection;
+import java.util.Currency;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Represent an amount of money in any currency.
@@ -54,7 +57,7 @@ import java.math.RoundingMode;
  * 10.gt(1.23) => true
  * 10.eq(10.00) => true
  * </PRE>
- * This corresponds to typical user expectations.
+ * This corresponds to typical users expectations.
  * An important exception to this rule is that {@link #equals(Object)} is sensitive
  * to scale (while {@link #eq(Money)} is not) . That is,
  * <PRE>
@@ -351,7 +354,7 @@ public final class Money implements Comparable<Money>, Serializable {
      * {@link #getAmount()}.getPlainString() + space + {@link #getCurrency()}.getSymbol().
      *
      * <P>The return value uses the runtime's <em>default locale</em>, and will not
-     * always be suitable for display to an end user.
+     * always be suitable for display to an end users.
      */
     public String toString(){
         return fAmount.toPlainString() + " " + fCurrency.getSymbol();

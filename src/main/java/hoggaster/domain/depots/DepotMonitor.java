@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 /**
  * Created by svante on 15-09-27.

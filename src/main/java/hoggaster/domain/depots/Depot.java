@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;

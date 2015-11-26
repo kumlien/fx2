@@ -1,4 +1,4 @@
-package hoggaster.domain.user;
+package hoggaster.domain.users;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -27,14 +27,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(User user) {
         validateFieldsNotNullOrEmpty(user);
-        checkArgument(!userRepo.findByUsername(user.username).isPresent(), "There is already a user with username '" + user.username + "'");
+        checkArgument(!userRepo.findByUsername(user.username).isPresent(), "There is already a users with username '" + user.username + "'");
         return userRepo.save(user);
     }
 
     private static void validateFieldsNotNullOrEmpty(User user) {
-        checkArgument(user != null, "The provided user is null...");
-        checkArgument(!Strings.isNullOrEmpty(user.username), "The user username is null or empty");
-        checkArgument(!Strings.isNullOrEmpty(user.email), "The user email is null or empty");
+        checkArgument(user != null, "The provided users is null...");
+        checkArgument(!Strings.isNullOrEmpty(user.username), "The users username is null or empty");
+        checkArgument(!Strings.isNullOrEmpty(user.email), "The users email is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.firstName), "User first name is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.lastName), "User last name is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.password), "User password is null or empty");

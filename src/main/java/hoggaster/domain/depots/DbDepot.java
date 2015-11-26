@@ -1,6 +1,7 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 
-@Document(collection = "depot")
+@Document(collection = "depots")
 public class DbDepot {
 
     private static final Logger LOG = LoggerFactory.getLogger(DbDepot.class);
@@ -60,7 +61,7 @@ public class DbDepot {
     public final String name;
 
     //The name used by the broker for this dbDepot
-    public final String brokerDepotName;
+    private String brokerDepotName;
 
     public final Broker broker;
 
@@ -287,6 +288,12 @@ public class DbDepot {
         if (unrealizedPl == null || unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
             LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
+            changed = true;
+        }
+
+        if (Strings.isNullOrEmpty(brokerDepotName) || !brokerDepotName.equals(brokerDepot.name)) {
+            LOG.info("Name updated with new value for dbDepot {}: {} -> {}", id, brokerDepotName, brokerDepot.name);
+            brokerDepotName = brokerDepot.name;
             changed = true;
         }
 

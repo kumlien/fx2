@@ -1,8 +1,8 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import hoggaster.domain.brokers.Broker;
-import hoggaster.domain.depot.DbDepot.Type;
-import hoggaster.domain.user.User;
+import hoggaster.domain.depots.DbDepot.Type;
+import hoggaster.domain.users.User;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public interface DepotService {
     void deleteDepot(DbDepot dbDepot);
 
     /**
-     * Get a depot by id
+     * Get a depots by id
      * @param id
      * @return The DbDepot or null if not found.
      */

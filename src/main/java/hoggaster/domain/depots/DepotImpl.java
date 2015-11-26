@@ -1,4 +1,4 @@
-package hoggaster.domain.depot;
+package hoggaster.domain.depots;
 
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
@@ -22,7 +22,7 @@ import java.util.Currency;
 import java.util.Objects;
 
 /**
- * Used to handle logic for a depot.
+ * Used to handle logic for a depots.
  * Not so found of this approach, splitting persistent stuff and business logic
  * <p>
  * Created by svante2 on 2015-10-11.
@@ -57,7 +57,7 @@ public class DepotImpl implements Depot {
     public DepotImpl(String dbDepotId, OrderService orderService, DepotService depotService, PriceService priceService, TradeService tradeService) {
         this.priceService = priceService;
         this.tradeService = tradeService;
-        Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depot with id '" + dbDepotId + "'");
+        Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depots with id '" + dbDepotId + "'");
         this.depotService = depotService;
         this.dbDepotId = dbDepotId;
         this.orderService = orderService;
@@ -80,7 +80,7 @@ public class DepotImpl implements Depot {
     /**
      * Buy something...
      * First -  for now, check if we already own the currencyPair, in that case we bail out.
-     * Second - Calculate the value of the order in the depot currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
+     * Second - Calculate the value of the order in the depots currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      *
@@ -97,7 +97,7 @@ public class DepotImpl implements Depot {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         //Don't allow the trade if the last sync is too old
         if(dbDepot.getLastSynchronizedWithBroker() == null || dbDepot.getLastSynchronizedWithBroker().isBefore(Instant.now().minus(MAX_TIME_SINCE_LAST_DEPOT_SYNC))) {
-            LOG.warn("Unable to sendOrder since the depot hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
+            LOG.warn("Unable to sendOrder since the depots hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
             return null;
         }
 
@@ -200,10 +200,10 @@ public class DepotImpl implements Depot {
         final BigDecimal balance = dbDepot.getBalance();
         LOG.info("Current balance is {}", balance);
         final BigDecimal newMarginAvailable = dbDepot.getMarginAvailable().subtract(marginAmountNeeded, MathContext.DECIMAL32);
-        LOG.info("New margin available after transaction would be {}", newMarginAvailable);
+        LOG.info("New margin available after transactions would be {}", newMarginAvailable);
         final BigDecimal marginAvailableDividedByBalance = newMarginAvailable.divide(balance, MathContext.DECIMAL32);
 
-        LOG.info("Margin available divided by balance will be {} after this transaction", marginAvailableDividedByBalance);
+        LOG.info("Margin available divided by balance will be {} after this transactions", marginAvailableDividedByBalance);
 
         return marginAvailableDividedByBalance;
     }

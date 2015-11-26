@@ -1,4 +1,4 @@
-package hoggaster.domain.user;
+package hoggaster.domain.users;
 
 import java.util.List;
 import java.util.Optional;

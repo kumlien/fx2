@@ -1,23 +1,16 @@
-package hoggaster.domain.user.web;
+package hoggaster.domain.users.web;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import hoggaster.domain.user.User;
-import hoggaster.domain.user.UserService;
-import hoggaster.domain.user.web.CreateUserRequest;
-import hoggaster.domain.user.web.UserNotFoundException;
+import hoggaster.domain.users.User;
+import hoggaster.domain.users.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.Resources;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.stream.Collectors;
@@ -51,7 +44,7 @@ public class UserController {
     }
 
 
-    @ApiOperation(value = "create a new user", code = 201)
+    @ApiOperation(value = "create a new users", code = 201)
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(CREATED)
     public UserResource createUser(@RequestBody @Valid CreateUserRequest request) {
@@ -67,7 +60,7 @@ public class UserController {
         return new Resources<>(userService.findAll().stream().map(UserLink::new).collect(Collectors.toList()));
     }
 
-    @ApiOperation(value = "Get the user with the specified username")
+    @ApiOperation(value = "Get the users with the specified username")
     @RequestMapping(value = "/{username}", method = RequestMethod.GET)
     public UserResource getUserByUsername(@PathVariable String username) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(username), "The provided username is null or empty");
@@ -87,7 +80,7 @@ public class UserController {
 
     class UserLink extends ResourceSupport {
         UserLink(User user) {
-            this.add(linkTo(UserController.class, user.username).slash(user.username).withRel("user"));
+            this.add(linkTo(UserController.class, user.username).slash(user.username).withRel("users"));
         }
     }
 }

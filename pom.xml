@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.2.7.RELEASE</version>
+		<version>1.3.0.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>hoggaster.Application</start-class>
 		<java.version>1.8</java.version>
-		<reactorVersion>2.0.4.RELEASE</reactorVersion>
+		<reactorVersion>2.0.7.RELEASE</reactorVersion>
 		<easyrules.version>2.1.0</easyrules.version>
 		<metrics.version>3.1.2</metrics.version>
 		<swagger.version>2.2.2</swagger.version>
@@ -36,6 +36,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
 		</dependency>
 
 		<dependency>

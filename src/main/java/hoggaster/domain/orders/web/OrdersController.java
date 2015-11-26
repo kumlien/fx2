@@ -2,10 +2,10 @@ package hoggaster.domain.orders.web;
 
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depot.DbDepot;
-import hoggaster.domain.depot.Depot;
-import hoggaster.domain.depot.DepotImpl;
-import hoggaster.domain.depot.DepotService;
+import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.depots.Depot;
+import hoggaster.domain.depots.DepotImpl;
+import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderService;
@@ -61,7 +61,7 @@ public class OrdersController {
     public OrderResponse placeOrderNew(@RequestParam("depotId") String depotId, @RequestParam("instrument")CurrencyPair currencyPair, @RequestParam("side") OrderSide side, @RequestParam("partOfMargin")BigDecimal partOfMargin) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "The provided depotId doesn't contain any text");
         DbDepot dbDepot = depotService.findDepotById(depotId);
-        Preconditions.checkArgument(dbDepot != null, "No depot found with id " + depotId);
+        Preconditions.checkArgument(dbDepot != null, "No depots found with id " + depotId);
         Depot depot = new DepotImpl(depotId, orderService, depotService, priceService, tradeService);
         return Objects.requireNonNull(depot.sendOrder(currencyPair, side, partOfMargin, null, "web-request"), "Ooops, the order was not sent for some reason, check the logs...");
     }

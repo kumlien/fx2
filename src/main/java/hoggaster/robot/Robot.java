@@ -6,7 +6,7 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
-import hoggaster.domain.depot.Depot;
+import hoggaster.domain.depots.Depot;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.Price;
 import hoggaster.rules.conditions.Condition;

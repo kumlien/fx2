@@ -1,6 +1,6 @@
 package hoggaster.web;
 
-import hoggaster.domain.user.web.UserNotFoundException;
+import hoggaster.domain.users.web.UserNotFoundException;
 import hoggaster.oanda.exceptions.TradingHaltedException;
 import org.springframework.hateoas.VndErrors;
 import org.springframework.http.HttpStatus;

@@ -29,7 +29,7 @@ public class RobotDefinitionController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    @ApiOperation("Get all configured robot definitions for the given depot")
+    @ApiOperation("Get all configured robot definitions for the given depots")
     public List<RobotDefinition> getByDepotId(@RequestParam("depotId") String depotId) {
         List<RobotDefinition> all = repo.findByDepotId(depotId);
         LOG.info("Found these robot defs: {}", all);

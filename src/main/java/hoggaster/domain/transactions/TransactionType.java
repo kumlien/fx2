@@ -1,4 +1,4 @@
-package hoggaster.domain.transaction;
+package hoggaster.domain.transactions;
 
 public enum TransactionType {
 

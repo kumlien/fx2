@@ -53,6 +53,7 @@ public class RobotDefintionCRUDTest {
      * @throws InterruptedException
      */
     @Test
+    //@Ignore
     public void testCreatePellesRobot() throws InterruptedException {
         RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", CurrencyPair.EUR_USD, "aTestDepot");
 
@@ -70,11 +71,10 @@ public class RobotDefintionCRUDTest {
 
         robotDefinition = robotRepo.save(robotDefinition);
 
-        //robotRepo.delete(robotDefinition.getId());
+        robotRepo.delete(robotDefinition.getId());
     }
 
     @Test
-    @Ignore
     public void testCRUDRobotDefinition() throws InterruptedException {
         RobotDefinition rd = new RobotDefinition("myRobotDefinition", CurrencyPair.AUD_USD, "aDepotId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, buy, MarketUpdateType.ONE_MINUTE_CANDLE);
