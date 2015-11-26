@@ -1,0 +1,36 @@
+oanda:
+ fetchPricesRegex: "*/1 * * * * *"
+ fetchCandlesRegex: "*/30 * * * * *"
+ restApiUrl: https://api-fxpractice.oanda.com/v1
+ streamingApiUrl: https://stream-fxpractice.oanda.com
+ apiKey:
+ mainAccountId:
+ resources:
+  accounts: ${oanda.restApiUrl}/accounts
+  account: ${oanda.restApiUrl}/accounts/{id}
+  instruments: ${oanda.restApiUrl}/instruments
+  candles: ${oanda.restApiUrl}/candles
+  prices: ${oanda.restApiUrl}/prices
+  orders: ${oanda.resources.account}/orders
+  positions: ${oanda.resources.account}/positions
+  
+ig:
+ restApiUrl: https://demo-api.ig.com/gateway/deal/
+ apiKey:
+ username:
+ password:
+ resources:
+  session: ${ig.restApiUrl}session
+  
+robots:
+  - test_robot
+  
+  
+logging:
+ level: 
+  org: INFO
+
+server:
+ tomcat:
+  remote_ip_header: x-forward-for
+  protocol_header: x-forwarded-proto

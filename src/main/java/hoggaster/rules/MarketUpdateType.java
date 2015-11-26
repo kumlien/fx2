@@ -1,5 +1,7 @@
 package hoggaster.rules;
 
+import hoggaster.rules.conditions.Condition;
+
 /**
  * Used to tell a {@link Condition} on what kind of events it should react.
  */

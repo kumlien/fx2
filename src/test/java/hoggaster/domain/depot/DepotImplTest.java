@@ -89,7 +89,7 @@ public class DepotImplTest extends TestCase {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
         Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
 
-        depot.buy(cp, new BigDecimal("0.02"), candle, "robot_id");
+        depot.sendOrder(cp, OrderSide.buy, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
         expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depot definition
 
@@ -101,7 +101,7 @@ public class DepotImplTest extends TestCase {
         assertTrue(request.expiry == null); //No expiry for market orders
         assertEquals(expectedRequest.externalDepotId, request.externalDepotId);
         assertEquals(expectedRequest.price, request.price); //No price for a market order
-        assertEquals(expectedRequest.getLowerBound(), null); //No lower bound for a buy order
+        assertEquals(expectedRequest.getLowerBound(), null); //No lower bound for a sendOrder order
         assertEquals(expectedRequest.getUpperBound(), request.getUpperBound()); //Upper bound should match
         assertEquals(expectedRequest.getStopLoss(), request.getStopLoss());
         assertEquals(expectedRequest.getTakeProfit(), request.getTakeProfit());
@@ -115,7 +115,7 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuyBreakMarginRule() throws Exception {
         dbDepot.setMarginAvailable(BigDecimal.ZERO);
-        depot.buy(cp, new BigDecimal("0.05"), null, "robot_id");
+        depot.sendOrder(cp, OrderSide.buy, new BigDecimal("0.05"), null, "robot_id");
         Mockito.verifyZeroInteractions(orderService);
     }
 

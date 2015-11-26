@@ -5,7 +5,7 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
-import hoggaster.rules.Condition;
+import hoggaster.rules.conditions.Condition;
 import hoggaster.rules.indicators.CandleStickField;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import hoggaster.rules.indicators.RSIIndicator;

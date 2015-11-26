@@ -1,5 +1,6 @@
 package hoggaster.domain.depot;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
@@ -117,5 +118,15 @@ public class Position {
     @Override
     public int hashCode() {
         return Objects.hashCode(currencyPair, side, quantity, averagePricePerShare);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("currencyPair", currencyPair)
+                .add("side", side)
+                .add("quantity", quantity)
+                .add("averagePricePerShare", averagePricePerShare)
+                .toString();
     }
 }

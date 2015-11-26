@@ -1,9 +1,10 @@
 package hoggaster.robot;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.rules.Condition;
+import hoggaster.rules.conditions.Condition;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -20,8 +21,8 @@ public class RobotDefinition {
     @Indexed(unique = true)
     public final String name;
     public final CurrencyPair currencyPair;
-    private final Set<Condition> buyConditions;
-    private final Set<Condition> sellConditions;
+    private final Set<Condition> enterConditions;
+    private final Set<Condition> exitConditions;
     private final String depotId;
 
     @PersistenceConstructor
@@ -29,8 +30,8 @@ public class RobotDefinition {
         this.id = id;
         this.name = name;
         this.currencyPair = currencyPair;
-        this.buyConditions = buyConditions;
-        this.sellConditions = sellConditions;
+        this.enterConditions = buyConditions;
+        this.exitConditions = sellConditions;
         this.depotId = depotId;
     }
 
@@ -38,17 +39,17 @@ public class RobotDefinition {
         this.name = name;
         this.currencyPair = currencyPair;
         this.depotId = depotId;
-        this.buyConditions = Sets.newHashSet();
-        this.sellConditions = Sets.newHashSet();
+        this.enterConditions = Sets.newHashSet();
+        this.exitConditions = Sets.newHashSet();
     }
 
-    public Set<Condition> getBuyConditions() {
-        return buyConditions;
+    public Set<Condition> getEnterConditions() {
+        return enterConditions;
     }
 
     public void addBuyCondition(Condition c) {
         Preconditions.checkNotNull(c);
-        buyConditions.add(c);
+        enterConditions.add(c);
     }
 
     public String getId() {
@@ -57,25 +58,26 @@ public class RobotDefinition {
 
     public void addSellCondition(Condition c) {
         Preconditions.checkNotNull(c);
-        sellConditions.add(c);
+        exitConditions.add(c);
     }
 
-    public Set<Condition> getSellConditions() {
-        return sellConditions;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("RobotDefinition [id=").append(id).append(", name=")
-                .append(name).append(", currencyPair=").append(currencyPair)
-                .append(", buyConditions=").append(buyConditions)
-                .append(", sellConditions=").append(sellConditions).append("]");
-        return builder.toString();
+    public Set<Condition> getExitConditions() {
+        return exitConditions;
     }
 
     public String getDepotId() {
         return depotId;
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .add("name", name)
+                .add("currencyPair", currencyPair)
+                .add("enterConditions", enterConditions)
+                .add("exitConditions", exitConditions)
+                .add("depotId", depotId)
+                .toString();
+    }
 }

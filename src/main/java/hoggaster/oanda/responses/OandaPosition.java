@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
-import hoggaster.rules.conditions.Side;
 
 import java.math.BigDecimal;
 

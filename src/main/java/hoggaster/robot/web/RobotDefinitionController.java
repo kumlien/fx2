@@ -1,8 +1,10 @@
 package hoggaster.robot.web;
 
 import com.google.common.base.Preconditions;
+import hoggaster.domain.CurrencyPair;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping("robotdefs")
@@ -25,16 +29,19 @@ public class RobotDefinitionController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<RobotDefinition> getAll() {
-        List<RobotDefinition> all = repo.findAll();
+    @ApiOperation("Get all configured robot definitions for the given depot")
+    public List<RobotDefinition> getByDepotId(@RequestParam("depotId") String depotId) {
+        List<RobotDefinition> all = repo.findByDepotId(depotId);
         LOG.info("Found these robot defs: {}", all);
         return all;
     }
 
 
     @RequestMapping(method = RequestMethod.POST)
-    public RobotDefinition create(@Valid @RequestBody CreateRobotRequest req) {
-        RobotDefinition def = new RobotDefinition(req.name, req.currencyPair, req.depotId);
+    @ResponseStatus(CREATED)
+    @ApiOperation(value = "Create a new robot definition")
+    public RobotDefinition create(@RequestParam("name") String name, @RequestParam("instrument") CurrencyPair currencyPair, @RequestParam("depotId") String depotId) {
+        RobotDefinition def = new RobotDefinition(name, currencyPair, depotId);
         repo.save(def);
         return def;
     }

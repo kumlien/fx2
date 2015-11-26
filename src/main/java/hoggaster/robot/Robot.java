@@ -7,8 +7,9 @@ import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.depot.Depot;
+import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.Price;
-import hoggaster.rules.Condition;
+import hoggaster.rules.conditions.Condition;
 import hoggaster.talib.TALibService;
 import org.easyrules.api.RulesEngine;
 import org.slf4j.Logger;
@@ -30,29 +31,42 @@ import static reactor.bus.selector.Selectors.R;
  * / Definition of code parameters
  DEFPARAM CumulateOrders = False // Cumulating positions deactivated
 
- // Conditions to enter long positions
- indicator1 = close
- indicator2 = Average[200](close)
- c1 = (indicator1 >= indicator2)
+// Conditions to enter long positions
+indicator1 = close
+indicator2 = Average[200](close)
+indicator3 = Williams[2](close)
+indicator4 = average[d](close)
 
- Dagens rsi[2] + gårdagens ska vara mindre än 11.
- indicator3 = RSI[2](close) + RSI[2](close[1])
- c2 = (indicator3 <= 10)
+c1 = (indicator1 >= indicator2)
+c2 = (indicator3 <= -100+r)
 
- IF c1 AND c2 THEN
- BUY (100000 + (strategyprofit))/((pipvalue/pipsize)*close) CONTRACT AT MARKET
- ENDIF
+IF c1 AND c2 THEN
+BUY 1 CONTRACT AT MARKET
+ENDIF
 
- // Conditions to exit long positions
- indicator4 = close
- indicator5 = Average[3](close)
- c3 = (indicator4 >= indicator5)
+// Conditions to exit long positions
+c3 = (indicator1 >= indicator4)
 
- IF c3 THEN
- SELL  AT MARKET
- ENDIF
+IF c3 THEN
+SELL  AT MARKET
+ENDIF
 
- // Stops and targets
+// Conditions to enter short positions
+c4 = (indicator1 < indicator2)
+c5 = (indicator3 >= 0-r)
+
+IF c4 AND c5 THEN
+SELLSHORT 1 CONTRACT AT MARKET
+ENDIF
+
+// Conditions to exit short positions
+c6 = (indicator1 <= indicator4)
+
+IF c6 THEN
+EXITSHORT  AT MARKET
+ENDIF
+
+// Stops and targets
  */
 
 //spring bean or basic object?
@@ -100,8 +114,8 @@ public class Robot implements Consumer<Event<?>> {
         this.id = definition.getId(); // This is kind of wacky
         this.name = definition.name;
         this.currencyPair = definition.currencyPair;
-        this.buyConditions = definition.getBuyConditions();
-        this.sellConditions = definition.getSellConditions();
+        this.buyConditions = definition.getEnterConditions();
+        this.sellConditions = definition.getExitConditions();
         this.depot = depot;
         this.priceEventBus = priceEventBus;
         this.rulesEngine = rulesEngine;
@@ -151,13 +165,13 @@ public class Robot implements Consumer<Event<?>> {
 
         //All buy conditions must be positive
         if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
-            LOG.info("Maybe we should buy something based on new price!");
-            doBuy(price);
+            LOG.info("Maybe we should sendOrder something based on new price!");
+            askDepotToSendOrder(price, OrderSide.buy);
         } else if (ctx.getPositiveSellConditions().size() > 0) { //Enough with one positive sell condition
             LOG.info("Maybe we should sell something based on new price!");
-            doSell();
+            askDepotToSendOrder(price, OrderSide.sell);
         } else {
-            LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+            LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
         }
 
     }
@@ -172,12 +186,12 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) { //All buy conditions say buy!
-            doBuy(candle);
+        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) { //All sendOrder conditions say sendOrder!
+            askDepotToSendOrder(candle, OrderSide.buy);
         } else if (ctx.getPositiveSellConditions().size() > 0) { //At least one sell condition say sell!
             doSell();
         } else {
-            LOG.info("No buy or sell actions triggered, seem like we should keep calm an carry on...");
+            LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
         }
 
     }
@@ -196,9 +210,9 @@ public class Robot implements Consumer<Event<?>> {
 
     }
 
-    //TODO Read buy percentage from db, hard code 20% for now
-    private void doBuy(MarketUpdate marketUpdate) {
-        depot.buy(currencyPair,new BigDecimal(0.2), marketUpdate, this.id);
+    //TODO Read sendOrder percentage from db, hard code 2% for now
+    private void askDepotToSendOrder(MarketUpdate marketUpdate, OrderSide side) {
+        depot.sendOrder(currencyPair, side, new BigDecimal(0.02), marketUpdate, this.id);
 
     }
 

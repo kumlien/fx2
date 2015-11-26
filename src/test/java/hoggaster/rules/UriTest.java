@@ -2,6 +2,7 @@ package hoggaster.rules;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.rules.indicators.CandleStickGranularity;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -14,6 +15,7 @@ public class UriTest {
 
 
     @Test
+    @Ignore
     public void testCreateUri() throws UnsupportedEncodingException {
         String resource = "https://api-fxpractice.oanda.com/v1/candles";
         Instant start = null;

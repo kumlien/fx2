@@ -2,9 +2,9 @@ package hoggaster.rules.conditions;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import hoggaster.domain.orders.OrderSide;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Comparator;
-import hoggaster.rules.Condition;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.indicators.Indicator;
 import org.easyrules.annotation.Action;
@@ -15,13 +15,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-import static hoggaster.rules.conditions.Side.BUY;
 
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
- * method will get called and we add ourselves to the buy- or sell action depending
- * on our {@link Side}
+ * method will get called and we add ourselves to the sendOrder- or sell action depending
+ * on our {@link OrderSide}
  *
  * @author svante
  */
@@ -35,7 +34,7 @@ public class TwoIndicatorCondition implements Condition {
     public final Indicator secondIndicator;
     public final Comparator operator;
     public final Integer priority;
-    public final Side buyOrSell;
+    public final OrderSide buyOrSell;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
@@ -50,7 +49,7 @@ public class TwoIndicatorCondition implements Condition {
      * @param buyOrSell
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, Side buyOrSell, MarketUpdateType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, OrderSide buyOrSell, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;
         this.secondIndicator = secondIndicator;
@@ -74,7 +73,7 @@ public class TwoIndicatorCondition implements Condition {
 
     @Action
     public void then() {
-        if (buyOrSell == BUY) {
+        if (buyOrSell == OrderSide.buy) {
             ctx.addPositiveBuyAction(this);
         } else {
             ctx.addPositiveSellAction(this);

@@ -3,6 +3,7 @@ package hoggaster.domain.depot;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.orders.OrderResponse;
+import hoggaster.domain.orders.OrderSide;
 
 import java.math.BigDecimal;
 
@@ -21,9 +22,10 @@ public interface Depot {
     /**
      *
      * @param currencyPair
-     * @param percentageOfAvailableMargin
+     * @param side
+     * @param partOfAvailableMargin Max part of available margin to use, 0.02 means 2%
      * @param marketUpdate
      * @param robotId
      */
-    OrderResponse buy(CurrencyPair currencyPair, BigDecimal percentageOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
+    OrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
 }

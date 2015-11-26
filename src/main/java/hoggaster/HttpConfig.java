@@ -3,7 +3,7 @@ package hoggaster;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
 import hoggaster.oanda.OandaProperties;
-import hoggaster.oanda.exceptions.RateLimitException;
+import hoggaster.oanda.exceptions.RateLimitExceededException;
 import hoggaster.oanda.exceptions.TradingHaltedException;
 import hoggaster.oanda.responses.ErrorResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -63,7 +63,6 @@ public class HttpConfig {
         retryableExceptions.put(HttpServerErrorException.class, true);
         retryableExceptions.put(ResourceAccessException.class, true);
         retryableExceptions.put(HttpMessageNotReadableException.class, true);
-        retryableExceptions.put(RateLimitException.class, true);
         return new SimpleRetryPolicy(MAX_ATTEMPTS, retryableExceptions);
     }
 
@@ -112,7 +111,7 @@ public class HttpConfig {
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
                     switch(errorResponse.code) {
                         case 24: throw new TradingHaltedException(errorResponse.message);
-                        case 68: throw new RateLimitException(errorResponse.message);
+                        case 68: throw new RateLimitExceededException(errorResponse.message);
                         default: LOG.warn("Unhandled error code from Oanda: {} ({})", errorResponse.code, errorResponse.message);
                     }
                 }

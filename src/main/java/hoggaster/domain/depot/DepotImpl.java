@@ -32,10 +32,10 @@ public class DepotImpl implements Depot {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotImpl.class);
 
-    //Use this factor to calculate upper bound for buy orders
+    //Use this factor to calculate upper bound for sendOrder orders
     private static final BigDecimal UPPER_BOUND_FACTOR = new BigDecimal("1.01");
 
-    //Don't buy if margin would go below this threshold as part of balance
+    //Don't sendOrder if margin would go below this threshold as part of balance
     private static final BigDecimal MARGIN_BALANCE_THRESHOLD = new BigDecimal("0.5");
 
     //Never spend more thant 5% of current available margin
@@ -80,15 +80,15 @@ public class DepotImpl implements Depot {
     /**
      * Buy something...
      * First -  for now, check if we already own the currencyPair, in that case we bail out.
-     * Second - Calculate the value of the order in the depot currency (dollar for us). For now we aim to buy for 2% of the available margin.
+     * Second - Calculate the value of the order in the depot currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      *
      * TODO Refac MarketUpdate -> BigDecimal ('trigger price' or something along those lines)
      * TODO Throw exceptions instead of returning null
      */
-    public OrderResponse buy(CurrencyPair currencyPair, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
-        LOG.info("We are told by robot '{}' to spend {} of available margin on buying {}", robotId, partOfAvailableMargin, currencyPair);
+    public OrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+        LOG.info("We are told by robot '{}' to {} {} of available margin on {}", robotId, side, partOfAvailableMargin, currencyPair);
         Preconditions.checkArgument(currencyPair != null, "The currency pair must not be null");
         Preconditions.checkArgument(partOfAvailableMargin != null, "The partOfAvailableMargin must not be null");
         Preconditions.checkArgument(partOfAvailableMargin.compareTo(BigDecimal.ZERO) > 0, "The partOfAvailableMargin must not be > 0");
@@ -97,17 +97,17 @@ public class DepotImpl implements Depot {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         //Don't allow the trade if the last sync is too old
         if(dbDepot.getLastSynchronizedWithBroker() == null || dbDepot.getLastSynchronizedWithBroker().isBefore(Instant.now().minus(MAX_TIME_SINCE_LAST_DEPOT_SYNC))) {
-            LOG.warn("Unable to buy since the depot hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
+            LOG.warn("Unable to sendOrder since the depot hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
             return null;
         }
 
         if(!dbDepot.getLastSyncOk()) {
-            LOG.warn("Unable to buy since the last sync attempt (at {}) with the broker ({}) was unsuccessful", dbDepot.getLastSynchronizedWithBroker(), dbDepot.broker);
+            LOG.warn("Unable to sendOrder since the last sync attempt (at {}) with the broker ({}) was unsuccessful", dbDepot.getLastSynchronizedWithBroker(), dbDepot.broker);
             return null;
         }
 
         if (dbDepot.ownThisInstrument(currencyPair)) {
-            LOG.warn("Unable to buy since we already own {}, only buy once...", currencyPair.name());
+            LOG.warn("Unable to sendOrder since we already own {}, only sendOrder once...", currencyPair.name());
             return null;
         }
         BigDecimal xRate = getCurrentRate(dbDepot.currency, currencyPair.baseCurrency, priceService);
@@ -117,13 +117,13 @@ public class DepotImpl implements Depot {
         //TODO Check for margin below 50%
         BigDecimal newMarginAsPartOfBalance = getNewMarginAsPartOfBalance(dbDepot, realUnits.multiply(xRate, MathContext.DECIMAL32).multiply(dbDepot.getMarginRate(), MathContext.DECIMAL32));
         if (newMarginAsPartOfBalance.compareTo(MARGIN_BALANCE_THRESHOLD) < 0) {
-            LOG.warn("Sorry, no buy since the margin/current balance would drop below the specified threshold (units: {}, xRate: {}, threshold: {}, current balance: {}", realUnits, xRate, MARGIN_BALANCE_THRESHOLD, dbDepot.getBalance());
+            LOG.warn("Sorry, no sendOrder since the margin/current balance would drop below the specified threshold (units: {}, xRate: {}, threshold: {}, current balance: {}", realUnits, xRate, MARGIN_BALANCE_THRESHOLD, dbDepot.getBalance());
             return null;
         }
 
-        LOG.info("The number of units we will buy (maxUnits: {} * partOfAvailableMaring: {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
+        LOG.info("The number of units we will sendOrder (maxUnits: {} * partOfAvailableMaring: {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
-        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), OrderSide.buy, OrderType.market, null, null);
+        OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), side, OrderType.market, null, null);
         if(marketUpdate != null) {
             order.setUpperBound(calculateUpperBound(marketUpdate));
         }
@@ -177,12 +177,12 @@ public class DepotImpl implements Depot {
     static BigDecimal calculateMaxUnitsWeCanBuy(DbDepot dbDepot, Currency baseCurrency, BigDecimal xRate) {
         Currency homeCurrency = dbDepot.currency;
         BigDecimal marginRatio = dbDepot.getMarginRate();
-        LOG.info("Calculating max units to buy for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, dbDepot.getMarginAvailable(), marginRatio);
+        LOG.info("Calculating max units to sendOrder for home curreny: {}, base currency: {}, margin available: {} and margin ratio: {}", homeCurrency, baseCurrency, dbDepot.getMarginAvailable(), marginRatio);
 
         BigDecimal totalAmount = dbDepot.getMarginAvailable().divide(marginRatio, MathContext.DECIMAL32);
-        LOG.info("Total amount to buy for (margin available divided by margin ratio) in {} is {}", homeCurrency, totalAmount.longValue());
+        LOG.info("Total amount to sendOrder for (margin available divided by margin ratio) in {} is {}", homeCurrency, totalAmount.longValue());
         BigDecimal totalUnits = totalAmount.divide(xRate, MathContext.DECIMAL32);
-        LOG.info("Total units we can buy ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
+        LOG.info("Total units we can sendOrder ({}/{}) is {}", totalAmount.longValue(), xRate, totalUnits.longValue());
 
         return totalUnits;
     }
