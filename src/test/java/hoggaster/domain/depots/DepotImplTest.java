@@ -3,6 +3,7 @@ package hoggaster.domain.depots;
 import com.google.common.collect.Sets;
 import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.NoSuchCurrencyPairException;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
@@ -177,7 +178,7 @@ public class DepotImplTest extends TestCase {
      * Units = (100 * 20) / 0.9309
      * Units = 2148
      */
-    @Test
+    @Test(expected = NoSuchCurrencyPairException.class)
     public void testCalculateMaxUnitsWeCanBuyInverse() throws Exception {
         Currency homeCurrency = Currency.getInstance("EUR");
         Currency baseCurrency = Currency.getInstance("USD");

@@ -9,6 +9,7 @@ import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
@@ -95,6 +96,21 @@ public class OandaApi implements BrokerConnection, OrderService {
                 });
         LOG.info("Found {} account", account.getBody());
         return account.getBody().toBrokerDepot();
+    }
+
+    @Override
+    public List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrades());
+        String uri = builder.buildAndExpand(brokerDepotId).toUriString();
+        LOG.info("Get open trades from oanda with id {} using uri {}", brokerDepotId, uri);
+        ResponseEntity<OandaTradesResponse> openTrades = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccount");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaTradesResponse.class);
+                });
+        return openTrades.getBody().trades.stream()
+                .map(t -> new Trade(fx2DepotId, null, Broker.OANDA, t.id, t.units, t.side, t.instrument, t.time, t.price, t.takeProfit, t.stopLoss, t.trailingStop))
+                .collect(toList());
     }
 
     @Override

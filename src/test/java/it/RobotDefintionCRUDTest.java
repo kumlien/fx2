@@ -53,7 +53,7 @@ public class RobotDefintionCRUDTest {
      * @throws InterruptedException
      */
     @Test
-    //@Ignore
+    @Ignore
     public void testCreatePellesRobot() throws InterruptedException {
         RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", CurrencyPair.EUR_USD, "aTestDepot");
 

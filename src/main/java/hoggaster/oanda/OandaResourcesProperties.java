@@ -21,6 +21,8 @@ public class OandaResourcesProperties {
 
     private String positions;
 
+    private String trades;
+
     public String getPositions() {
         return positions;
     }
@@ -85,5 +87,13 @@ public class OandaResourcesProperties {
 
     public void setAccount(String account) {
         this.account = account;
+    }
+
+    public String getTrades() {
+        return trades;
+    }
+
+    public void setTrades(String trades) {
+        this.trades = trades;
     }
 }

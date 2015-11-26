@@ -1,8 +1,8 @@
 package hoggaster.domain.brokers;
 
-import com.codahale.metrics.annotation.Timed;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.Position;
+import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
@@ -13,7 +13,6 @@ import java.util.Set;
 
 public interface BrokerConnection {
 
-    @Timed
     List<Position> getPositions(String depotId);
 
     Instruments getInstrumentsForAccount(Integer accountId) throws UnsupportedEncodingException;
@@ -29,4 +28,13 @@ public interface BrokerConnection {
     OandaBidAskCandlesResponse getBidAskCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst);
 
     BrokerDepot getDepot(String depotId);
+
+    /**
+     * Get all open trades for a depot from the broker
+     *
+     * @param fx2DepotId
+     * @param brokerDepotId
+     * @return List of Trade :s
+     */
+    List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId);
 }

@@ -88,10 +88,10 @@ public class Trade {
     /**
      * Create a new trade.
      *
-     * @param depotId
+     * @param depotId The id of the fx2 depot
      * @param robotId
      * @param broker
-     * @param brokerId
+     * @param brokerId The broker id for this trade
      * @param units
      * @param side
      * @param instrument

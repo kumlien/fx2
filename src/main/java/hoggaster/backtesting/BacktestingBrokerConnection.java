@@ -7,6 +7,7 @@ import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.springframework.stereotype.Service;
@@ -69,5 +70,11 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     public BrokerDepot getDepot(String depotId) {
         return null;
     }
+
+    @Override
+    public List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
+        return null;
+    }
+
 
 }

@@ -12,7 +12,6 @@ import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
-import hoggaster.oanda.responses.OandaOrderResponse;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +45,10 @@ public class OrdersController {
 
     //@RequestMapping(method = RequestMethod.POST)
     //@ApiOperation("Send a new order request to directly to oanda using the specified depotId")
-    public OandaOrderResponse placeOrderDirect(@RequestBody OrderRequest request) {
+    public OrderResponse placeOrderDirect(@RequestBody OrderRequest request) {
         LOG.info("Sending order to broker: {}", request);
 
-        OandaOrderResponse result = orderService.sendOrder(request);
+        OrderResponse result = orderService.sendOrder(request);
         LOG.info("Got response: {}", result);
         return result;
 

@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
-import hoggaster.domain.NoSuchCurrencyPairException;
 import hoggaster.domain.orders.*;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
@@ -208,29 +207,15 @@ public class DepotImpl implements Depot {
         return marginAvailableDividedByBalance;
     }
 
+
+
     static BigDecimal getCurrentRate(Currency homeCurrency, Currency baseCurrency, PriceService priceService) {
         if (homeCurrency == baseCurrency) return BigDecimal.ONE;
         CurrencyPair baseAndHomePair;
-        boolean isInverse = false;
-        try {
-            baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
-        } catch (NoSuchCurrencyPairException e) {
-            LOG.info("No currency pair found for {}_{}, try with the inverse...", baseCurrency, homeCurrency, e.getMessage());
-            try {
-                baseAndHomePair = CurrencyPair.ofBaseAndQuote(homeCurrency, baseCurrency);
-            } catch (NoSuchCurrencyPairException ee) {
-                LOG.error("Unable to find a currency pair (not even the inverse one) for {} and {} ({}).", homeCurrency, baseCurrency, e.getMessage());
-                throw new RuntimeException(ee);
-            }
-            LOG.info("Found currency pair {}, will use that one in lookup and use inverse x-rate", baseAndHomePair);
-            isInverse = true;
-        }
+        baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
 
         //get the price...
         final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
-        if (isInverse) {
-            return BigDecimal.ONE.divide(lastPriceForBaseAndHome.bid, MathContext.DECIMAL32);
-        }
         return lastPriceForBaseAndHome.bid;
     }
 }
