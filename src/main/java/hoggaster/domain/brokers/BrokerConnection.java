@@ -9,6 +9,7 @@ import hoggaster.rules.indicators.CandleStickGranularity;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface BrokerConnection {
@@ -37,4 +38,14 @@ public interface BrokerConnection {
      * @return List of Trade :s
      */
     List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId);
+
+    /**
+     * Get a specific trade by id.
+     *
+     * @param depotId
+     * @param brokerId
+     * @param tradeId
+     * @return The trade if found
+     */
+    Optional<Trade> getTrade(String depotId, String brokerId, String tradeId);
 }

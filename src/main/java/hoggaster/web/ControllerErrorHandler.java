@@ -1,5 +1,6 @@
 package hoggaster.web;
 
+import hoggaster.domain.trades.web.TradeNotFoundException;
 import hoggaster.domain.users.web.UserNotFoundException;
 import hoggaster.oanda.exceptions.TradingHaltedException;
 import org.springframework.hateoas.VndErrors;
@@ -20,6 +21,13 @@ public class ControllerErrorHandler {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     VndErrors userNotFoundExceptionHandler(UserNotFoundException ex) {
+        return new VndErrors("error", ex.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(TradeNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    VndErrors tradeNotFoundExceptionHandler(TradeNotFoundException ex) {
         return new VndErrors("error", ex.getMessage());
     }
 

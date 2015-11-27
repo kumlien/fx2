@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
@@ -102,15 +103,36 @@ public class OandaApi implements BrokerConnection, OrderService {
     public List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrades());
         String uri = builder.buildAndExpand(brokerDepotId).toUriString();
-        LOG.info("Get open trades from oanda with id {} using uri {}", brokerDepotId, uri);
+        LOG.info("Get open trades from oanda depot with id {} using uri {}", brokerDepotId, uri);
         ResponseEntity<OandaTradesResponse> openTrades = oandaRetryTemplate
                 .execute(context -> {
-                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccount");
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getOpenTrades");
                     return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaTradesResponse.class);
                 });
         return openTrades.getBody().trades.stream()
-                .map(t -> new Trade(fx2DepotId, null, Broker.OANDA, t.id, t.units, t.side, t.instrument, t.time, t.price, t.takeProfit, t.stopLoss, t.trailingStop))
+                .map(t -> fromOandaTrade(fx2DepotId, t))
                 .collect(toList());
+    }
+
+    @Override
+    public Optional<Trade> getTrade(String fx2DepotId, String brokerDepotId, String tradeId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
+        String uri = builder.buildAndExpand(brokerDepotId, tradeId).toUriString();
+        LOG.info("Get trade by id from oanda for depot with id {}, tradeId: {} using uri {}", brokerDepotId, tradeId,  uri);
+        ResponseEntity<OandaTradesResponse.Trade> openTrade = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getTrade");
+                    return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaTradesResponse.Trade.class);
+                });
+        OandaTradesResponse.Trade trade = openTrade.getBody();
+        if(trade != null) {
+            return Optional.of(fromOandaTrade(fx2DepotId, trade));
+        }
+        return Optional.empty();
+    }
+
+    private static final Trade fromOandaTrade(String fx2DepotId, OandaTradesResponse.Trade t) {
+        return new Trade(fx2DepotId, null, Broker.OANDA, t.id, t.units, t.side, t.instrument, t.time, t.price, t.takeProfit, t.stopLoss, t.trailingStop);
     }
 
     @Override

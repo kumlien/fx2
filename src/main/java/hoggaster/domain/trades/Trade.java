@@ -30,6 +30,9 @@ public class Trade {
 
     public final Broker broker;
 
+    /**
+     * The id on the broker side for this trade
+     */
     public final Long brokerId;
 
     public final BigDecimal units;
@@ -104,8 +107,6 @@ public class Trade {
     public Trade(String depotId, String robotId, Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair instrument, Instant openTime, BigDecimal openPrice, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop) {
         this(null, TradeStatus.OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, null, null, null, null, null);
     }
-
-
 
     public String getId() {
         return id;
