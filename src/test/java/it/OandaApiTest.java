@@ -1,10 +1,15 @@
 package it;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hoggaster.Application;
+import hoggaster.MongoConfig;
+import hoggaster.OandaConnectionConfig;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
+import hoggaster.oanda.responses.OandaClosedTradeReponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import reactor.core.processor.RingBufferWorkProcessor;
@@ -20,13 +26,15 @@ import reactor.fn.Consumer;
 import reactor.rx.Stream;
 import reactor.rx.Streams;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
+@EnableConfigurationProperties(value = {OandaProperties.class})
+@SpringApplicationConfiguration(classes = OandaConnectionConfig.class)
 public class OandaApiTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaApiTest.class);
@@ -37,6 +45,7 @@ public class OandaApiTest {
 
     @Autowired
     CandleService candleService;
+
 
     @Test
     @Ignore

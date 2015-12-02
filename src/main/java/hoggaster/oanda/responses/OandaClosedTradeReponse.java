@@ -15,7 +15,7 @@ import java.time.Instant;
 public class OandaClosedTradeReponse {
 
      // The ID of the close trade transaction (on oanda side)
-    public final Integer id;
+    public final BigDecimal id;
 
     public final BigDecimal price; // The price the trade was closed at
 
@@ -32,7 +32,7 @@ public class OandaClosedTradeReponse {
     public final Instant time;
 
     @JsonCreator
-    public OandaClosedTradeReponse(@JsonProperty("id") Integer id, @JsonProperty("price")BigDecimal price, @JsonProperty("instrument") CurrencyPair instrument,  @JsonProperty("profit") BigDecimal profit, @JsonProperty("side") OrderSide side,  @JsonProperty("time") Instant time) {
+    public OandaClosedTradeReponse(@JsonProperty("id") BigDecimal id, @JsonProperty("price")BigDecimal price, @JsonProperty("instrument") CurrencyPair instrument, @JsonProperty("profit") BigDecimal profit, @JsonProperty("side") OrderSide side, @JsonProperty("time") Instant time) {
         this.id = id;
         this.price = price;
         this.instrument = instrument;

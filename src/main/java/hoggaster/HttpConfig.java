@@ -102,13 +102,19 @@ public class HttpConfig {
 
             @Override
             public boolean hasError(ClientHttpResponse response) throws IOException {
-                return super.hasError(response);
+                if(super.hasError(response)){
+                    String body = CharStreams.toString(new InputStreamReader(response.getBody()));
+                    LOG.info("Error with body {}", body);
+                    return true;
+                }
+                return false;
             }
 
             @Override
             public void handleError(ClientHttpResponse response) throws IOException {
                 if (response.getBody() != null) {
                     String body = CharStreams.toString(new InputStreamReader(response.getBody()));
+
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
                     switch(errorResponse.code) {
                         case 12: throw new TradeNotFoundException(errorResponse.message);
