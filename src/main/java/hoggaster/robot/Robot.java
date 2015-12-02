@@ -73,6 +73,7 @@ ENDIF
 public class Robot implements Consumer<Event<?>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Robot.class);
+    public static final BigDecimal PART_OF_AVAILABLE_MARGIN = new BigDecimal("0.02");
 
     public final String id;
 
@@ -212,7 +213,7 @@ public class Robot implements Consumer<Event<?>> {
 
     //TODO Read sendOrder percentage from db, hard code 2% for now
     private void askDepotToSendOrder(MarketUpdate marketUpdate, OrderSide side) {
-        depot.sendOrder(currencyPair, side, new BigDecimal(0.02), marketUpdate, this.id);
+        depot.sendOrder(currencyPair, side, PART_OF_AVAILABLE_MARGIN, marketUpdate, this.id);
 
     }
 
