@@ -9,6 +9,7 @@ import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;
@@ -118,7 +119,7 @@ public class OandaApi implements BrokerConnection, OrderService {
     public Optional<Trade> getTrade(String fx2DepotId, String brokerDepotId, String tradeId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
         String uri = builder.buildAndExpand(brokerDepotId, tradeId).toUriString();
-        LOG.info("Get trade by id from oanda for depot with id {}, tradeId: {} using uri {}", brokerDepotId, tradeId,  uri);
+        LOG.info("Get trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", brokerDepotId, tradeId,  uri);
         ResponseEntity<OandaTradesResponse.Trade> openTrade = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getTrade");
@@ -129,6 +130,21 @@ public class OandaApi implements BrokerConnection, OrderService {
             return Optional.of(fromOandaTrade(fx2DepotId, trade));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public CloseTradeResponse closeTrade(String fx2DepotId, String oandaAccountId, String oandaTradeId) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
+        String uri = builder.buildAndExpand(oandaAccountId, oandaTradeId).toUriString();
+        LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", fx2DepotId, oandaTradeId,  uri);
+        ResponseEntity<OandaClosedTradeReponse> closedTradeEntity = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "deleteTrade");
+                    return restTemplate.exchange(uri, HttpMethod.DELETE, defaultHttpEntity, OandaClosedTradeReponse.class);
+                });
+        OandaClosedTradeReponse closedTrade = closedTradeEntity.getBody();
+
+        return new CloseTradeResponse(Broker.OANDA,String.valueOf(closedTrade.id), closedTrade.price, closedTrade.instrument,closedTrade.profit, closedTrade.side, closedTrade.time);
     }
 
     private static final Trade fromOandaTrade(String fx2DepotId, OandaTradesResponse.Trade t) {
@@ -251,16 +267,16 @@ public class OandaApi implements BrokerConnection, OrderService {
 
     @Override
     @Timed
-    public OandaOrderResponse sendOrder(OrderRequest request) {
+    public OandaCreateOrderResponse sendOrder(OrderRequest request) {
         MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
         LOG.info("Sendning order to {}: {}", uri, request);
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
-        ResponseEntity<OandaOrderResponse> orderResponse = oandaRetryTemplate
+        ResponseEntity<OandaCreateOrderResponse> orderResponse = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "sendOrder");
-                    return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaOrderResponse.class);
+                    return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaCreateOrderResponse.class);
                 });
         LOG.info("Received order response: {}", orderResponse.getBody());
         return orderResponse.getBody();

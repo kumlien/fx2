@@ -86,7 +86,7 @@ public class DepotImpl implements Depot {
      * TODO Refac MarketUpdate -> BigDecimal ('trigger price' or something along those lines)
      * TODO Throw exceptions instead of returning null
      */
-    public OrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+    public CreateOrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
         LOG.info("We are told by robot '{}' to {} {} of available margin on {}", robotId, side, partOfAvailableMargin, currencyPair);
         Preconditions.checkArgument(currencyPair != null, "The currency pair must not be null");
         Preconditions.checkArgument(partOfAvailableMargin != null, "The partOfAvailableMargin must not be null");
@@ -126,7 +126,7 @@ public class DepotImpl implements Depot {
         if(marketUpdate != null) {
             order.setUpperBound(calculateUpperBound(marketUpdate));
         }
-        OrderResponse response = null;
+        CreateOrderResponse response = null;
         try {
             response = orderService.sendOrder(order);
             LOG.info("Order away and we got a response! {}", response);

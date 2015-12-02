@@ -1,28 +1,37 @@
 package hoggaster.oanda;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties(prefix = "oanda.resources")
+@ConfigurationProperties(prefix = "oanda.resources", exceptionIfInvalid = true, locations = "file:/data/fx2/config/application.yml")
 public class OandaResourcesProperties {
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda accounts endpoint")
     private String accounts;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda account endpoint")
     private String account;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda instruments endpoint")
     private String instruments;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda candles endpoint")
     private String candles;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda prices endpoint")
     private String prices;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda orders endpoint")
     private String orders;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda positions endpoint")
     private String positions;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda trades endpoint")
     private String trades;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda trade endpoint")
     private String trade;
 
     public String getTrade() {

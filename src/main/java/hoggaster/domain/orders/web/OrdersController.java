@@ -6,8 +6,8 @@ import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotImpl;
 import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.orders.CreateOrderResponse;
 import hoggaster.domain.orders.OrderRequest;
-import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.PriceService;
@@ -45,10 +45,10 @@ public class OrdersController {
 
     //@RequestMapping(method = RequestMethod.POST)
     //@ApiOperation("Send a new order request to directly to oanda using the specified depotId")
-    public OrderResponse placeOrderDirect(@RequestBody OrderRequest request) {
+    public CreateOrderResponse placeOrderDirect(@RequestBody OrderRequest request) {
         LOG.info("Sending order to broker: {}", request);
 
-        OrderResponse result = orderService.sendOrder(request);
+        CreateOrderResponse result = orderService.sendOrder(request);
         LOG.info("Got response: {}", result);
         return result;
 
@@ -57,7 +57,7 @@ public class OrdersController {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("Send a new order request to oanda for the specified depotId" )
-    public OrderResponse placeOrderNew(@RequestParam("depotId") String depotId, @RequestParam("instrument")CurrencyPair currencyPair, @RequestParam("side") OrderSide side, @RequestParam("partOfMargin")BigDecimal partOfMargin) {
+    public CreateOrderResponse placeOrderNew(@RequestParam("depotId") String depotId, @RequestParam("instrument")CurrencyPair currencyPair, @RequestParam("side") OrderSide side, @RequestParam("partOfMargin")BigDecimal partOfMargin) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "The provided depotId doesn't contain any text");
         DbDepot dbDepot = depotService.findDepotById(depotId);
         Preconditions.checkArgument(dbDepot != null, "No depots found with id " + depotId);

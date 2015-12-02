@@ -33,15 +33,23 @@ public class TradesController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation("Get all open trades for the specified depotId" )
+    @ApiOperation("Get all open trades for the specified depotId, directly from the broker right now" )
     public Collection<Trade> getAll(@RequestParam("depotId") String depotId) {
         DbDepot dbDepot = depotService.findDepotById(depotId);
         return brokerConnection.getOpenTrades(depotId, dbDepot.brokerId);
     }
 
+    @RequestMapping(value = "{tradeId}", method = RequestMethod.DELETE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ApiOperation("Close the trade with the specified id" )
+    public void closeTrade(@RequestParam("depotId") String depotId, @PathVariable("tradeId") String tradeId) {
+        DbDepot dbDepot = depotService.findDepotById(depotId);
+        brokerConnection.closeTrade(depotId, dbDepot.brokerId, tradeId);
+    }
+
     @RequestMapping(value = "{tradeId}", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation("Get a specific trade for the specified depotId" )
+    @ApiOperation("Get a specific trade for the specified depotId, directly from the broker right now" )
     public Trade getById(@RequestParam("depotId") String depotId, @PathVariable("tradeId") String tradeId) {
         DbDepot dbDepot = depotService.findDepotById(depotId);
         Optional<Trade> trade = brokerConnection.getTrade(depotId, dbDepot.brokerId, tradeId);

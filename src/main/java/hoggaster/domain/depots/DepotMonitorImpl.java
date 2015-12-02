@@ -59,6 +59,7 @@ public class DepotMonitorImpl implements DepotMonitor {
         } else {
             final List<Position> positions = broker.getPositions(dbDepot.brokerId);
             final List<Trade> openTrades = broker.getOpenTrades(dbDepot.getId(), dbDepot.brokerId);
+            openTrades.forEach(t->LOG.info("Open trade: {}", t));
             dbDepot.setLastSyncOk(true);
             dbDepot.setLastSynchronizedWithBroker(Instant.now());
             dbDepot.updateWithValuesFrom(depotFromBroker, positions);

@@ -7,6 +7,7 @@ import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
@@ -27,7 +28,7 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
 
 
     @Override
-    public OandaOrderResponse sendOrder(OrderRequest request) {
+    public OandaCreateOrderResponse sendOrder(OrderRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -79,6 +80,11 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
 
     @Override
     public Optional<Trade> getTrade(String depotId, String brokerId, String tradeId) {
+        return null;
+    }
+
+    @Override
+    public CloseTradeResponse closeTrade(String depotId, String brokerId, String tradeId) {
         return null;
     }
 

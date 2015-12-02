@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
-import hoggaster.domain.orders.OrderResponse;
+import hoggaster.domain.orders.CreateOrderResponse;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.trades.Trade;
 
@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * The response returned from an order request sent to Oanda
  */
-public class OandaOrderResponse implements OrderResponse {
+public class OandaCreateOrderResponse implements CreateOrderResponse {
 
     private final CurrencyPair currencyPair;
     private final Instant time;
@@ -33,7 +33,7 @@ public class OandaOrderResponse implements OrderResponse {
     private final Optional<List<OandaTrade>> tradesReduced;
 
     @JsonCreator
-    public OandaOrderResponse(
+    public OandaCreateOrderResponse(
             @JsonProperty(value = "instrument", required = true) CurrencyPair currencyPair,
             @JsonProperty(value = "price", required = true) BigDecimal price,
             @JsonProperty(value = "time", required = true) Instant time,
@@ -217,7 +217,7 @@ public class OandaOrderResponse implements OrderResponse {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("OandaOrderResponse [currencyPair=").append(currencyPair)
+        builder.append("OandaCreateOrderResponse [currencyPair=").append(currencyPair)
                 .append(", time=").append(time).append(", price=")
                 .append(price).append(", tradeOpened=").append(tradeOpened)
                 .append(", tradesClosed=").append(tradesClosed)

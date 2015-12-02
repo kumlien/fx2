@@ -2,12 +2,14 @@ package hoggaster.domain.brokers;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.Position;
+import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -48,4 +50,6 @@ public interface BrokerConnection {
      * @return The trade if found
      */
     Optional<Trade> getTrade(String depotId, String brokerId, String tradeId);
+
+    CloseTradeResponse closeTrade(String depotId, String brokerId, String tradeId);
 }

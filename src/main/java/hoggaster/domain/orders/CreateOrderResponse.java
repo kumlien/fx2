@@ -4,7 +4,7 @@ import hoggaster.domain.trades.Trade;
 
 import java.util.Optional;
 
-public interface OrderResponse {
+public interface CreateOrderResponse {
 
     boolean tradeWasOpened();
 

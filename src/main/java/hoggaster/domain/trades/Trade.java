@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * Represents a single OandaTrade.
+ * Represents a single Trade.
  *
  * Created by svante2 on 2015-11-15.
  */

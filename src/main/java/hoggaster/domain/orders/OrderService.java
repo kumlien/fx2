@@ -6,5 +6,5 @@ package hoggaster.domain.orders;
 public interface OrderService {
 
     //TODO remove Oanda
-    OrderResponse sendOrder(OrderRequest request);
+    CreateOrderResponse sendOrder(OrderRequest request);
 }

@@ -12,7 +12,7 @@ import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
-import hoggaster.oanda.responses.OandaOrderResponse;
+import hoggaster.oanda.responses.OandaCreateOrderResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -88,7 +88,7 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuy() throws Exception {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
-        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
+        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaCreateOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
 
         depot.sendOrder(cp, OrderSide.buy, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
