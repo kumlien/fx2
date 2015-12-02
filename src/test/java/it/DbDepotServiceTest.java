@@ -39,7 +39,6 @@ import static org.mockito.Mockito.when;
 @SpringApplicationConfiguration(classes = {DbDepotServiceTest.class, MongoConfig.class})
 @Configuration
 @ComponentScan(basePackageClasses = {DepotService.class})
-@EnableMongoRepositories(basePackageClasses = DepotRepo.class)
 public class DbDepotServiceTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(DbDepotServiceTest.class);

@@ -1,6 +1,7 @@
 package it;
 
 import hoggaster.Application;
+import hoggaster.MongoConfig;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
@@ -31,15 +32,10 @@ import static hoggaster.rules.indicators.CandleStickField.CLOSE_BID;
 import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
-@WebAppConfiguration
-@IntegrationTest("server.port:0")
+@SpringApplicationConfiguration(classes = MongoConfig.class)
 public class RobotDefintionCRUDTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(RobotDefintionCRUDTest.class);
-
-    @Value("${local.server.port}")
-    int port;
 
     @Autowired
     RobotDefinitionRepo robotRepo;
@@ -71,7 +67,7 @@ public class RobotDefintionCRUDTest {
 
         robotDefinition = robotRepo.save(robotDefinition);
 
-        robotRepo.delete(robotDefinition.getId());
+        //robotRepo.delete(robotDefinition.getId());
     }
 
     @Test
