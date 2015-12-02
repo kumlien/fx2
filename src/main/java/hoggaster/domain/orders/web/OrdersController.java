@@ -43,16 +43,6 @@ public class OrdersController {
         this.tradeService = tradeService;
     }
 
-    //@RequestMapping(method = RequestMethod.POST)
-    //@ApiOperation("Send a new order request to directly to oanda using the specified depotId")
-    public CreateOrderResponse placeOrderDirect(@RequestBody OrderRequest request) {
-        LOG.info("Sending order to broker: {}", request);
-
-        CreateOrderResponse result = orderService.sendOrder(request);
-        LOG.info("Got response: {}", result);
-        return result;
-
-    }
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)

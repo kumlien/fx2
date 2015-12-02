@@ -1,5 +1,7 @@
 package hoggaster.web;
 
+import hoggaster.domain.depots.Depot;
+import hoggaster.domain.depots.web.DepotNotFoundException;
 import hoggaster.domain.trades.web.TradeNotFoundException;
 import hoggaster.domain.users.web.UserNotFoundException;
 import hoggaster.oanda.exceptions.TradingHaltedException;
@@ -28,6 +30,13 @@ public class ControllerErrorHandler {
     @ExceptionHandler(TradeNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     VndErrors tradeNotFoundExceptionHandler(TradeNotFoundException ex) {
+        return new VndErrors("error", ex.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(DepotNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    VndErrors depotNotFoundExceptionHandler(DepotNotFoundException ex) {
         return new VndErrors("error", ex.getMessage());
     }
 

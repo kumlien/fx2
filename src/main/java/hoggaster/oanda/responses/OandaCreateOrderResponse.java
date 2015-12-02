@@ -27,8 +27,6 @@ public class OandaCreateOrderResponse implements CreateOrderResponse {
     @JsonIgnore
     private final Optional<OandaTradeOpened> tradeOpened;
 
-    @JsonIgnore
-    private final Optional<OrderOpened> orderOpened;
     private final Optional<List<OandaTrade>> tradesClosed;
     private final Optional<List<OandaTrade>> tradesReduced;
 
@@ -45,15 +43,14 @@ public class OandaCreateOrderResponse implements CreateOrderResponse {
         this.price = price;
         this.time = time;
         this.tradeOpened = Optional.ofNullable(oandaTradeOpened);
-        this.orderOpened = Optional.ofNullable(orderOpened);
         this.tradesClosed = Optional.ofNullable(tradesClosed);
         this.tradesReduced = Optional.ofNullable(tradesReduced);
 
 
     }
 
-    public OrderOpened getOrderOpened() {
-        return orderOpened.isPresent() ? orderOpened.get() : null;
+    public OandaTrade getTradeOpened() {
+        return tradeOpened.isPresent() ? tradeOpened.get() : null;
     }
 
     public List<OandaTrade> getTradesClosed() {

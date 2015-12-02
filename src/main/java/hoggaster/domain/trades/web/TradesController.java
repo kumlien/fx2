@@ -3,6 +3,7 @@ package hoggaster.domain.trades.web;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.depots.web.DepotNotFoundException;
 import hoggaster.domain.trades.Trade;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class TradesController {
     @ApiOperation("Get all open trades for the specified depotId, directly from the broker right now" )
     public Collection<Trade> getAll(@RequestParam("depotId") String depotId) {
         DbDepot dbDepot = depotService.findDepotById(depotId);
+        if(dbDepot == null) {
+            throw new DepotNotFoundException("No depot found in our db with id " + depotId);
+        }
         return brokerConnection.getOpenTrades(depotId, dbDepot.brokerId);
     }
 
