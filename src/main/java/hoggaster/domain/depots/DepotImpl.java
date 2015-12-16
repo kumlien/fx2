@@ -12,6 +12,7 @@ import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.exceptions.TradingHaltedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -64,11 +65,11 @@ public class DepotImpl implements Depot {
 
 
     @Override
-    public void sell(CurrencyPair currencyPair, String robotId) {
+    public void closeTrade(CurrencyPair currencyPair, String robotId) {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         LOG.info("We are told by robot '{}' to sell {}", robotId, currencyPair);
-        if (!dbDepot.ownThisInstrument(currencyPair)) {
-            LOG.info("Nahh, we don't own {} yet...", currencyPair.name());
+        if (dbDepot.hasOpenPositionForInstrument(currencyPair)) {
+            LOG.info("Nahh, we already have an open position for {}", currencyPair.name());
             return;
         }
 
@@ -83,11 +84,12 @@ public class DepotImpl implements Depot {
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      *
-     * TODO Refac MarketUpdate -> BigDecimal ('trigger price' or something along those lines)
+     * TODO Refac MarketUpdate -> BigDecimal ('triggerPrice' or something along those lines)
      * TODO Throw exceptions instead of returning null
      */
-    public CreateOrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+    public CreateOrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
         LOG.info("We are told by robot '{}' to {} {} of available margin on {}", robotId, side, partOfAvailableMargin, currencyPair);
+        Preconditions.checkArgument(StringUtils.hasText(robotId), "No robotId specified");
         Preconditions.checkArgument(currencyPair != null, "The currency pair must not be null");
         Preconditions.checkArgument(partOfAvailableMargin != null, "The partOfAvailableMargin must not be null");
         Preconditions.checkArgument(partOfAvailableMargin.compareTo(BigDecimal.ZERO) > 0, "The partOfAvailableMargin must not be > 0");
@@ -105,7 +107,7 @@ public class DepotImpl implements Depot {
             return null;
         }
 
-        if (dbDepot.ownThisInstrument(currencyPair)) {
+        if (dbDepot.hasOpenPositionForInstrument(currencyPair)) {
             LOG.warn("Unable to sendOrder since we already own {}, only sendOrder once...", currencyPair.name());
             return null;
         }
@@ -139,6 +141,7 @@ public class DepotImpl implements Depot {
                 LOG.warn("No trade opened, better check open orders!");
             }
             depotService.save(dbDepot);
+            depotService.syncDepot(dbDepot);
         } catch (TradingHaltedException the) {
             LOG.info("No order placed since the trading is halted for {} ({})", currencyPair, the.getMessage());
         }

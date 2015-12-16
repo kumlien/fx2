@@ -32,13 +32,13 @@ public class RobotExecutionContext {
 
     public final CurrencyPair currencyPair;
 
-    private final List<Condition> positiveBuyConditions = new ArrayList<>();
+    private final List<Condition> positiveOpenTradeConditions = new ArrayList<>();
 
-    private final List<Condition> positiveSellConditions = new ArrayList<>();
+    private final List<Condition> positiveCloseTradeConditions = new ArrayList<>();
 
-    private final List<Condition> negativeBuyConditions = new ArrayList<>();
+    private final List<Condition> negativeOpenTradeConditions = new ArrayList<>();
 
-    private final List<Condition> negativeSellConditions = new ArrayList<>();
+    private final List<Condition> negativeCloseTradeConditions = new ArrayList<>();
 
     private final TALibService taLibService;
 
@@ -54,20 +54,20 @@ public class RobotExecutionContext {
         this.bidAskCandleService = bidAskCandleService;
     }
 
-    public void addPositiveBuyAction(Condition condition) {
-        positiveBuyConditions.add(condition);
+    public void addPositiveOpenTradeCondition(Condition condition) {
+        positiveOpenTradeConditions.add(condition);
     }
 
-    public void addPositiveSellAction(Condition condition) {
-        positiveSellConditions.add(condition);
+    public void addPositiveCloseTradeAction(Condition condition) {
+        positiveCloseTradeConditions.add(condition);
     }
 
     public void addNegativeBuyAction(Condition condition) {
-        negativeBuyConditions.add(condition);
+        negativeOpenTradeConditions.add(condition);
     }
 
     public void addNegativeSellAction(Condition condition) {
-        negativeSellConditions.add(condition);
+        negativeCloseTradeConditions.add(condition);
     }
 
 
@@ -87,20 +87,20 @@ public class RobotExecutionContext {
         return taLibService.sma(values, periods);
     }
 
-    public List<Condition> getPositiveBuyConditions() {
-        return positiveBuyConditions;
+    public List<Condition> getPositiveOpenTradeConditions() {
+        return positiveOpenTradeConditions;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", currencyPair=").append(currencyPair).append(", positiveConditions=").append(positiveBuyConditions).append("]");
+        builder.append("RobotExecutionContext [marketUpdate=").append(marketUpdate).append(", currencyPair=").append(currencyPair).append(", positiveConditions=").append(positiveOpenTradeConditions).append("]");
         return builder.toString();
     }
 
 
-    public List<Condition> getPositiveSellConditions() {
-        return positiveSellConditions;
+    public List<Condition> getPositiveCloseTradeConditions() {
+        return positiveCloseTradeConditions;
     }
 
 

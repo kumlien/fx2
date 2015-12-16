@@ -7,7 +7,6 @@ import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotImpl;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.CreateOrderResponse;
-import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.PriceService;
@@ -52,6 +51,6 @@ public class OrdersController {
         DbDepot dbDepot = depotService.findDepotById(depotId);
         Preconditions.checkArgument(dbDepot != null, "No depots found with id " + depotId);
         Depot depot = new DepotImpl(depotId, orderService, depotService, priceService, tradeService);
-        return Objects.requireNonNull(depot.sendOrder(currencyPair, side, partOfMargin, null, "web-request"), "Ooops, the order was not sent for some reason, check the logs...");
+        return Objects.requireNonNull(depot.openTrade(currencyPair, side, partOfMargin, null, "web-request"), "Ooops, the order was not sent for some reason, check the logs...");
     }
 }

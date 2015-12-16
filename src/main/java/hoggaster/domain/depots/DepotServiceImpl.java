@@ -1,10 +1,12 @@
 package hoggaster.domain.depots;
 
+import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
+import hoggaster.domain.trades.Trade;
 import hoggaster.domain.users.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +16,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by svante on 15-09-22.
  */
 @Service
-public class DepotServiceImpl implements  DepotService {
+public class DepotServiceImpl implements DepotService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotServiceImpl.class);
 
@@ -73,5 +76,23 @@ public class DepotServiceImpl implements  DepotService {
     @Override
     public DbDepot save(DbDepot dbDepot) {
         return depotRepo.save(dbDepot);
+    }
+
+    @Override
+    @Timed
+    public void syncDepot(DbDepot dbDepot) {
+        LOG.info("Start syncing dbDepot {}", dbDepot);
+        BrokerDepot depotFromBroker = brokerConnection.getDepot(dbDepot.getBrokerId());
+        if (depotFromBroker == null) {
+            LOG.error("Unable to fetch matching dbDepot from broker: {}", dbDepot);
+            dbDepot.setLastSyncOk(false);
+        } else {
+            final Set<Position> positions = brokerConnection.getPositions(dbDepot.brokerId);
+            final Set<Trade> openTrades = brokerConnection.getOpenTrades(dbDepot.getId(), dbDepot.brokerId);
+            dbDepot.setLastSyncOk(true);
+            dbDepot.updateWithValuesFrom(depotFromBroker, positions, openTrades);
+        }
+        dbDepot.setLastSynchronizedWithBroker(Instant.now());
+        depotRepo.save(dbDepot);
     }
 }

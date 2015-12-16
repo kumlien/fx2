@@ -8,6 +8,7 @@ import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.Price;
+import hoggaster.domain.trades.TradeAction;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
@@ -68,13 +69,13 @@ public class BasicRobotTest {
         SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
         //Let's compare them in a condition, putting an operator between them
-        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, OrderSide.buy, MarketUpdateType.PRICE);
+        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, MarketUpdateType.PRICE);
         definition.addBuyCondition(condition);
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
         Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();
         Price price = new Price(CurrencyPair.USD_SEK, new BigDecimal("1.99"), new BigDecimal("2.01"), Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
-        Mockito.verify(depot).sendOrder(CurrencyPair.USD_SEK, OrderSide.buy, new BigDecimal("0.02"), price, robot.id);
+        Mockito.verify(depot).openTrade(CurrencyPair.USD_SEK, OrderSide.buy, new BigDecimal("0.02"), price, robot.id);
     }
 }

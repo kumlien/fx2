@@ -43,4 +43,5 @@ public interface DepotService {
 
     DbDepot save(DbDepot dbDepot);
 
+    void syncDepot(DbDepot dbDepot);
 }

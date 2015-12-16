@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,7 +33,7 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     }
 
     @Override
-    public List<Position> getPositions(String depotId) {
+    public Set<Position> getPositions(String depotId) {
         return null;
     }
 
@@ -74,7 +73,7 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     }
 
     @Override
-    public List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
+    public Set<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
         return null;
     }
 

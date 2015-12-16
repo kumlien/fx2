@@ -1,8 +1,8 @@
 package it;
 
-import hoggaster.Application;
 import hoggaster.MongoConfig;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.trades.TradeAction;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.rules.MarketUpdateType;
@@ -16,15 +16,11 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
 
-import static hoggaster.domain.orders.OrderSide.buy;
 import static hoggaster.rules.Comparator.GREATER_OR_EQUAL_THAN;
 import static hoggaster.rules.Comparator.LESS_OR_EQUAL_THAN;
 import static hoggaster.rules.MarketUpdateType.ONE_DAY_CANDLE;
@@ -57,12 +53,12 @@ public class RobotDefintionCRUDTest {
         RSIIndicator rsi2 = new RSIIndicator(2, 100, 1, END_OF_DAY, CLOSE_BID);
         CompoundIndicator compoundRSIIndicator = new CompoundIndicator(rsi1, rsi2, CompoundIndicator.Operator.ADD);
         SimpleValueIndicator simpleValueIndicator = new SimpleValueIndicator(new BigDecimal("10.0"));
-        Condition firstBuyCondition = new TwoIndicatorCondition("rsi1 + rsi2 should be <= 10", compoundRSIIndicator, simpleValueIndicator, LESS_OR_EQUAL_THAN, 0, buy, ONE_DAY_CANDLE);
+        Condition firstBuyCondition = new TwoIndicatorCondition("rsi1 + rsi2 should be <= 10", compoundRSIIndicator, simpleValueIndicator, LESS_OR_EQUAL_THAN, 0, TradeAction.OPEN, ONE_DAY_CANDLE);
         robotDefinition.addBuyCondition(firstBuyCondition);
 
         CandleIndicator oneDayCloseCandleIndicator = new CandleIndicator(CandleStickGranularity.END_OF_DAY, CLOSE_BID);
         SMAIndicator smaForOneDayClose200Days = new SMAIndicator(END_OF_DAY,500, CLOSE_BID, 200);
-        TwoIndicatorCondition secondBuyCondition = new TwoIndicatorCondition("Close bid for the one day candle should be >= SMA200 for one day candle close bid",oneDayCloseCandleIndicator,smaForOneDayClose200Days, GREATER_OR_EQUAL_THAN,0, buy,ONE_DAY_CANDLE);
+        TwoIndicatorCondition secondBuyCondition = new TwoIndicatorCondition("Close bid for the one day candle should be >= SMA200 for one day candle close bid",oneDayCloseCandleIndicator,smaForOneDayClose200Days, GREATER_OR_EQUAL_THAN,0, TradeAction.OPEN,ONE_DAY_CANDLE);
         robotDefinition.addBuyCondition(secondBuyCondition);
 
         robotDefinition = robotRepo.save(robotDefinition);
@@ -73,14 +69,14 @@ public class RobotDefintionCRUDTest {
     @Test
     public void testCRUDRobotDefinition() throws InterruptedException {
         RobotDefinition rd = new RobotDefinition("myRobotDefinition", CurrencyPair.AUD_USD, "aDepotId");
-        TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, buy, MarketUpdateType.ONE_MINUTE_CANDLE);
+        TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, TradeAction.OPEN, MarketUpdateType.ONE_MINUTE_CANDLE);
         rd.addBuyCondition(buyCondition);
         rd = robotRepo.save(rd);
         Assert.assertNotNull(rd.getId());
         LOG.info("RobotDefinition saved to db with id {}", rd.getId());
 
-        TwoIndicatorCondition stopLoss = new TwoIndicatorCondition("Sell when ask is <= 140", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(140.0)), LESS_OR_EQUAL_THAN, 1, buy);
-        TwoIndicatorCondition takeProfit = new TwoIndicatorCondition("Sell when bid is >= 160", new CurrentBidIndicator(), new SimpleValueIndicator(new BigDecimal(160.0)), GREATER_OR_EQUAL_THAN, 2, buy);
+        TwoIndicatorCondition stopLoss = new TwoIndicatorCondition("Sell when ask is <= 140", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(140.0)), LESS_OR_EQUAL_THAN, 1, TradeAction.OPEN);
+        TwoIndicatorCondition takeProfit = new TwoIndicatorCondition("Sell when bid is >= 160", new CurrentBidIndicator(), new SimpleValueIndicator(new BigDecimal(160.0)), GREATER_OR_EQUAL_THAN, 2, TradeAction.OPEN);
         rd.addSellCondition(stopLoss);
         rd.addSellCondition(takeProfit);
         rd = robotRepo.save(rd);
@@ -93,14 +89,14 @@ public class RobotDefintionCRUDTest {
     @Ignore
     public void testCRUDRobotDefinition2() throws InterruptedException {
         RobotDefinition rd = new RobotDefinition("Robot2", CurrencyPair.EUR_USD, "aDepotId");
-        TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, buy);
+        TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, TradeAction.OPEN);
         rd.addBuyCondition(buyCondition);
         rd = robotRepo.save(rd);
         Assert.assertNotNull(rd.getId());
         LOG.info("RobotDefinition saved to db with id {}", rd.getId());
 
-        TwoIndicatorCondition stopLoss = new TwoIndicatorCondition("Sell when ask is <= 140", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(140.0)), LESS_OR_EQUAL_THAN, 1, buy);
-        TwoIndicatorCondition takeProfit = new TwoIndicatorCondition("Sell when bid is >= 160", new CurrentBidIndicator(), new SimpleValueIndicator(new BigDecimal(160.0)), GREATER_OR_EQUAL_THAN, 2, buy);
+        TwoIndicatorCondition stopLoss = new TwoIndicatorCondition("Sell when ask is <= 140", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(140.0)), LESS_OR_EQUAL_THAN, 1, TradeAction.OPEN);
+        TwoIndicatorCondition takeProfit = new TwoIndicatorCondition("Sell when bid is >= 160", new CurrentBidIndicator(), new SimpleValueIndicator(new BigDecimal(160.0)), GREATER_OR_EQUAL_THAN, 2, TradeAction.OPEN);
         rd.addSellCondition(stopLoss);
         rd.addSellCondition(takeProfit);
         rd = robotRepo.save(rd);

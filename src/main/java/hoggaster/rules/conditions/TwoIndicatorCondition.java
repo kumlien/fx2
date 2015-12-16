@@ -1,8 +1,10 @@
 package hoggaster.rules.conditions;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.trades.TradeAction;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
@@ -34,7 +36,7 @@ public class TwoIndicatorCondition implements Condition {
     public final Indicator secondIndicator;
     public final Comparator operator;
     public final Integer priority;
-    public final OrderSide buyOrSell;
+    public final TradeAction tradeAction;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
@@ -46,16 +48,16 @@ public class TwoIndicatorCondition implements Condition {
      * @param secondIndicator
      * @param operator
      * @param priority
-     * @param buyOrSell
+     * @param tradeAction
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, OrderSide buyOrSell, MarketUpdateType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;
         this.secondIndicator = secondIndicator;
         this.operator = operator;
         this.priority = priority;
-        this.buyOrSell = buyOrSell;
+        this.tradeAction = tradeAction;
         this.eventTypes = Sets.newHashSet(eventTypes);
     }
 
@@ -73,10 +75,10 @@ public class TwoIndicatorCondition implements Condition {
 
     @Action
     public void then() {
-        if (buyOrSell == OrderSide.buy) {
-            ctx.addPositiveBuyAction(this);
+        if (tradeAction == TradeAction.OPEN) {
+            ctx.addPositiveOpenTradeCondition(this);
         } else {
-            ctx.addPositiveSellAction(this);
+            ctx.addPositiveCloseTradeAction(this);
         }
     }
 
@@ -92,8 +94,15 @@ public class TwoIndicatorCondition implements Condition {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("TwoIndicatorCondition [name=").append(name).append(", firstIndicator=").append(firstIndicator).append(", secondIndicator=").append(secondIndicator).append(", operator=").append(operator).append(", priority=").append(priority).append(", type=").append(buyOrSell).append("]");
-        return builder.toString();
+        return MoreObjects.toStringHelper(this)
+                .add("name", name)
+                .add("firstIndicator", firstIndicator)
+                .add("secondIndicator", secondIndicator)
+                .add("operator", operator)
+                .add("priority", priority)
+                .add("tradeAction", tradeAction)
+                .add("ctx", ctx)
+                .add("eventTypes", eventTypes)
+                .toString();
     }
 }

@@ -82,10 +82,10 @@ public class Robot implements Consumer<Event<?>> {
     private final CurrencyPair currencyPair;
 
     // The buy conditions. Must be annotated with @Rule
-    private final Set<Condition> buyConditions;
+    private final Set<Condition> openTradeConditions;
 
     // The sell conditions. Must be annotated with @Rule
-    private final Set<Condition> sellConditions;
+    private final Set<Condition> closeTradeConditions;
 
     private final TALibService taLibService;
 
@@ -115,21 +115,16 @@ public class Robot implements Consumer<Event<?>> {
         this.id = definition.getId(); // This is kind of wacky
         this.name = definition.name;
         this.currencyPair = definition.currencyPair;
-        this.buyConditions = definition.getEnterConditions();
-        this.sellConditions = definition.getExitConditions();
+        this.openTradeConditions = definition.getEnterConditions();
+        this.closeTradeConditions = definition.getExitConditions();
         this.depot = depot;
         this.priceEventBus = priceEventBus;
         this.rulesEngine = rulesEngine;
         this.taLibService = taLibService;
         this.candleService = candleService;
 
-        buyConditions.stream().forEach(c -> {
-            rulesEngine.registerRule(c);
-        });
-
-        sellConditions.stream().forEach(c -> {
-            rulesEngine.registerRule(c);
-        });
+        openTradeConditions.forEach(rulesEngine::registerRule);
+        closeTradeConditions.forEach(rulesEngine::registerRule);
     }
 
     /**
@@ -165,12 +160,12 @@ public class Robot implements Consumer<Event<?>> {
         rulesEngine.fireRules();
 
         //All buy conditions must be positive
-        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) {
+        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) {
             LOG.info("Maybe we should sendOrder something based on new price!");
-            askDepotToSendOrder(price, OrderSide.buy);
-        } else if (ctx.getPositiveSellConditions().size() > 0) { //Enough with one positive sell condition
+            askDepotToOpenTrade(price, OrderSide.buy);
+        } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //Enough with one positive close condition
             LOG.info("Maybe we should sell something based on new price!");
-            askDepotToSendOrder(price, OrderSide.sell);
+            askDepotToOpenTrade(price, OrderSide.sell);
         } else {
             LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
         }
@@ -187,10 +182,10 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveBuyConditions().size() == buyConditions.size()) { //All sendOrder conditions say sendOrder!
-            askDepotToSendOrder(candle, OrderSide.buy);
-        } else if (ctx.getPositiveSellConditions().size() > 0) { //At least one sell condition say sell!
-            doSell();
+        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All sendOrder conditions say sendOrder!
+            askDepotToOpenTrade(candle, OrderSide.buy);
+        } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //At least one sell condition say sell!
+            doCloseTrade();
         } else {
             LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
         }
@@ -198,23 +193,22 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void setCtxOnConditions(RobotExecutionContext ctx) {
-        buyConditions.parallelStream().forEach(c -> {
+        openTradeConditions.parallelStream().forEach(c -> {
             c.setContext(ctx);
         });
-        sellConditions.parallelStream().forEach(c -> {
+        closeTradeConditions.parallelStream().forEach(c -> {
             c.setContext(ctx);
         });
     }
 
-    private void doSell() {
-        depot.sell(currencyPair, this.id);
+    private void doCloseTrade() {
+        depot.closeTrade(currencyPair, this.id);
 
     }
 
     //TODO Read sendOrder percentage from db, hard code 2% for now
-    private void askDepotToSendOrder(MarketUpdate marketUpdate, OrderSide side) {
-        depot.sendOrder(currencyPair, side, PART_OF_AVAILABLE_MARGIN, marketUpdate, this.id);
-
+    private void askDepotToOpenTrade(MarketUpdate marketUpdate, OrderSide side) {
+        depot.openTrade(currencyPair, side, PART_OF_AVAILABLE_MARGIN, marketUpdate, this.id);
     }
 
     /**
@@ -259,7 +253,7 @@ public class Robot implements Consumer<Event<?>> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", currencyPair=").append(currencyPair).append(", buyConditions=").append(buyConditions).append(", sellConditions=").append(sellConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
+        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", currencyPair=").append(currencyPair).append(", openTradeConditions=").append(openTradeConditions).append(", closeTradeConditions=").append(closeTradeConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
         return builder.toString();
     }
 

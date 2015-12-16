@@ -7,6 +7,7 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.trades.Trade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
@@ -51,8 +52,8 @@ public class DbDepot {
      * It is equal to your Net Asset Value minus Margin Used.
      */
     private BigDecimal marginAvailable;
-    private Integer openTrades;
-    private Integer openOrders;
+    private Integer numberOfOpenTrades;
+    private Integer numoberOfOpenOrders;
 
     public final String userId;
 
@@ -76,6 +77,12 @@ public class DbDepot {
      * A list of open positions
      */
     private Set<Position> positions = Sets.newHashSet();
+
+
+    /**
+     * A list of open trades
+     */
+    private Set<Trade> openTrades = Sets.newHashSet();
 
 
     /**
@@ -108,18 +115,20 @@ public class DbDepot {
      * @param realizedPl
      * @param marginUsed
      * @param marginAvailable
-     * @param openTrades
-     * @param openOrders
+     * @param numberOfOpenTrades
+     * @param numoberOfOpenOrders
      * @param lastSynchronizedWithBroker
      * @param lastSyncOk
      * @param type
      */
     @PersistenceConstructor
-    public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
-        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, openTrades, openOrders, lastSynchronizedWithBroker, lastSyncOk, type);
+    public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, Set<Trade> openTrades, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
+                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numoberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, numberOfOpenTrades, numoberOfOpenOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.positions = positions;
+        this.numberOfOpenTrades = numberOfOpenTrades;
+        this.openTrades = openTrades;
     }
 
 
@@ -136,13 +145,13 @@ public class DbDepot {
      * @param realizedPl
      * @param marginUsed
      * @param marginAvailable
-     * @param openTrades
-     * @param openOrders
+     * @param numberOfOpenTrades
+     * @param numoberOfOpenOrders
      * @param lastSynchronizedWithBroker
      * @param lastSyncOk
      * @param type
      */
-    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer openTrades, Integer openOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numoberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -152,8 +161,8 @@ public class DbDepot {
         this.realizedPl = realizedPl;
         this.marginUsed = marginUsed;
         this.marginAvailable = marginAvailable;
-        this.openTrades = openTrades;
-        this.openOrders = openOrders;
+        this.numberOfOpenTrades = numberOfOpenTrades;
+        this.numoberOfOpenOrders = numoberOfOpenOrders;
         this.marginRate = marginRate;
         this.brokerDepotName = brokerDepotName;
         this.currency = currency;
@@ -162,7 +171,7 @@ public class DbDepot {
         this.type = type;
     }
 
-    public boolean ownThisInstrument(CurrencyPair currencyPair) {
+    public boolean hasOpenPositionForInstrument(CurrencyPair currencyPair) {
         return getPositionByInstrumentInternal(currencyPair) != null;
     }
 
@@ -235,7 +244,7 @@ public class DbDepot {
      * @param positions
      * @return true if any fields were changed
      */
-    public boolean updateWithValuesFrom(BrokerDepot brokerDepot, List<Position> positions) {
+    public boolean updateWithValuesFrom(BrokerDepot brokerDepot, Set<Position> positions, Set<Trade> openTrades) {
         boolean changed = false;
         if (balance.compareTo(brokerDepot.balance) != 0) {
             LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
@@ -267,15 +276,15 @@ public class DbDepot {
             changed = true;
         }
 
-        if (openOrders == null || openOrders.compareTo(brokerDepot.openOrders) != 0) {
-            LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, openOrders, brokerDepot.openOrders);
-            openOrders = brokerDepot.openOrders;
+        if (numoberOfOpenOrders == null || numoberOfOpenOrders.compareTo(brokerDepot.openOrders) != 0) {
+            LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, numoberOfOpenOrders, brokerDepot.openOrders);
+            numoberOfOpenOrders = brokerDepot.openOrders;
             changed = true;
         }
 
-        if (openTrades == null || openTrades.compareTo(brokerDepot.openTrades) != 0) {
-            LOG.info("Open trades updated with new value for dbDepot {}: {} -> {}", id, openTrades, brokerDepot.openTrades);
-            openTrades = brokerDepot.openTrades;
+        if (numberOfOpenTrades == null || numberOfOpenTrades.compareTo(brokerDepot.openTrades) != 0) {
+            LOG.info("Open trades updated with new value for dbDepot {}: {} -> {}", id, numberOfOpenTrades, brokerDepot.openTrades);
+            numberOfOpenTrades = brokerDepot.openTrades;
             changed = true;
         }
 
@@ -308,8 +317,17 @@ public class DbDepot {
                         .count() > 0) {
             changed = true;
             LOG.info("Positions updated with new values for dbDepot {}: {} -> {}", id, this.positions, positions);
-            this.positions.clear();
-            this.positions.addAll(positions);
+            this.positions = positions;
+        }
+
+
+        if(this.openTrades.size() != openTrades.size() ||
+                openTrades.stream()
+                        .filter(newTrade -> !this.openTrades.contains(newTrade))
+                        .count() > 0) {
+            changed = true;
+            LOG.info("Open trades updated with new values for dbDepot {}: {} -> {}", id, this.openTrades, openTrades);
+            this.openTrades = openTrades;
         }
 
         return changed;
@@ -368,20 +386,20 @@ public class DbDepot {
         this.marginAvailable = marginAvailable;
     }
 
-    public Integer getOpenTrades() {
-        return openTrades;
+    public Integer getNumberOfOpenTrades() {
+        return numberOfOpenTrades;
     }
 
-    public void setOpenTrades(Integer openTrades) {
-        this.openTrades = openTrades;
+    public void setNumberOfOpenTrades(Integer numberOfOpenTrades) {
+        this.numberOfOpenTrades = numberOfOpenTrades;
     }
 
-    public Integer getOpenOrders() {
-        return openOrders;
+    public Integer getNumoberOfOpenOrders() {
+        return numoberOfOpenOrders;
     }
 
-    public void setOpenOrders(Integer openOrders) {
-        this.openOrders = openOrders;
+    public void setNumoberOfOpenOrders(Integer numoberOfOpenOrders) {
+        this.numoberOfOpenOrders = numoberOfOpenOrders;
     }
 
     public Boolean getLastSyncOk() {

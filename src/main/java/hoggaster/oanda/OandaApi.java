@@ -31,11 +31,10 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Access point to oanda
@@ -102,18 +101,18 @@ public class OandaApi implements BrokerConnection, OrderService {
     }
 
     @Override
-    public List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
+    public Set<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrades());
         String uri = builder.buildAndExpand(brokerDepotId).toUriString();
         LOG.info("Get open trades from oanda depot with id {} using uri {}", brokerDepotId, uri);
         ResponseEntity<OandaTradesResponse> openTrades = oandaRetryTemplate
                 .execute(context -> {
-                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getOpenTrades");
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getNumberOfOpenTrades");
                     return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaTradesResponse.class);
                 });
         return openTrades.getBody().trades.stream()
                 .map(t -> fromOandaTrade(fx2DepotId, t))
-                .collect(toList());
+                .collect(toSet());
     }
 
     @Override
@@ -154,7 +153,7 @@ public class OandaApi implements BrokerConnection, OrderService {
 
     @Override
     @Timed
-    public List<Position> getPositions(String depotId) {
+    public Set<Position> getPositions(String depotId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPositions());
         String uri = builder.buildAndExpand(depotId).toUriString();
         LOG.info("Get positions from oanda with account id {} using uri {}", depotId, uri);
@@ -167,7 +166,7 @@ public class OandaApi implements BrokerConnection, OrderService {
         return positions.getBody().positions
                 .stream()
                 .map(p -> new Position(p.instrument, p.side, p.units, p.avgPrice))
-                .collect(toList());
+                .collect(toSet());
     }
 
     /**

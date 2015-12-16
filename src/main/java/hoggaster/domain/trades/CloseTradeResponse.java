@@ -8,7 +8,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * Created by svante.kumlien on 02.12.15.
+ * Returned from a Broker in response to a request to close a specific trade.
+ *
+ * @author  svante.kumlien
  */
 public class CloseTradeResponse {
 

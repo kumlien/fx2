@@ -9,14 +9,12 @@ import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public interface BrokerConnection {
 
-    List<Position> getPositions(String depotId);
+    Set<Position> getPositions(String depotId);
 
     Instruments getInstrumentsForAccount(Integer accountId) throws UnsupportedEncodingException;
 
@@ -39,7 +37,7 @@ public interface BrokerConnection {
      * @param brokerDepotId
      * @return List of Trade :s
      */
-    List<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId);
+    Set<Trade> getOpenTrades(String fx2DepotId, String brokerDepotId);
 
     /**
      * Get a specific trade by id.

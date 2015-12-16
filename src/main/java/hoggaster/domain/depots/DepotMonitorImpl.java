@@ -1,8 +1,6 @@
 package hoggaster.domain.depots;
 
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.trades.Trade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -19,7 +16,7 @@ import java.util.List;
  * Created by svante on 15-09-20.
  */
 @Component
-public class DepotMonitorImpl implements DepotMonitor {
+public class DepotMonitorImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepotMonitorImpl.class);
 
@@ -29,10 +26,13 @@ public class DepotMonitorImpl implements DepotMonitor {
 
     private final BrokerConnection broker;
 
+    private final DepotService depotService;
+
     @Autowired
-    public DepotMonitorImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection broker) {
+    public DepotMonitorImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection broker, DepotService depotService) {
         this.depotRepo = depotRepo;
         this.broker = broker;
+        this.depotService = depotService;
     }
 
 
@@ -49,29 +49,11 @@ public class DepotMonitorImpl implements DepotMonitor {
     }
 
 
-    @Override
-    public DbDepot syncDepot(DbDepot dbDepot) {
-        LOG.info("Start syncing dbDepot {}", dbDepot);
-        BrokerDepot depotFromBroker = broker.getDepot(dbDepot.getBrokerId());
-        if (depotFromBroker == null) {
-            LOG.error("Unable to fetch matching dbDepot from broker: {}", dbDepot);
-            dbDepot.setLastSyncOk(false);
-        } else {
-            final List<Position> positions = broker.getPositions(dbDepot.brokerId);
-            final List<Trade> openTrades = broker.getOpenTrades(dbDepot.getId(), dbDepot.brokerId);
-            openTrades.forEach(t->LOG.info("Open trade: {}", t));
-            dbDepot.setLastSyncOk(true);
-            dbDepot.setLastSynchronizedWithBroker(Instant.now());
-            dbDepot.updateWithValuesFrom(depotFromBroker, positions);
-        }
-        depotRepo.save(dbDepot);
-        return dbDepot;
-    }
 
-    @Override
+
     public void checkDepotMargin(DbDepot dbDepot, boolean doSync) {
         if (doSync) {
-            dbDepot = syncDepot(dbDepot);
+            depotService.syncDepot(dbDepot);
         }
         LOG.warn("Implement dbDepot margin check here...");
     }

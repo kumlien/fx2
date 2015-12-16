@@ -13,19 +13,17 @@ import java.math.BigDecimal;
 public interface Depot {
 
     /**
-     *
-     * @param currencyPair
+     *  @param currencyPair
      * @param robotId
      */
-    void sell(CurrencyPair currencyPair, String robotId);
+    void closeTrade(CurrencyPair currencyPair, String robotId);
 
     /**
-     *
-     * @param currencyPair
+     *  @param currencyPair
      * @param side
      * @param partOfAvailableMargin Max part of available margin to use, 0.02 means 2%
      * @param marketUpdate
      * @param robotId
      */
-    CreateOrderResponse sendOrder(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
+    CreateOrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
 }

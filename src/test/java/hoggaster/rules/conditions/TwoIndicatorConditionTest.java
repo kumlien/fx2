@@ -4,7 +4,7 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
-import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.trades.TradeAction;
 import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
@@ -39,7 +39,7 @@ public class TwoIndicatorConditionTest {
 
         Indicator firstIndicator = new CandleIndicator(CandleStickGranularity.MINUTE, CandleStickField.CLOSE_BID);
         Indicator secondIndicator = new SimpleValueIndicator(new BigDecimal("2.0"));
-        TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, OrderSide.buy, MarketUpdateType.ONE_MINUTE_CANDLE);
+        TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, TradeAction.OPEN, MarketUpdateType.ONE_MINUTE_CANDLE);
         RobotExecutionContext ctx = new RobotExecutionContext(candle, currencyPair, taLibService, candleService);
         tic.setContext(ctx);
 
@@ -47,6 +47,6 @@ public class TwoIndicatorConditionTest {
         rulesEngine.registerRule(tic);
         rulesEngine.fireRules();
 
-        Assert.assertTrue(ctx.getPositiveBuyConditions().size() > 0);
+        Assert.assertTrue(ctx.getPositiveOpenTradeConditions().size() > 0);
     }
 }

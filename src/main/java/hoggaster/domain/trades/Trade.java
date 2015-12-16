@@ -12,11 +12,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * Represents a single Trade.
+ * Represents a single Trade. When a trade is open it lives in the Depot document. Once it is closed
+ * it is moved to it's own collection.
  *
  * Created by svante2 on 2015-11-15.
  */
-@Document
+@Document (collection = "historic_trades")
 public class Trade {
 
     @Id
