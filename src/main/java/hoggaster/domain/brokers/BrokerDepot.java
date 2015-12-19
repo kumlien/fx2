@@ -5,7 +5,7 @@ import java.util.Currency;
 
 /**
  * Generic dbDepot on the broker side.
- * Right now it's a copy of the OandaAccount, until we add support for other brokers.
+ * Right now it's a copy of the OandaAccount, until we tradeOpened support for other brokers.
  *
  * Created by svante2 on 15-09-21.
  */

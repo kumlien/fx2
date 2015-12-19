@@ -23,21 +23,22 @@ public class Position {
 
     public final CurrencyPair currencyPair;
 
-    public final OrderSide side;
+    public OrderSide side;
 
     private BigDecimal quantity;
 
     private BigDecimal averagePricePerShare;
 
-    public Position(CurrencyPair currencyPair, OrderSide side) {
-        this.currencyPair = currencyPair;
-        this.side = side;
-        quantity = new BigDecimal(0);
-        averagePricePerShare = new BigDecimal(0l);
-    }
-
+    /**
+     *
+     * @param currencyPair
+     * @param side
+     * @param quantity
+     * @param averagePricePerShare
+     */
     @PersistenceConstructor
     public Position(CurrencyPair currencyPair, OrderSide side, BigDecimal quantity, BigDecimal averagePricePerShare) {
+        LOG.info("New position created for {} with initial side {}, qty {} and price {}", currencyPair, side, quantity, averagePricePerShare);
         this.currencyPair = currencyPair;
         this.side = side;
         this.quantity = quantity;
@@ -65,40 +66,37 @@ public class Position {
      *
      * @param incomingQuantity
      * @param incomingPPS
+     * @param side
      */
-    public BigDecimal add(BigDecimal incomingQuantity, BigDecimal incomingPPS) {
+    public BigDecimal newTrade(BigDecimal incomingQuantity, BigDecimal incomingPPS, OrderSide side) {
         Preconditions.checkArgument(incomingQuantity != null, "Quantity can't be null");
         Preconditions.checkArgument(incomingQuantity.doubleValue() > 0, "Quantity must be > 0");
         Preconditions.checkArgument(incomingPPS != null, "Price per share can't be null");
         Preconditions.checkArgument(incomingPPS.doubleValue() > 0, "Price per share must be a positive value (provided value: " + incomingPPS + ")");
-        LOG.info("Adding {} units of {} with price per share {}, averagePPS before adding is {}", incomingQuantity, currencyPair, incomingPPS, getAveragePricePerShare());
+        LOG.info("New {} trade for {} units of {} with price per share {}, averagePPS before adding is {}", side, incomingQuantity, currencyPair, incomingPPS, getAveragePricePerShare());
         synchronized (this) {
-            BigDecimal oldTotalValue = this.quantity.multiply(averagePricePerShare, MATH_CONTEXT);
+            BigDecimal oldTotalValue = quantity.multiply(averagePricePerShare, MATH_CONTEXT);
             BigDecimal incomingTotalValue = incomingQuantity.multiply(incomingPPS, MATH_CONTEXT);
 
-            BigDecimal newTotalQty = this.quantity.add(incomingQuantity, MATH_CONTEXT);
-            BigDecimal newTotalValue = oldTotalValue.add(incomingTotalValue, MATH_CONTEXT);
-            this.averagePricePerShare = newTotalValue.divide(newTotalQty, MATH_CONTEXT);
+            BigDecimal newTotalQty = this.side == side ? quantity.add(incomingQuantity, MATH_CONTEXT) : quantity.subtract(incomingQuantity, MATH_CONTEXT);
+            BigDecimal newTotalValue = this.side == side ? oldTotalValue.add(incomingTotalValue, MATH_CONTEXT) : oldTotalValue.subtract(incomingTotalValue, MATH_CONTEXT);
             this.quantity = newTotalQty;
+            if(this.side == side) {
+                this.averagePricePerShare = newTotalValue.abs().divide(newTotalQty.abs(), MATH_CONTEXT);
+            } else if (quantity.compareTo(BigDecimal.ZERO) < 0) {
+                LOG.info("Switching side from {} to {} since the computed quantity is {}", this.side, side, quantity);
+                this.side = side;
+                quantity = quantity.abs(MATH_CONTEXT);
+                averagePricePerShare = incomingPPS;
+            } else if (quantity.compareTo(BigDecimal.ZERO) == 0) {
+                LOG.info("Position seem to be closed (quantity is zero)");
+                averagePricePerShare = BigDecimal.ZERO;
+            }
         }
-        LOG.info("After adding, the quantity is {} and averagePPS is {}", this.quantity, getAveragePricePerShare());
+        LOG.info("After new trade, the quantity is {} and averagePPS is {}", this.quantity, getAveragePricePerShare());
         return quantity;
     }
 
-    /**
-     * @param incomingQuantity
-     */
-    public BigDecimal subtract(BigDecimal incomingQuantity) {
-        Preconditions.checkArgument(incomingQuantity != null, "Quantity can't be null");
-        Preconditions.checkArgument(incomingQuantity.doubleValue() > 0, "Quantity must be > 0");
-        Preconditions.checkArgument(this.quantity.compareTo(incomingQuantity) >= 0, "Not possible to remove " + incomingQuantity + " from " + this.quantity);
-        LOG.info("Subtracting {} units of {}. Before subtracting we own {} units.", incomingQuantity, currencyPair, this.quantity);
-        synchronized (this) {
-            this.quantity = this.quantity.subtract(incomingQuantity, MATH_CONTEXT);
-        }
-        LOG.info("After subtracting {} we now have {} of {}", incomingQuantity, quantity, currencyPair);
-        return this.quantity;
-    }
 
     public BigDecimal getAveragePricePerShare() {
         return averagePricePerShare;

@@ -44,8 +44,8 @@
  *  -------------------------------------------------------------------
  *  121005 MF     First Version
  *  022206 BT     1. initialization of candleSettings
- *                2. add SetCompatibility and GetCompatibility
- *                3. add SetUnstablePeriod, GetUnstablePeriod
+ *                2. tradeOpened SetCompatibility and GetCompatibility
+ *                3. tradeOpened SetUnstablePeriod, GetUnstablePeriod
  */
 
 package com.tictactec.ta.lib;

@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
- * method will get called and we add ourselves to the sendOrder- or sell action depending
+ * method will get called and we tradeOpened ourselves to the sendOrder- or sell action depending
  * on our {@link OrderSide}
  *
  * @author svante

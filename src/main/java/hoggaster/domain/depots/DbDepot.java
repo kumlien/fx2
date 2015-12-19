@@ -214,21 +214,22 @@ public class DbDepot {
     }
 
     /**
-     * Signal that we bought something
+     * Signal that we tradeOpened something
      * Add to set of {@link Position}s if not already present
      *
      * @param currencyPair
      * @param quantity
      * @param pricePerShare
      */
-    public void bought(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare) {
+    public void tradeOpened(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare, OrderSide side) {
         synchronized (positions) {
             Position io = getPositionByInstrumentInternal(currencyPair);
             if (io == null) {
-                io = new Position(currencyPair, OrderSide.buy);
+                io = new Position(currencyPair, side, quantity, pricePerShare);
                 positions.add(io);
+            } else {
+                io.newTrade(quantity, pricePerShare, side);
             }
-            io.add(quantity, pricePerShare);
         }
     }
 

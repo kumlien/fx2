@@ -215,7 +215,7 @@ public class OandaApi implements BrokerConnection, OrderService {
             if (start != null) {
                 String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
                 builder.queryParam("start", encoded);
-                builder.queryParam("includeFirst", includeFirst); //Only add this param is start is specified
+                builder.queryParam("includeFirst", includeFirst); //Only tradeOpened this param is start is specified
             }
             if (end != null) {
                 String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");

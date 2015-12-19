@@ -25,7 +25,7 @@ import static org.springframework.http.HttpStatus.CREATED;
  * <p/>
  * Created by svante2 on 2015-10-03.
  * <p/>
- * add some security: http://spring.io/guides/tutorials/bookmarks/
+ * tradeOpened some security: http://spring.io/guides/tutorials/bookmarks/
  */
 
 @RestController

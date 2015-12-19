@@ -134,7 +134,7 @@ public class DepotImpl implements Depot {
             LOG.info("Order away and we got a response! {}", response);
             if (response != null && response.tradeWasOpened()) {
                 Trade newTrade = response.getOpenedTrade(dbDepotId, robotId).get();
-                dbDepot.bought(currencyPair, newTrade.units, newTrade.openPrice);
+                dbDepot.tradeOpened(currencyPair, newTrade.units, newTrade.openPrice, side);
                 tradeService.saveNewTrade(newTrade);
                 LOG.info("Trade opened: {}", newTrade);
             } else {

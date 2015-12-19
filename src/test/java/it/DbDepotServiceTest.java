@@ -6,8 +6,8 @@ import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.DbDepot;
-import hoggaster.domain.depots.DepotRepo;
 import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.users.User;
 import hoggaster.oanda.OandaProperties;
 import org.junit.Ignore;
@@ -22,7 +22,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.math.BigDecimal;
@@ -109,11 +108,11 @@ public class DbDepotServiceTest {
         try {
             dbDepot = depotService.createDepot(user, "DummyDepot", Broker.OANDA, externalDepotId, DbDepot.Type.DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
-            dbDepot.bought(cp, BigDecimal.TEN, BigDecimal.ONE);
+            dbDepot.tradeOpened(cp, BigDecimal.TEN, BigDecimal.ONE, OrderSide.buy);
             depotService.save(dbDepot);
             dbDepot = depotService.findDepotById(dbDepot.getId());
             assertEquals(1, dbDepot.getPositions().size());
-            dbDepot.bought(cp, BigDecimal.TEN, new BigDecimal("3"));
+            dbDepot.tradeOpened(cp, BigDecimal.TEN, new BigDecimal("3"), OrderSide.buy);
             depotService.save(dbDepot);
             dbDepot = depotService.findDepotById(dbDepot.getId());
             assertEquals(1, dbDepot.getPositions().size());

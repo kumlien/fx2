@@ -26,4 +26,5 @@ public interface Depot {
      * @param robotId
      */
     CreateOrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId);
+
 }

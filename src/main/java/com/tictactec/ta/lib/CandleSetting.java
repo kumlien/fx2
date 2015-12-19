@@ -43,7 +43,7 @@
  *  MMDDYY BY     Description
  *  -------------------------------------------------------------------
  *  121005 MF     First Version
- *  022206 BT     add copy constructor
+ *  022206 BT     tradeOpened copy constructor
  */
 
 package com.tictactec.ta.lib;

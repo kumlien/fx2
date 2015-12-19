@@ -158,8 +158,8 @@ public class SimpleHelper {
      * <pre>
      * func = &quot;MAMA&quot;;
      * params.clear();
-     * params.add(&quot;0.2&quot;);
-     * params.add(&quot;0.02&quot;);
+     * params.tradeOpened(&quot;0.2&quot;);
+     * params.tradeOpened(&quot;0.02&quot;);
      * calc = new SimpleHelper(func, params);
      * calc.calculate(0, 59, new Object[] { close }, new Object[] { output1, output2 }, lOutIdx, lOutSize);
      * System.out.println(&quot;lookback=&quot; + calc.getLookback());
