@@ -233,10 +233,6 @@ public class DbDepot {
         }
     }
 
-    public void sold() {
-        // TODO Auto-generated method stub
-
-    }
 
     /**
      * Update our values with the values from the BrokerDepot
