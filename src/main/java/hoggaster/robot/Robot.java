@@ -159,12 +159,12 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        //All buy conditions must be positive
+        //TODO Check this one!!! not correct. We need the order side too
         if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) {
-            LOG.info("Maybe we should sendOrder something based on new price!");
+            LOG.info("Maybe we should enter a buy trade something based on new price!");
             askDepotToOpenTrade(price, OrderSide.buy);
-        } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //Enough with one positive close condition
-            LOG.info("Maybe we should sell something based on new price!");
+        } else if (ctx.getPositiveCloseTradeConditions().size() > 0) {
+            LOG.info("Maybe we should enter a sell trade based on new price!");
             askDepotToOpenTrade(price, OrderSide.sell);
         } else {
             LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
@@ -182,7 +182,7 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All sendOrder conditions say sendOrder!
+        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All openTrade conditions say open trade!
             askDepotToOpenTrade(candle, OrderSide.buy);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //At least one sell condition say sell!
             doCloseTrade();

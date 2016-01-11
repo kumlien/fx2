@@ -150,6 +150,7 @@ public class DepotImpl implements Depot {
     }
 
 
+    //Used to calculate the max price we are willing to pay.
     private static BigDecimal calculateUpperBound(MarketUpdate marketUpdate) {
         if (marketUpdate instanceof Price) {
             return ((Price) marketUpdate).ask.multiply(UPPER_BOUND_FACTOR);

@@ -37,6 +37,7 @@ public class TwoIndicatorCondition implements Condition {
     public final Comparator operator;
     public final Integer priority;
     public final TradeAction tradeAction;
+    doesn't this one need an OrderSide as well?
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
