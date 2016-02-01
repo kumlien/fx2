@@ -105,16 +105,6 @@ public class HttpConfig {
                 if(super.hasError(response)){
                     String body = CharStreams.toString(new InputStreamReader(response.getBody()));
                     LOG.info("Error with body {}", body);
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void handleError(ClientHttpResponse response) throws IOException {
-                if (response.getBody() != null) {
-                    String body = CharStreams.toString(new InputStreamReader(response.getBody()));
-
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
                     switch(errorResponse.code) {
                         case 12: throw new TradeNotFoundException(errorResponse.message);
@@ -122,7 +112,13 @@ public class HttpConfig {
                         case 68: throw new RateLimitExceededException(errorResponse.message);
                         default: LOG.warn("Unhandled error code from Oanda: {} ({})", errorResponse.code, errorResponse.message);
                     }
+                    return true;
                 }
+                return false;
+            }
+
+            @Override
+            public void handleError(ClientHttpResponse response) throws IOException {
                 super.handleError(response);
             }
         });
@@ -147,7 +143,7 @@ public class HttpConfig {
         return statusCode;
     }
 
-    private Charset getCharset(ClientHttpResponse response) {
+    private static Charset getCharset(ClientHttpResponse response) {
         HttpHeaders headers = response.getHeaders();
         MediaType contentType = headers.getContentType();
         return contentType != null ? contentType.getCharSet() : null;

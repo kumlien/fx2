@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
+import static hoggaster.domain.trades.TradeAction.OPEN;
+
 
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
@@ -37,28 +39,32 @@ public class TwoIndicatorCondition implements Condition {
     public final Comparator operator;
     public final Integer priority;
     public final TradeAction tradeAction;
-    doesn't this one need an OrderSide as well?
+
+    public final OrderSide orderSide;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
     private final Set<MarketUpdateType> eventTypes;
 
     /**
-     * @param name
+     * @param name A describing name for this condition
      * @param firstIndicator
      * @param secondIndicator
-     * @param operator
+     * @param operator The operator to use when comparing firstIndicator and secondIndicator
      * @param priority
-     * @param tradeAction
+     * @param tradeAction Is this condition for opening or closing of a position?
+     * @param orderSide Should we go short or long?
      * @param eventTypes
      */
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, MarketUpdateType... eventTypes) {
+    //TODO This is too much info for a condition! Order side and action doesn't belong here!
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, OrderSide orderSide, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;
         this.secondIndicator = secondIndicator;
         this.operator = operator;
         this.priority = priority;
         this.tradeAction = tradeAction;
+        this.orderSide = orderSide;
         this.eventTypes = Sets.newHashSet(eventTypes);
     }
 
@@ -76,7 +82,7 @@ public class TwoIndicatorCondition implements Condition {
 
     @Action
     public void then() {
-        if (tradeAction == TradeAction.OPEN) {
+        if (tradeAction == OPEN) {
             ctx.addPositiveOpenTradeCondition(this);
         } else {
             ctx.addPositiveCloseTradeAction(this);

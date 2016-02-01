@@ -8,7 +8,7 @@ import hoggaster.domain.orders.OrderSide;
 import java.math.BigDecimal;
 
 /**
- * Created by svante2 on 2015-10-11.
+ * @author svante
  */
 public interface Depot {
 

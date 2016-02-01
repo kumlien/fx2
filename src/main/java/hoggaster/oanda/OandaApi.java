@@ -133,10 +133,10 @@ public class OandaApi implements BrokerConnection, OrderService {
     }
 
     @Override
-    public CloseTradeResponse closeTrade(String fx2DepotId, String oandaAccountId, String oandaTradeId) {
+    public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
-        String uri = builder.buildAndExpand(oandaAccountId, oandaTradeId).toUriString();
-        LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", fx2DepotId, oandaTradeId,  uri);
+        String uri = builder.buildAndExpand(brokerAccountId, trade.brokerId).toUriString();
+        LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", trade.depotId, trade.brokerId,  uri);
         ResponseEntity<OandaClosedTradeReponse> closedTradeEntity = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "deleteTrade");

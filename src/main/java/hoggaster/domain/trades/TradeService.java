@@ -1,9 +1,11 @@
 package hoggaster.domain.trades;
 
+import hoggaster.domain.CurrencyPair;
+
 import java.util.Collection;
 
 /**
- * Created by svante2 on 2015-11-15.
+ * @author svante
  */
 public interface TradeService {
 
@@ -16,6 +18,9 @@ public interface TradeService {
     Trade findTradeByBrokerId(String brokerId);
 
     Collection<Trade> getOpenTrades(String depotId);
+
+    Collection<Trade> findByInstrumentAndRobotId(CurrencyPair instrument, String robotId);
+
 
     //Paging...
     Collection<Trade> getClosedTrades(String depotId);

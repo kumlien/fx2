@@ -47,7 +47,7 @@ public class RobotDefinition {
         return enterConditions;
     }
 
-    public void addBuyCondition(Condition c) {
+    public void addEnterTradeCondition(Condition c) {
         Preconditions.checkNotNull(c);
         enterConditions.add(c);
     }
@@ -56,7 +56,7 @@ public class RobotDefinition {
         return id;
     }
 
-    public void addSellCondition(Condition c) {
+    public void addExitTradeCondition(Condition c) {
         Preconditions.checkNotNull(c);
         exitConditions.add(c);
     }

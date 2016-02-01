@@ -141,4 +141,6 @@ public class Trade {
                 .add("closeTime", closeTime)
                 .toString();
     }
+
+
 }

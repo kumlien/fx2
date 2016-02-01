@@ -8,7 +8,7 @@ import org.springframework.util.StringUtils;
 import java.util.Collection;
 
 /**
- * Created by svante2 on 2015-11-15.
+ * @author svante
  */
 @Service
 public class TradeServiceImpl implements TradeService {

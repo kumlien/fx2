@@ -69,8 +69,8 @@ public class BasicRobotTest {
         SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
         //Let's compare them in a condition, putting an operator between them
-        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, MarketUpdateType.PRICE);
-        definition.addBuyCondition(condition);
+        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, OrderSide.buy, MarketUpdateType.PRICE);
+        definition.addEnterTradeCondition(condition);
         RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
         Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
         robot.start();

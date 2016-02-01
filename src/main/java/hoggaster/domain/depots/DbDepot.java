@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.trades.Trade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,18 +216,16 @@ public class DbDepot {
      * Signal that we tradeOpened something
      * Add to set of {@link Position}s if not already present
      *
-     * @param currencyPair
-     * @param quantity
-     * @param pricePerShare
+     * @param trade The new trade.
      */
-    public void tradeOpened(CurrencyPair currencyPair, BigDecimal quantity, BigDecimal pricePerShare, OrderSide side) {
+    public void tradeOpened(Trade trade) {
         synchronized (positions) {
-            Position io = getPositionByInstrumentInternal(currencyPair);
-            if (io == null) {
-                io = new Position(currencyPair, side, quantity, pricePerShare);
-                positions.add(io);
+            Position position = getPositionByInstrumentInternal(trade.instrument);
+            if (position == null) {
+                position = new Position(trade.instrument, trade.side, trade.units, trade.openPrice);
+                positions.add(position);
             } else {
-                io.newTrade(quantity, pricePerShare, side);
+                position.newTrade(trade.units, trade.openPrice, trade.side);
             }
         }
     }

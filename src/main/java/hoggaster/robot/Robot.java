@@ -69,7 +69,9 @@ ENDIF
 // Stops and targets
  */
 
-//spring bean or basic object?
+/**
+ * The guy which reacts to new prices or candles, evaluates it's conditions to see if it should open/close a trade based on the input.
+ */
 public class Robot implements Consumer<Event<?>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Robot.class);
@@ -182,7 +184,7 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All openTrade conditions say open trade!
+        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All openTrade conditions say open trade! TODO refactor with compound conditions
             askDepotToOpenTrade(candle, OrderSide.buy);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //At least one sell condition say sell!
             doCloseTrade();
@@ -193,17 +195,16 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void setCtxOnConditions(RobotExecutionContext ctx) {
-        openTradeConditions.parallelStream().forEach(c -> {
+        openTradeConditions.forEach(c -> {
             c.setContext(ctx);
         });
-        closeTradeConditions.parallelStream().forEach(c -> {
+        closeTradeConditions.forEach(c -> {
             c.setContext(ctx);
         });
     }
 
     private void doCloseTrade() {
         depot.closeTrade(currencyPair, this.id);
-
     }
 
     //TODO Read sendOrder percentage from db, hard code 2% for now

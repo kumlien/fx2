@@ -14,6 +14,8 @@ import java.math.MathContext;
 
 /**
  * Represents the ownership of an currencyPair
+ *
+ * @see hoggaster.domain.trades.Trade
  */
 public class Position {
 
@@ -38,7 +40,7 @@ public class Position {
      */
     @PersistenceConstructor
     public Position(CurrencyPair currencyPair, OrderSide side, BigDecimal quantity, BigDecimal averagePricePerShare) {
-        LOG.info("New position created for {} with initial side {}, qty {} and price {}", currencyPair, side, quantity, averagePricePerShare);
+        LOG.info("New position read from database for {} with order side {}, qty {} and price {}", currencyPair, side, quantity, averagePricePerShare);
         this.currencyPair = currencyPair;
         this.side = side;
         this.quantity = quantity;

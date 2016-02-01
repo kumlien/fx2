@@ -1,12 +1,18 @@
 package hoggaster.domain.depots;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
-import hoggaster.domain.orders.*;
+import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.orders.CreateOrderResponse;
+import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
+import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.exceptions.TradingHaltedException;
@@ -18,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Currency;
 import java.util.Objects;
 
@@ -48,32 +55,37 @@ public class DepotImpl implements Depot {
     private final DepotService depotService;
 
     // The service we use to deal with orders
-    private final OrderService orderService;
+    private final BrokerConnection brokerConnection;
 
     private final PriceService priceService;
 
     private final TradeService tradeService;
 
-    public DepotImpl(String dbDepotId, OrderService orderService, DepotService depotService, PriceService priceService, TradeService tradeService) {
+    public DepotImpl(String dbDepotId, BrokerConnection brokerConnection, DepotService depotService, PriceService priceService, TradeService tradeService) {
         this.priceService = priceService;
         this.tradeService = tradeService;
         Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depots with id '" + dbDepotId + "'");
         this.depotService = depotService;
         this.dbDepotId = dbDepotId;
-        this.orderService = orderService;
+        this.brokerConnection = brokerConnection;
     }
 
 
     @Override
     public void closeTrade(CurrencyPair currencyPair, String robotId) {
+        Preconditions.checkArgument(currencyPair != null, "No currency pair is provided");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(robotId), "No robot id is specified");
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
-        LOG.info("We are told by robot '{}' to sell {}", robotId, currencyPair);
-        if (dbDepot.hasOpenPositionForInstrument(currencyPair)) {
-            LOG.info("Nahh, we already have an open position for {}", currencyPair.name());
+        LOG.info("We are told by robot '{}' to close trade for currency pair {}", robotId, currencyPair);
+        Collection<Trade> trades = tradeService.findByInstrumentAndRobotId(currencyPair, robotId);
+        if(trades == null || trades.size() != 1) {
+            LOG.warn("Asked by robot {} to close trade for instrument {} but no matching open trade found!");
             return;
         }
+        Trade tradeToClose = trades.iterator().next();
+        CloseTradeResponse response = brokerConnection.closeTrade(tradeToClose, dbDepot.brokerId);
 
-        LOG.info("Ooops, we should sell what we got of {}!", currencyPair.name());
+
     }
 
     @Override
@@ -84,7 +96,7 @@ public class DepotImpl implements Depot {
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      *
-     * TODO Refac MarketUpdate -> BigDecimal ('triggerPrice' or something along those lines)
+     * TODO Refactor MarketUpdate -> BigDecimal ('triggerPrice' or something along those lines)
      * TODO Throw exceptions instead of returning null
      */
     public CreateOrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
@@ -125,17 +137,16 @@ public class DepotImpl implements Depot {
         LOG.info("The number of units we will sendOrder (maxUnits: {} * partOfAvailableMaring: {}) is {}", maxUnits.longValue(), partOfAvailableMargin, realUnits);
 
         OrderRequest order = new OrderRequest(dbDepot.getBrokerId(), currencyPair, realUnits.longValue(), side, OrderType.market, null, null);
-        if(marketUpdate != null) {
+        if(marketUpdate != null) { //marketUpdate might be null if triggered interactively
             order.setUpperBound(calculateUpperBound(marketUpdate));
         }
         CreateOrderResponse response = null;
         try {
-            response = orderService.sendOrder(order);
+            response = brokerConnection.sendOrder(order);
             LOG.info("Order away and we got a response! {}", response);
             if (response != null && response.tradeWasOpened()) {
                 Trade newTrade = response.getOpenedTrade(dbDepotId, robotId).get();
-                dbDepot.tradeOpened(currencyPair, newTrade.units, newTrade.openPrice, side);
-                tradeService.saveNewTrade(newTrade);
+                dbDepot.tradeOpened(newTrade);
                 LOG.info("Trade opened: {}", newTrade);
             } else {
                 LOG.warn("No trade opened, better check open orders!");
