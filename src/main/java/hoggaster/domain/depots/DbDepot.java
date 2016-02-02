@@ -426,6 +426,10 @@ public class DbDepot {
     public void buy(CurrencyPair currencyPair) {
     }
 
+    public Optional<Trade> getOpenTrade(String tradeId) {
+        return openTrades.stream().filter(t -> t.getId().equals(tradeId)).findFirst();
+    }
+
     public enum Type {
         LIVE, DEMO, SIMULATION;
     }

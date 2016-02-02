@@ -5,8 +5,8 @@ import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.NoSuchCurrencyPairException;
 import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.orders.OrderRequest;
-import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
@@ -51,7 +51,7 @@ public class DepotImplTest extends TestCase {
     private Depot depot;
 
     @Mock
-    private OrderService orderService;
+    private BrokerConnection brokerConnection;
 
     @Mock
     private DepotService depotService;
@@ -77,7 +77,7 @@ public class DepotImplTest extends TestCase {
                 UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
         Mockito.when(depotService.findDepotById(eq(DEPOT_ID))).thenReturn(dbDepot);
 
-        depot = new DepotImpl(dbDepot.getId(), orderService, depotService, priceService, tradeService);
+        depot = new DepotImpl(dbDepot.getId(), brokerConnection, depotService, priceService, tradeService);
     }
 
     @Test
@@ -88,14 +88,14 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuy() throws Exception {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
-        Mockito.when(orderService.sendOrder(any(OrderRequest.class))).thenReturn(new OandaCreateOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
+        Mockito.when(brokerConnection.sendOrder(any(OrderRequest.class))).thenReturn(new OandaCreateOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
 
         depot.openTrade(cp, OrderSide.buy, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
         expectedRequest.setUpperBound(candle.closeAsk.multiply(new BigDecimal("1.01"))); //TODO This value should be fetched from the robot or depots definition
 
 
-        verify(orderService).sendOrder(rac.capture());
+        verify(brokerConnection).sendOrder(rac.capture());
         OrderRequest request = rac.getValue();
 
         assertEquals(expectedRequest.currencyPair, request.currencyPair);
@@ -117,7 +117,7 @@ public class DepotImplTest extends TestCase {
     public void testBuyBreakMarginRule() throws Exception {
         dbDepot.setMarginAvailable(BigDecimal.ZERO);
         depot.openTrade(cp, OrderSide.buy, new BigDecimal("0.05"), null, "robot_id");
-        Mockito.verifyZeroInteractions(orderService);
+        Mockito.verifyZeroInteractions(brokerConnection);
     }
 
 

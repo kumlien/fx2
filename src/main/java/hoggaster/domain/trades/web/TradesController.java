@@ -1,10 +1,12 @@
 package hoggaster.domain.trades.web;
 
+import com.google.common.base.Preconditions;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.depots.web.DepotNotFoundException;
 import hoggaster.domain.trades.Trade;
+import hoggaster.domain.trades.TradeService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -25,10 +28,13 @@ public class TradesController {
 
     private final BrokerConnection brokerConnection;
 
+    private final TradeService tradeService;
+
     @Autowired
-    public TradesController(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
+    public TradesController(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, TradeService tradeService) {
         this.depotService = depotService;
         this.brokerConnection = brokerConnection;
+        this.tradeService = tradeService;
     }
 
 
@@ -47,8 +53,10 @@ public class TradesController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiOperation("Close the trade with the specified id" )
     public void closeTrade(@RequestParam("depotId") String depotId, @PathVariable("tradeId") String tradeId) {
-        DbDepot dbDepot = depotService.findDepotById(depotId);
-        brokerConnection.closeTrade(depotId, dbDepot.brokerId, tradeId);
+        final DbDepot dbDepot = Objects.requireNonNull(depotService.findDepotById(depotId));
+        Optional<Trade> trade = dbDepot.getOpenTrade(tradeId);
+        Preconditions.checkArgument(trade.isPresent(), "No open trade found on depot with id " + depotId + " and tradeId " + tradeId);
+        brokerConnection.closeTrade(trade.get(), dbDepot.brokerId);
     }
 
     @RequestMapping(value = "{tradeId}", method = RequestMethod.GET)

@@ -2,12 +2,12 @@ package hoggaster.domain.orders.web;
 
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotImpl;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.CreateOrderResponse;
-import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
@@ -18,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -30,13 +34,13 @@ public class OrdersController {
     private static final Logger LOG = LoggerFactory.getLogger(OrdersController.class);
 
     private final DepotService depotService;
-    private final OrderService orderService;
+    private final BrokerConnection orderService;
     private final PriceService priceService;
     private final TradeService tradeService;
 
     @Autowired
-    public OrdersController(@Qualifier("OandaOrderService") OrderService oandaOrderService, DepotService depotService, PriceService priceService, TradeService tradeService) {
-        this.orderService = oandaOrderService;
+    public OrdersController(@Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, DepotService depotService, PriceService priceService, TradeService tradeService) {
+        this.orderService = brokerConnection;
         this.depotService = depotService;
         this.priceService = priceService;
         this.tradeService = tradeService;

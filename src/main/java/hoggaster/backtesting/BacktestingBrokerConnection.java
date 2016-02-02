@@ -6,10 +6,14 @@ import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
-import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
-import hoggaster.oanda.responses.*;
+import hoggaster.oanda.responses.Instruments;
+import hoggaster.oanda.responses.OandaAccounts;
+import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
+import hoggaster.oanda.responses.OandaCreateOrderResponse;
+import hoggaster.oanda.responses.OandaInstrument;
+import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +27,7 @@ import java.util.Set;
  * Used for backtesting
  */
 @Service("BacktestingBrokerConnection")
-public class BacktestingBrokerConnection implements BrokerConnection, OrderService {
+public class BacktestingBrokerConnection implements BrokerConnection {
 
 
     @Override
@@ -83,9 +87,7 @@ public class BacktestingBrokerConnection implements BrokerConnection, OrderServi
     }
 
     @Override
-    public CloseTradeResponse closeTrade(String depotId, String brokerId, String tradeId) {
+    public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
         return null;
     }
-
-
 }

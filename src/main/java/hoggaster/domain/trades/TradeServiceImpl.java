@@ -1,6 +1,7 @@
 package hoggaster.domain.trades;
 
 import com.google.common.base.Preconditions;
+import hoggaster.domain.CurrencyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -48,6 +49,13 @@ public class TradeServiceImpl implements TradeService {
     public Collection<Trade> getOpenTrades(String depotId) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "Please provide a depotId which contains some text");
         return tradeRepo.findByDepotIdAndStatus(depotId, TradeStatus.OPEN);
+    }
+
+    @Override
+    public Collection<Trade> findByInstrumentAndRobotId(CurrencyPair instrument, String robotId) {
+        Preconditions.checkNotNull(instrument, "The instrument must not be null");
+        Preconditions.checkArgument(StringUtils.hasText(robotId), "The robotId must contain some text");
+        return tradeRepo.findByInstrumentAndRobotId(instrument, robotId);
     }
 
     @Override
