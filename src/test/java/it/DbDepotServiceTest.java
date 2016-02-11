@@ -94,6 +94,7 @@ public class DbDepotServiceTest {
             LOG.info("error...", e);
             throw e;
         }
+
     }
 
     @Test
