@@ -11,17 +11,60 @@ public class User {
     @Id
     private String id;
 
-    public final String username;
+    public User() {
 
-    public final String firstName;
+    }
 
-    public final String lastName;
+    public String getUsername() {
+        return username;
+    }
 
-    public final String email;
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String username;
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String firstName;
+
+    public String lastName;
+
+    public String email;
 
     @JsonIgnore
-    public final String password;
+    public String password;
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     @PersistenceConstructor
     public User(String username, String firstName, String lastName, String email, String password, String id) {
