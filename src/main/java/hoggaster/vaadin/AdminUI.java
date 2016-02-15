@@ -1,11 +1,14 @@
 package hoggaster.vaadin;
 
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
@@ -13,9 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.label.RichText;
+import org.vaadin.viritin.fields.MTextField;
+import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * @author svante2
@@ -24,6 +31,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 @Title("FX2 Admin interface")
 @SpringUI(path = "admin")
 @Theme("valo")
+@Push(PushMode.MANUAL)
 public class AdminUI extends UI {
 
     private final UserService userService;
@@ -38,6 +46,7 @@ public class AdminUI extends UI {
     private Button edit = new MButton(FontAwesome.PENCIL_SQUARE_O, this::edit);
     private Button delete = new ConfirmButton(FontAwesome.TRASH_O,
             "Are you sure you want to delete the user?", this::remove);
+    private TextField pushed = new MTextField();
 
     @Autowired
     public AdminUI(UserService userService) {
@@ -48,13 +57,30 @@ public class AdminUI extends UI {
     protected void init(VaadinRequest request) {
         setContent(
                 new MVerticalLayout(
-                        new RichText().setRichText("hej hopp"),
-                        new MHorizontalLayout(addNew, edit, delete),
+                        new Header("Welcome to FX2 Administration application"),
+                        new MHorizontalLayout(addNew, edit, delete, pushed),
                         usersTable
                 ).expand(usersTable)
         );
         listEntities();
         usersTable.addMValueChangeListener(e -> adjustActionButtonState());
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                        getUI().access(() -> {
+                            pushed.setValue(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
+                            getUI().push();
+                        });
+                    }catch(InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     private void listEntities() {

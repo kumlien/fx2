@@ -20,6 +20,7 @@ public class UserForm extends AbstractForm<User> {
     TextField lastName = new MTextField("Last name");
     TextField username = new MTextField("Username");
     PasswordField password = new MPasswordField("Password");
+    PasswordField password2 = new MPasswordField("Password (repeated)");
 
     UserForm(User user) {
         setSizeUndefined();
@@ -34,7 +35,8 @@ public class UserForm extends AbstractForm<User> {
                         lastName,
                         username,
                         email,
-                        password
+                        password,
+                        password2
                 ).withWidth(""),
                 getToolbar()
         ).withWidth("");
