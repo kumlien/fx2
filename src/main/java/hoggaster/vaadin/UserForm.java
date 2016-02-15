@@ -1,8 +1,10 @@
 package hoggaster.vaadin;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import hoggaster.domain.users.User;
+import org.vaadin.viritin.fields.MPasswordField;
 import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.form.AbstractForm;
 import org.vaadin.viritin.layouts.MFormLayout;
@@ -17,7 +19,7 @@ public class UserForm extends AbstractForm<User> {
     TextField email = new MTextField("Email");
     TextField lastName = new MTextField("Last name");
     TextField username = new MTextField("Username");
-    TextField password = new MTextField("Password");
+    PasswordField password = new MPasswordField("Password");
 
     UserForm(User user) {
         setSizeUndefined();

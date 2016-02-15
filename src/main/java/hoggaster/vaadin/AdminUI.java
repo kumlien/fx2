@@ -58,18 +58,8 @@ public class AdminUI extends UI {
     }
 
     private void listEntities() {
-        // A dead simple in memory listing would be:
-        // list.setBeans(repo.findAll());
-
-        // Lazy binding with SortableLazyList: memory and query efficient
-        // connection from Vaadin Table to Spring Repository
-        // Note that fetching strategies can be given to MTable constructor as well.
-        // Use this approach if you expect you'll have lots of data in your
-        // table.
-
         usersTable.setBeans(userService.findAll());
         adjustActionButtonState();
-
     }
 
 
