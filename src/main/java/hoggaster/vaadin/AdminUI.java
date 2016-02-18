@@ -3,26 +3,22 @@ package hoggaster.vaadin;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
-import hoggaster.domain.users.User;
-import hoggaster.domain.users.UserService;
+import com.vaadin.ui.themes.ValoTheme;
+import hoggaster.vaadin.views.ListUserView;
+import hoggaster.vaadin.views.ViewScopedView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
-import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.label.Header;
-import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 /**
  * @author svante2
@@ -34,101 +30,47 @@ import java.time.temporal.ChronoUnit;
 @Push(PushMode.MANUAL)
 public class AdminUI extends UI {
 
-    private final UserService userService;
-
-    MTable<User> usersTable = new MTable<>(User.class)
-            .withProperties("firstName", "lastName", "email", "username")
-            .withColumnHeaders("First name", "Last name", "Email", "Username")
-            .setSortableProperties("firstName", "lastName")
-            .withFullWidth();
-
-    private Button addNew = new MButton(FontAwesome.PLUS, this::add);
-    private Button edit = new MButton(FontAwesome.PENCIL_SQUARE_O, this::edit);
-    private Button delete = new ConfirmButton(FontAwesome.TRASH_O,
-            "Are you sure you want to delete the user?", this::remove);
-    private TextField pushed = new MTextField();
+    private final SpringViewProvider viewProvider;
 
     @Autowired
-    public AdminUI(UserService userService) {
-        this.userService = userService;
+    public AdminUI(SpringViewProvider viewProvider) {
+        this.viewProvider = viewProvider;
     }
 
     @Override
     protected void init(VaadinRequest request) {
-        setContent(
-                new MVerticalLayout(
-                        new Header("Welcome to FX2 Administration application"),
-                        new MHorizontalLayout(addNew, edit, delete, pushed),
-                        usersTable
-                ).expand(usersTable)
-        );
-        listEntities();
-        usersTable.addMValueChangeListener(e -> adjustActionButtonState());
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-                        getUI().access(() -> {
-                            pushed.setValue(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
-                            getUI().push();
-                        });
-                    }catch(InterruptedException e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
+
+        Header header = new Header("Welcome to FX2 Administration application");
+
+        final Panel viewContainer = new Panel("Main...");
+        viewContainer.setSizeFull();
+
+        final CssLayout navigationBar = new CssLayout();
+        navigationBar.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
+        navigationBar.addComponent(createNavigationButton("View Scoped View", ViewScopedView.VIEW_NAME));
+        navigationBar.addComponent(createNavigationButton("Users view", ListUserView.VIEW_NAME));
+
+        final MVerticalLayout root = new MVerticalLayout(header, viewContainer, navigationBar).expand(viewContainer);
+        root.setSizeFull();
+        root.setMargin(true);
+        root.setSpacing(true);
+        setContent(root);
+
+        Navigator navigator = new Navigator(this, viewContainer);
+        navigator.addProvider(viewProvider);
     }
 
-    private void listEntities() {
-        usersTable.setBeans(userService.findAll());
-        adjustActionButtonState();
+    private Button createNavigationButton(String caption, final String viewName) {
+        Button button = new MButton(caption);
+        button.addStyleName(ValoTheme.BUTTON_SMALL);
+        // If you didn't choose Java 8 when creating the project, convert this to an anonymous listener class
+        button.addClickListener(event -> getUI().getNavigator().navigateTo(viewName));
+        return button;
     }
 
 
-    protected void adjustActionButtonState() {
-        boolean hasSelection = usersTable.getValue() != null;
-        edit.setEnabled(hasSelection);
-        delete.setEnabled(hasSelection);
-    }
 
 
-    public void add(Button.ClickEvent clickEvent) {
-        edit(new User());
-    }
 
-    public void edit(Button.ClickEvent e) {
-        edit(usersTable.getValue());
-    }
-
-    public void remove(Button.ClickEvent e) {
-        userService.delete(usersTable.getValue());
-        usersTable.setValue(null);
-        listEntities();
-    }
-
-    protected void edit(final User user) {
-        UserForm userForm = new UserForm(user);
-        userForm.openInModalPopup();
-        userForm.setSavedHandler(this::saveEntry);
-        userForm.setResetHandler(this::resetEntry);
-    }
-
-    public void saveEntry(User user) {
-        userService.update(user);
-        listEntities();
-        closeWindow();
-    }
-
-    public void resetEntry(User user) {
-        listEntities();
-        closeWindow();
-    }
-
-    protected void closeWindow() {
-        getWindows().stream().forEach(w -> removeWindow(w));
-    }
 }

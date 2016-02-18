@@ -22,7 +22,7 @@ public class UserForm extends AbstractForm<User> {
     PasswordField password = new MPasswordField("Password");
     PasswordField password2 = new MPasswordField("Password (repeated)");
 
-    UserForm(User user) {
+    public UserForm(User user) {
         setSizeUndefined();
         setEntity(user);
     }
