@@ -1,6 +1,5 @@
 package hoggaster.web.vaadin;
 
-import com.google.common.collect.Sets;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.PasswordField;
@@ -62,7 +61,8 @@ public class UserForm extends AbstractForm<User> {
 
         @Override
         public String convertToPresentation(Collection value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-            return value.stream().collect(Collectors.joining(",")).toString();
+
+            return value != null ? value.stream().collect(Collectors.joining(",")).toString() : "";
         }
 
         @Override
