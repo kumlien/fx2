@@ -1,4 +1,4 @@
-package hoggaster.vaadin.views;
+package hoggaster.web.vaadin.views;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;

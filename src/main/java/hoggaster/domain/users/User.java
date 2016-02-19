@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Set;
+
 @Document
 public class User {
 
@@ -61,6 +63,16 @@ public class User {
 
     @JsonIgnore
     public String password;
+
+    public Set<String> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<String> authorities) {
+        this.authorities = authorities;
+    }
+
+    public Set<String> authorities;
 
     public void setPassword(String password) {
         this.password = password;

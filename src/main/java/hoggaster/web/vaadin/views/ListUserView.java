@@ -1,4 +1,4 @@
-package hoggaster.vaadin.views;
+package hoggaster.web.vaadin.views;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
@@ -9,7 +9,7 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
-import hoggaster.vaadin.UserForm;
+import hoggaster.web.vaadin.UserForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
@@ -131,6 +131,6 @@ public class ListUserView extends VerticalLayout implements View {
     }
 
     protected void closeWindow() {
-        //getWindows().stream().forEach(w -> removeWindow(w));
+        getUI().getWindows().stream().forEach(w -> getUI().removeWindow(w));
     }
 }
