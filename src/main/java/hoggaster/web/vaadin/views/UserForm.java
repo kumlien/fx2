@@ -1,5 +1,6 @@
 package hoggaster.web.vaadin.views;
 
+import com.google.common.collect.Sets;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.PasswordField;
@@ -48,6 +49,7 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
         roles.setOptions(Role.values());
         roles.setSizeFull();
 
+
         return new MVerticalLayout(
                 new MFormLayout(
                         firstName,
@@ -69,7 +71,7 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
         String lastName;
         String username;
         String email;
-        Collection<Role> roles;
+        Collection<Role> roles = Sets.newHashSet();
         String password;
         String password2;
 
@@ -88,8 +90,8 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
             return roles;
         }
 
-        public void setRoles(Collection<Role> roles) {
-            this.roles = roles;
+        public void setRoles(Object roles) {
+            this.roles = (Collection<Role>) roles;
         }
 
         public String getFirstName() {
