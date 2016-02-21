@@ -8,6 +8,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.core.convert.CustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,12 +27,27 @@ public class MongoConfig extends AbstractMongoConfiguration {
                 //new InstantToLongConverter(),
                 new DBObjectToInstantConverter(),
                 new DbObjectToCurrencyConverter(),
+                new StringToGrantedAuthorityConverterConverter(), new GrantedAuthorityToStringConverterConverter(),
                 new LocalDateToStringConverter(), new StringToLocalDateConverter()));
+    }
+
+    public class StringToGrantedAuthorityConverterConverter implements Converter<String, GrantedAuthority> {
+        @Override
+        public GrantedAuthority convert(String source) {
+            return new SimpleGrantedAuthority(source);
+        }
+    }
+
+    public class GrantedAuthorityToStringConverterConverter implements Converter<GrantedAuthority, String> {
+
+        @Override
+        public String convert(GrantedAuthority source) {
+            return source.getAuthority();
+        }
     }
 
 
     public class DbObjectToCurrencyConverter implements Converter<DBObject, Currency> {
-
         @Override
         public Currency convert(DBObject source) {
             return Currency.getInstance((String) source.get("currencyCode"));

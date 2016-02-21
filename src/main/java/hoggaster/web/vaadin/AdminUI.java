@@ -4,6 +4,7 @@ import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.navigator.Navigator;
+import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.spring.annotation.SpringUI;
@@ -14,6 +15,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 import hoggaster.web.vaadin.views.ListUserView;
+import hoggaster.web.vaadin.views.LoginView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.label.Header;
@@ -57,6 +59,27 @@ public class AdminUI extends UI {
 
         Navigator navigator = new Navigator(this, viewContainer);
         navigator.addProvider(viewProvider);
+        navigator.addViewChangeListener(new ViewChangeListener() {
+
+            @Override
+            public boolean beforeViewChange(ViewChangeEvent event) {
+                // Check if a user has logged in
+                boolean isLoggedIn = getSession().getAttribute("user") != null;
+                boolean isLoginView = event.getNewView() instanceof LoginView;
+                if(!isLoggedIn && !isLoginView) {
+                    getNavigator().navigateTo(LoginView.VIEW_NAME);
+                    return false;
+                }
+                if(isLoggedIn && isLoginView) {
+                    //Logged in user should not be able to access loginview
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public void afterViewChange(ViewChangeEvent event) {}
+        });
     }
 
     private Button createNavigationButton(String caption, final String viewName) {

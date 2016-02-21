@@ -30,6 +30,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
 @RequestMapping(UserController.ROOT_URL)
+@Deprecated
 public class UserController {
 
     public static final Logger LOG = LoggerFactory.getLogger(UserController.class);
@@ -49,7 +50,7 @@ public class UserController {
     @ResponseStatus(CREATED)
     public UserResource createUser(@RequestBody @Valid CreateUserRequest request) {
         LOG.info("Got a createUserRequest: {}", request);
-        User user = new User(request.username, request.firstName, request.lastName, request.email1, request.password1);
+        User user = new User(request.username, request.firstName, request.lastName, request.email1, request.password1, null);
         userService.create(user);
         return new UserResource(user);
     }
@@ -74,13 +75,13 @@ public class UserController {
 
         UserResource(User user) {
             this.user = user;
-            this.add(linkTo(UserController.class, user.username).slash(user.username).withSelfRel());
+            this.add(linkTo(UserController.class, user.getUsername()).slash(user.getUsername()).withSelfRel());
         }
     }
 
     class UserLink extends ResourceSupport {
         UserLink(User user) {
-            this.add(linkTo(UserController.class, user.username).slash(user.username).withRel("users"));
+            this.add(linkTo(UserController.class, user.getUsername()).slash(user.getUsername()).withRel("users"));
         }
     }
 }

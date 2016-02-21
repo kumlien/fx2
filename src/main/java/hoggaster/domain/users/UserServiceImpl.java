@@ -27,17 +27,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(User user) {
         validateFieldsNotNullOrEmpty(user);
-        checkArgument(!userRepo.findByUsername(user.username).isPresent(), "There is already a users with username '" + user.username + "'");
+        checkArgument(!userRepo.findByUsername(user.getUsername()).isPresent(), "There is already a users with username '" + user.getUsername() + "'");
         return userRepo.save(user);
     }
 
     private static void validateFieldsNotNullOrEmpty(User user) {
         checkArgument(user != null, "The provided users is null...");
-        checkArgument(!Strings.isNullOrEmpty(user.username), "The users username is null or empty");
+        checkArgument(!Strings.isNullOrEmpty(user.getUsername()), "The users username is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.email), "The users email is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.firstName), "User first name is null or empty");
         checkArgument(!Strings.isNullOrEmpty(user.lastName), "User last name is null or empty");
-        checkArgument(!Strings.isNullOrEmpty(user.password), "User password is null or empty");
+        checkArgument(!Strings.isNullOrEmpty(user.getPassword()), "User password is null or empty");
     }
 
     @Override

@@ -7,10 +7,11 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
-import hoggaster.web.vaadin.UserForm;
+import hoggaster.web.vaadin.views.UserForm.FormUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.util.StringUtils;
 import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
@@ -21,6 +22,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by svante2 on 2016-02-18.
@@ -31,7 +33,9 @@ public class ListUserView extends VerticalLayout implements View {
 
     private final UserService userService;
 
-    MTable<User> usersTable = new MTable<>(User.class)
+    private final UserDetailsManager userDetailsManager;
+
+    MTable<FormUser> usersTable = new MTable<>(FormUser.class)
             .withProperties("firstName", "lastName", "email", "username")
             .withColumnHeaders("First name", "Last name", "Email", "Username")
             .setSortableProperties("firstName", "lastName")
@@ -45,8 +49,9 @@ public class ListUserView extends VerticalLayout implements View {
 
 
     @Autowired
-    public ListUserView(UserService userService) {
+    public ListUserView(UserService userService, UserDetailsManager userDetailsManager) {
         this.userService = userService;
+        this.userDetailsManager = userDetailsManager;
     }
 
 
@@ -54,7 +59,6 @@ public class ListUserView extends VerticalLayout implements View {
     void init() {
         addComponent(
                 new MVerticalLayout(
-
                         new MHorizontalLayout(addNew, edit, delete, pushed),
                         usersTable
                 ).expand(usersTable)
@@ -86,7 +90,7 @@ public class ListUserView extends VerticalLayout implements View {
     }
 
     private void listEntities() {
-        usersTable.setBeans(userService.findAll());
+        usersTable.setBeans(userService.findAll().stream().map(FormUser::new).collect(Collectors.toList()));
         adjustActionButtonState();
     }
 
@@ -99,7 +103,7 @@ public class ListUserView extends VerticalLayout implements View {
 
 
     public void add(Button.ClickEvent clickEvent) {
-        edit(new User());
+        edit(new FormUser());
     }
 
     public void edit(Button.ClickEvent e) {
@@ -107,25 +111,29 @@ public class ListUserView extends VerticalLayout implements View {
     }
 
     public void remove(Button.ClickEvent e) {
-        userService.delete(usersTable.getValue());
+        //userService.delete(usersTable.getValue());
         usersTable.setValue(null);
         listEntities();
     }
 
-    protected void edit(final User user) {
+    protected void edit(final FormUser user) {
         UserForm userForm = new UserForm(user);
         userForm.openInModalPopup();
         userForm.setSavedHandler(this::saveEntry);
         userForm.setResetHandler(this::resetEntry);
     }
 
-    public void saveEntry(User user) {
-        userService.update(user);
+    public void saveEntry(FormUser user) {
+        if(StringUtils.hasText(user.id)) {
+            userDetailsManager.updateUser(user.getUser());
+        } else {
+            userDetailsManager.createUser(user.getUser());
+        }
         listEntities();
         closeWindow();
     }
 
-    public void resetEntry(User user) {
+    public void resetEntry(FormUser user) {
         listEntities();
         closeWindow();
     }
