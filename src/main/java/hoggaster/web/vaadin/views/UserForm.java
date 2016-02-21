@@ -82,16 +82,12 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
             this.username = user.getUsername();
             this.email = user.email;
             this.roles = user.getAuthorities().stream().map(a -> Role.valueOf(a.getAuthority().toUpperCase())).collect(Collectors.toList());
-            this.password = user.getPassword();
+            this.password = ""; //Don't use the password from the user...
         }
         public FormUser(){}
 
         public Collection<Role> getRoles() {
             return roles;
-        }
-
-        public void setRoles(Object roles) {
-            this.roles = (Collection<Role>) roles;
         }
 
         public String getFirstName() {
