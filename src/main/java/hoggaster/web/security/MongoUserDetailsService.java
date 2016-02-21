@@ -51,12 +51,12 @@ public class MongoUserDetailsService extends AbstractUserDetailsAuthenticationPr
 
     @Override
     public void createUser(UserDetails user) {
-
+        userRepo.save((hoggaster.domain.users.User) user);
     }
 
     @Override
     public void updateUser(UserDetails user) {
-
+        userRepo.save((hoggaster.domain.users.User) user);
     }
 
     @Override
