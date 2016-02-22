@@ -1,13 +1,15 @@
 package hoggaster.web.vaadin.views;
 
 import com.google.common.collect.Sets;
+import com.vaadin.data.Validator.InvalidValueException;
 import com.vaadin.data.util.converter.Converter;
+import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
 import hoggaster.domain.users.Role;
 import hoggaster.domain.users.User;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.util.StringUtils;
 import org.vaadin.viritin.fields.CheckBoxGroup;
 import org.vaadin.viritin.fields.MPasswordField;
 import org.vaadin.viritin.fields.MTextField;
@@ -35,20 +37,34 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
     PasswordField password2 = new MPasswordField("Password again");
 
     public UserForm(FormUser user) {
+        firstName.setRequired(true);
+        lastName.setRequired(true);
+        username.setRequired(true); //TODO add validator for unique username?
+        email.addValidator(new EmailValidator("Please provide a valid email address"));
+        email.setRequired(true);
+
+        addValidator(fu -> {
+            if(fu.id == null && !StringUtils.hasText(password.getValue())) {
+                throw new InvalidValueException("You must specify a password for a new user");
+            }
+            if(!password.getValue().equals(password2.getValue())) {
+                throw new InvalidValueException("The passwords doesn't match");
+            }
+        }, password, password2);
+
         setSizeUndefined();
         setEntity(user);
     }
 
     @Override
     protected Component createContent() {
-        roles.setCaptionGenerator(id -> {
+        roles.setCaptionGenerator(id -> { //Fix the roles options group
             if(id == Role.ADMIN) return "Admin";
             if(id == Role.USER) return  "User";
             return "Unknown: " + id;
         });
         roles.setOptions(Role.values());
         roles.setSizeFull();
-
 
         return new MVerticalLayout(
                 new MFormLayout(
@@ -82,7 +98,6 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
             this.username = user.getUsername();
             this.email = user.email;
             this.roles = user.getAuthorities().stream().map(a -> Role.valueOf(a.getAuthority().toUpperCase())).collect(Collectors.toList());
-            this.password = ""; //Don't use the password from the user...
         }
         public FormUser(){}
 
@@ -136,10 +151,6 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
 
         public void setPassword2(String password2) {
             this.password2 = password2;
-        }
-
-        public User getUser() {
-            return new User(username, firstName, lastName, email, password, id, roles.stream().map(r -> new SimpleGrantedAuthority(r.toString())).collect(Collectors.toSet()));
         }
     }
 

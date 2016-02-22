@@ -5,12 +5,15 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
+import hoggaster.web.security.MongoUserDetailsService;
 import hoggaster.web.vaadin.views.UserForm.FormUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.StringUtils;
 import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
@@ -33,7 +36,7 @@ public class ListUserView extends VerticalLayout implements View {
 
     private final UserService userService;
 
-    private final UserDetailsManager userDetailsManager;
+    private final MongoUserDetailsService userDetailsManager;
 
     MTable<FormUser> usersTable = new MTable<>(FormUser.class)
             .withProperties("firstName", "lastName", "email", "username")
@@ -49,7 +52,7 @@ public class ListUserView extends VerticalLayout implements View {
 
 
     @Autowired
-    public ListUserView(UserService userService, UserDetailsManager userDetailsManager) {
+    public ListUserView(UserService userService, MongoUserDetailsService userDetailsManager) {
         this.userService = userService;
         this.userDetailsManager = userDetailsManager;
     }
@@ -65,7 +68,10 @@ public class ListUserView extends VerticalLayout implements View {
         );
         listEntities();
         usersTable.addMValueChangeListener(e -> adjustActionButtonState());
+    }
 
+    @Override
+    public void enter(ViewChangeListener.ViewChangeEvent event) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -76,17 +82,13 @@ public class ListUserView extends VerticalLayout implements View {
                             pushed.setValue(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
                             getUI().push();
                         });
-                    }catch(InterruptedException e){
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
+                        break;
                     }
                 }
             }
         }).start();
-    }
-
-    @Override
-    public void enter(ViewChangeListener.ViewChangeEvent event) {
-
     }
 
     private void listEntities() {
@@ -101,7 +103,6 @@ public class ListUserView extends VerticalLayout implements View {
         delete.setEnabled(hasSelection);
     }
 
-
     public void add(Button.ClickEvent clickEvent) {
         edit(new FormUser());
     }
@@ -111,23 +112,34 @@ public class ListUserView extends VerticalLayout implements View {
     }
 
     public void remove(Button.ClickEvent e) {
-        //userService.delete(usersTable.getValue());
+        userDetailsManager.deleteUser(usersTable.getValue().username);
         usersTable.setValue(null);
         listEntities();
     }
 
+    //Display a form and set our methods as handlers
     protected void edit(final FormUser user) {
         UserForm userForm = new UserForm(user);
         userForm.openInModalPopup();
-        userForm.setSavedHandler(this::saveEntry);
+        userForm.setSavedHandler(this::saveUser);
         userForm.setResetHandler(this::resetEntry);
     }
 
-    public void saveEntry(FormUser user) {
-        if(StringUtils.hasText(user.id)) {
-            userDetailsManager.updateUser(user.getUser());
+    public void saveUser(FormUser formUser) {
+        String password;
+        if (!StringUtils.hasText(formUser.password)) { //No pwd entered, use the stored one from db. todo store it in the formuser
+            password = userDetailsManager.loadUserByUsername(formUser.username).getPassword();
         } else {
-            userDetailsManager.createUser(user.getUser());
+            password = userDetailsManager.encode(formUser.password);
+        }
+        if (StringUtils.hasText(formUser.id)) { //Existing user
+            User user = new User(formUser.username, formUser.firstName, formUser.lastName, formUser.email, password, formUser.id, formUser.roles.stream().map(r -> new SimpleGrantedAuthority(r.toString())).collect(Collectors.toSet()));
+            userDetailsManager.updateUser(user);
+            Notification.show("User updated", Notification.Type.ASSISTIVE_NOTIFICATION);
+        } else {
+            User user = new User(formUser.username, formUser.firstName, formUser.lastName, formUser.email, password, formUser.id, formUser.roles.stream().map(r -> new SimpleGrantedAuthority(r.toString())).collect(Collectors.toSet()));
+            userDetailsManager.createUser(user);
+            Notification.show("User created", Notification.Type.ASSISTIVE_NOTIFICATION);
         }
         listEntities();
         closeWindow();

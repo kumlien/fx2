@@ -33,14 +33,21 @@ public class AdminUI extends UI {
 
     private final SpringViewProvider viewProvider;
 
+    private final Button logoutBtn = new MButton("Logout", e -> {
+        getUI().getSession().setAttribute(LoginView.USER_SESSION_ATTR, null);
+        getUI().getNavigator().navigateTo(LoginView.VIEW_NAME);
+    });
+
+    private final Button listUsersBtn = createNavigationButton("Users", ListUserView.VIEW_NAME);
+
     @Autowired
     public AdminUI(SpringViewProvider viewProvider) {
         this.viewProvider = viewProvider;
+        logoutBtn.addStyleName(ValoTheme.BUTTON_SMALL);
     }
 
     @Override
     protected void init(VaadinRequest request) {
-
 
         Header header = new Header("Welcome to the FX2 Administration application");
 
@@ -49,7 +56,6 @@ public class AdminUI extends UI {
 
         final CssLayout navigationBar = new CssLayout();
         navigationBar.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
-        navigationBar.addComponent(createNavigationButton("Users", ListUserView.VIEW_NAME));
 
         final MVerticalLayout root = new MVerticalLayout(header, viewContainer, navigationBar).expand(viewContainer);
         root.setSizeFull();
@@ -64,15 +70,22 @@ public class AdminUI extends UI {
             @Override
             public boolean beforeViewChange(ViewChangeEvent event) {
                 // Check if a user has logged in
-                boolean isLoggedIn = getSession().getAttribute("user") != null;
+                boolean isLoggedIn = getSession().getAttribute(LoginView.USER_SESSION_ATTR) != null;
                 boolean isLoginView = event.getNewView() instanceof LoginView;
-                if(!isLoggedIn && !isLoginView) {
-                    getNavigator().navigateTo(LoginView.VIEW_NAME);
-                    return false;
-                }
-                if(isLoggedIn && isLoginView) {
-                    //Logged in user should not be able to access loginview
-                    return false;
+                if(!isLoggedIn) {
+                    navigationBar.removeComponent(logoutBtn);
+                    navigationBar.removeComponent(listUsersBtn);
+                    if(!isLoginView) {
+                        getNavigator().navigateTo(LoginView.VIEW_NAME);
+                        return false;
+                    }
+                } else { //Logged in
+                    navigationBar.addComponent(logoutBtn);
+                    navigationBar.addComponent(listUsersBtn);
+                    if(isLoginView) {
+                        //Logged in user should not be able to access login view
+                        return false;
+                    }
                 }
                 return true;
             }

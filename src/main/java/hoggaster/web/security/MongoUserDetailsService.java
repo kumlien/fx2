@@ -61,7 +61,7 @@ public class MongoUserDetailsService extends AbstractUserDetailsAuthenticationPr
 
     @Override
     public void deleteUser(String username) {
-
+        userRepo.deleteByUsername(username);
     }
 
     @Override
@@ -82,5 +82,9 @@ public class MongoUserDetailsService extends AbstractUserDetailsAuthenticationPr
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return retrieveUser(username, new UsernamePasswordAuthenticationToken(username, ""));
+    }
+
+    public final String encode(String s) {
+        return passwordEncoder.encode(s);
     }
 }
