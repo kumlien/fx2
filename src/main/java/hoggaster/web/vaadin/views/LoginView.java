@@ -65,6 +65,7 @@ public class LoginView extends MVerticalLayout implements View {
         loginBtn.addStyleName(ValoTheme.BUTTON_HUGE);
         loginBtn.addClickListener(e -> {
             if(!username.isValid() || !password.isValid()) {
+                loginBtn.setEnabled(true);
                 return;
             }
             String user = username.getValue().trim();

@@ -1,5 +1,6 @@
 package hoggaster.web.vaadin.views;
 
+import com.vaadin.event.Action;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -12,6 +13,7 @@ import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
 import hoggaster.web.security.MongoUserDetailsService;
 import hoggaster.web.vaadin.views.UserForm.FormUser;
+import hoggaster.web.vaadin.views.user.UserView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.StringUtils;
@@ -32,7 +34,10 @@ import java.util.stream.Collectors;
  */
 @SpringView(name = ListUserView.VIEW_NAME)
 public class ListUserView extends VerticalLayout implements View {
+
     public static final String VIEW_NAME = "users";
+
+    private static final Action VIEW_USER_DETAILS_ACTION = new Action("View details");
 
     private final UserService userService;
 
@@ -68,6 +73,22 @@ public class ListUserView extends VerticalLayout implements View {
         );
         listEntities();
         usersTable.addMValueChangeListener(e -> adjustActionButtonState());
+        usersTable.addActionHandler(new Action.Handler() {
+
+            @Override
+            public Action[] getActions(Object target, Object sender) {
+                if(target != null) {
+                    return new Action[]{VIEW_USER_DETAILS_ACTION};
+                }
+                return new Action[]{};
+            }
+
+            @Override
+            public void handleAction(Action action, Object sender, Object target) {
+                getUI().getSession().setAttribute(UserView.SELECTED_USER, target);
+                getUI().getNavigator().navigateTo(UserView.VIEW_NAME);
+            }
+        });
     }
 
     @Override
