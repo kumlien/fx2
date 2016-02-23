@@ -38,7 +38,7 @@ public class AdminUI extends UI {
         getUI().getNavigator().navigateTo(LoginView.VIEW_NAME);
     });
 
-    private final Button listUsersBtn = createNavigationButton("Users", ListUserView.VIEW_NAME);
+    private final Button listUsersBtn = createNavigationButton("List users", ListUserView.VIEW_NAME);
 
     @Autowired
     public AdminUI(SpringViewProvider viewProvider) {

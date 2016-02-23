@@ -7,7 +7,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +45,7 @@ public class MongoUserDetailsService extends AbstractUserDetailsAuthenticationPr
         if(!dbUser.isPresent()) {
             throw new UsernameNotFoundException(username);
         }
-        return new User(username, dbUser.get().getPassword(), dbUser.get().getAuthorities());
+        return dbUser.get();
     }
 
     @Override

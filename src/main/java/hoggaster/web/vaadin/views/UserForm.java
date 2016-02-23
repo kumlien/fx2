@@ -47,7 +47,7 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
             if(fu.id == null && !StringUtils.hasText(password.getValue())) {
                 throw new InvalidValueException("You must specify a password for a new user");
             }
-            if(!password.getValue().equals(password2.getValue())) {
+            if(password.getValue() != null && !password.getValue().equals(password2.getValue())) {
                 throw new InvalidValueException("The passwords doesn't match");
             }
         }, password, password2);

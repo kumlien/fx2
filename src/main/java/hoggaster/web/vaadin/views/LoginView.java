@@ -1,13 +1,16 @@
 package hoggaster.web.vaadin.views;
 
+import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.themes.ValoTheme;
+import hoggaster.domain.users.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MPasswordField;
@@ -42,7 +46,7 @@ public class LoginView extends MVerticalLayout implements View {
 
     private final PasswordField password = new MPasswordField("Password");
 
-    private final Button loginBtn = new MButton("login");
+    private final MButton loginBtn = new MButton("login");
 
     private final AuthenticationProvider authenticationProvider;
 
@@ -56,6 +60,9 @@ public class LoginView extends MVerticalLayout implements View {
 
     @PostConstruct
     public void init() {
+        loginBtn.setDisableOnClick(true);
+        loginBtn.setClickShortcut(KeyCode.ENTER);
+        loginBtn.addStyleName(ValoTheme.BUTTON_HUGE);
         loginBtn.addClickListener(e -> {
             if(!username.isValid() || !password.isValid()) {
                 return;
@@ -69,9 +76,17 @@ public class LoginView extends MVerticalLayout implements View {
             try {
                 Authentication ud = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, pass));
                 LOG.info("User logged in: " + ud);
-                getSession().setAttribute(USER_SESSION_ATTR, userDetailsService.loadUserByUsername(user));
+                final UserDetails userDetails = userDetailsService.loadUserByUsername(user);
+                getSession().setAttribute(USER_SESSION_ATTR, userDetails);
+                getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
+                Notification.show("Welcome " + ((User)userDetails).getFirstName());
             } catch(AuthenticationException ae) {
                 LOG.debug("Authentication failed...");
+                password.setValue(null);
+                password.focus();
+                Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);
+            } finally {
+                loginBtn.setEnabled(true);
             }
         });
 
