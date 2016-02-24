@@ -73,4 +73,5 @@ public enum CurrencyPair {
         this.quoteCurrency = quoteCurrency;
     }
 
+
 }

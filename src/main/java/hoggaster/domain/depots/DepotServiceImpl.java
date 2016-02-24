@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -94,5 +95,10 @@ public class DepotServiceImpl implements DepotService {
         }
         dbDepot.setLastSynchronizedWithBroker(Instant.now());
         depotRepo.save(dbDepot);
+    }
+
+    @Override
+    public Collection<DbDepot> findByUserId(String userId) {
+        return depotRepo.findByUserId(userId);
     }
 }

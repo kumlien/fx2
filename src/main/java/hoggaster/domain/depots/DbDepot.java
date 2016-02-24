@@ -56,6 +56,10 @@ public class DbDepot {
 
     public final String userId;
 
+    public Type getType() {
+        return type;
+    }
+
     public final Type type;
 
     public final String name;

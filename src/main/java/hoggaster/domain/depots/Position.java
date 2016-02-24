@@ -104,6 +104,10 @@ public class Position {
         return averagePricePerShare;
     }
 
+    public OrderSide getSide() {
+        return side;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

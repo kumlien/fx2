@@ -101,6 +101,10 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
         }
         public FormUser(){}
 
+        public String getId() {
+            return id;
+        }
+
         public Collection<Role> getRoles() {
             return roles;
         }

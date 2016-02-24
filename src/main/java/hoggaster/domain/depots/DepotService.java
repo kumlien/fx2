@@ -4,6 +4,7 @@ import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.depots.DbDepot.Type;
 import hoggaster.domain.users.User;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,4 +45,6 @@ public interface DepotService {
     DbDepot save(DbDepot dbDepot);
 
     void syncDepot(DbDepot dbDepot);
+
+    Collection<DbDepot> findByUserId(String userId);
 }

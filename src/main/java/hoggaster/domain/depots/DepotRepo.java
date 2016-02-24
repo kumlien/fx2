@@ -2,6 +2,7 @@ package hoggaster.domain.depots;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -10,4 +11,6 @@ import java.util.Optional;
 public interface DepotRepo extends MongoRepository<DbDepot, String> {
 
     Optional<DbDepot> findByBrokerId(String brokerId);
+
+    Collection<DbDepot> findByUserId(String userId);
 }
