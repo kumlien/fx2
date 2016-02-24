@@ -52,7 +52,7 @@ public class DbDepot {
      */
     private BigDecimal marginAvailable;
     private Integer numberOfOpenTrades;
-    private Integer numoberOfOpenOrders;
+    private Integer numberOfOpenOrders;
 
     public final String userId;
 
@@ -115,15 +115,15 @@ public class DbDepot {
      * @param marginUsed
      * @param marginAvailable
      * @param numberOfOpenTrades
-     * @param numoberOfOpenOrders
+     * @param numberOfOpenOrders
      * @param lastSynchronizedWithBroker
      * @param lastSyncOk
      * @param type
      */
     @PersistenceConstructor
     public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, Set<Trade> openTrades, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numoberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
-        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, numberOfOpenTrades, numoberOfOpenOrders, lastSynchronizedWithBroker, lastSyncOk, type);
+                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+        this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, numberOfOpenTrades, numberOfOpenOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.positions = positions;
         this.numberOfOpenTrades = numberOfOpenTrades;
@@ -145,12 +145,12 @@ public class DbDepot {
      * @param marginUsed
      * @param marginAvailable
      * @param numberOfOpenTrades
-     * @param numoberOfOpenOrders
+     * @param numberOfOpenOrders
      * @param lastSynchronizedWithBroker
      * @param lastSyncOk
      * @param type
      */
-    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numoberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+    public DbDepot(String userId, String name, Broker broker, String brokerDepotName, String brokerId, BigDecimal marginRate, Currency currency, BigDecimal balance, BigDecimal unrealizedPl, BigDecimal realizedPl, BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
         this.userId = userId;
         this.name = name;
         this.broker = broker;
@@ -161,7 +161,7 @@ public class DbDepot {
         this.marginUsed = marginUsed;
         this.marginAvailable = marginAvailable;
         this.numberOfOpenTrades = numberOfOpenTrades;
-        this.numoberOfOpenOrders = numoberOfOpenOrders;
+        this.numberOfOpenOrders = numberOfOpenOrders;
         this.marginRate = marginRate;
         this.brokerDepotName = brokerDepotName;
         this.currency = currency;
@@ -270,9 +270,9 @@ public class DbDepot {
             changed = true;
         }
 
-        if (numoberOfOpenOrders == null || numoberOfOpenOrders.compareTo(brokerDepot.openOrders) != 0) {
-            LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, numoberOfOpenOrders, brokerDepot.openOrders);
-            numoberOfOpenOrders = brokerDepot.openOrders;
+        if (numberOfOpenOrders == null || numberOfOpenOrders.compareTo(brokerDepot.openOrders) != 0) {
+            LOG.info("Open orders updated with new value for dbDepot {}: {} -> {}", id, numberOfOpenOrders, brokerDepot.openOrders);
+            numberOfOpenOrders = brokerDepot.openOrders;
             changed = true;
         }
 
@@ -388,12 +388,12 @@ public class DbDepot {
         this.numberOfOpenTrades = numberOfOpenTrades;
     }
 
-    public Integer getNumoberOfOpenOrders() {
-        return numoberOfOpenOrders;
+    public Integer getNumberOfOpenOrders() {
+        return numberOfOpenOrders;
     }
 
-    public void setNumoberOfOpenOrders(Integer numoberOfOpenOrders) {
-        this.numoberOfOpenOrders = numoberOfOpenOrders;
+    public void setNumberOfOpenOrders(Integer numberOfOpenOrders) {
+        this.numberOfOpenOrders = numberOfOpenOrders;
     }
 
     public Boolean getLastSyncOk() {

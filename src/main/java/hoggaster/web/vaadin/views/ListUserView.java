@@ -85,7 +85,7 @@ public class ListUserView extends VerticalLayout implements View {
 
             @Override
             public void handleAction(Action action, Object sender, Object target) {
-                getUI().getSession().setAttribute(UserView.SELECTED_USER, target);
+                getUI().getSession().setAttribute(UserView.SESSION_ATTRIBUTE_SELECTED_USER, target);
                 getUI().getNavigator().navigateTo(UserView.VIEW_NAME);
             }
         });

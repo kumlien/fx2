@@ -51,7 +51,7 @@ public class AdminUI extends UI {
 
         Header header = new Header("Welcome to the FX2 Administration application");
 
-        final Panel viewContainer = new Panel("Main...");
+        final Panel viewContainer = new Panel();
         viewContainer.setSizeFull();
 
         final CssLayout navigationBar = new CssLayout();

@@ -62,7 +62,7 @@ public class LoginView extends MVerticalLayout implements View {
     public void init() {
         loginBtn.setDisableOnClick(true);
         loginBtn.setClickShortcut(KeyCode.ENTER);
-        loginBtn.addStyleName(ValoTheme.BUTTON_HUGE);
+        loginBtn.addStyleName(ValoTheme.BUTTON_FRIENDLY);
         loginBtn.addClickListener(e -> {
             if(!username.isValid() || !password.isValid()) {
                 loginBtn.setEnabled(true);
