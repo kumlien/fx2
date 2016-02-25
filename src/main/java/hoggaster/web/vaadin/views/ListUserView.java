@@ -25,8 +25,6 @@ import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import javax.annotation.PostConstruct;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -93,23 +91,7 @@ public class ListUserView extends VerticalLayout implements View {
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-                        getUI().access(() -> {
-                            pushed.setValue(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
-                            getUI().push();
-                        });
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            }
-        }).start();
+
     }
 
     private void listEntities() {

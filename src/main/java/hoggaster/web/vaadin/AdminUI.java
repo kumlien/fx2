@@ -16,6 +16,8 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 import hoggaster.web.vaadin.views.ListUserView;
 import hoggaster.web.vaadin.views.LoginView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.label.Header;
@@ -26,18 +28,23 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
  */
 
 @Title("FX2 Admin interface")
-@SpringUI(path = "admin")
+@SpringUI(path = "fx2")
 @Theme("valo")
 @Push(PushMode.MANUAL)
 public class AdminUI extends UI {
 
+    public static final Logger LOG = LoggerFactory.getLogger(AdminUI.class);
+
+    //Get the views annotated as SpringView:s
     private final SpringViewProvider viewProvider;
 
+    //The logout button, unset the user in the session and go back to login view
     private final Button logoutBtn = new MButton("Logout", e -> {
         getUI().getSession().setAttribute(LoginView.USER_SESSION_ATTR, null);
         getUI().getNavigator().navigateTo(LoginView.VIEW_NAME);
     });
 
+    //Button to navigate to the list with users
     private final Button listUsersBtn = createNavigationButton("List users", ListUserView.VIEW_NAME);
 
     @Autowired
@@ -57,6 +64,8 @@ public class AdminUI extends UI {
         final CssLayout navigationBar = new CssLayout();
         navigationBar.addStyleName(ValoTheme.LAYOUT_COMPONENT_GROUP);
 
+        //Build a root layout with a header, the view container and a nav bar at the bottom. The content of the view container
+        //will be handled by the view navigator.
         final MVerticalLayout root = new MVerticalLayout(header, viewContainer, navigationBar).expand(viewContainer);
         root.setSizeFull();
         root.setMargin(true);
@@ -65,10 +74,13 @@ public class AdminUI extends UI {
 
         Navigator navigator = new Navigator(this, viewContainer);
         navigator.addProvider(viewProvider);
+        setNavigator(navigator);
         navigator.addViewChangeListener(new ViewChangeListener() {
 
             @Override
             public boolean beforeViewChange(ViewChangeEvent event) {
+
+                LOG.info("View changed to {}", event.getNewView());
                 // Check if a user has logged in
                 boolean isLoggedIn = getSession().getAttribute(LoginView.USER_SESSION_ATTR) != null;
                 boolean isLoginView = event.getNewView() instanceof LoginView;
