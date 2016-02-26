@@ -36,3 +36,10 @@ server:
  tomcat:
   remote_ip_header: x-forward-for
   protocol_header: x-forwarded-proto
+
+vaadin:
+ spring:
+  productionMode: false
+  heartbeatInterval: 20
+  closeIdleSessions: true
+

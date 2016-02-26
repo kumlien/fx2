@@ -9,10 +9,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-//@PropertySource("file:/data/fx2/config/application.yml")
 @EnableConfigurationProperties(value = {OandaProperties.class, OandaResourcesProperties.class})
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
+
 }

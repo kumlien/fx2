@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.vaadin.viritin.fields.MTable;
+import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 import reactor.bus.EventBus;
@@ -93,15 +94,35 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addTab(createRobotsTab(), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
+            LOG.info("Selected tab change detected, selected tab is now {}", e.getTabSheet().getSelectedTab());
             if (e.getTabSheet().getSelectedTab() == positionsTab) {
                 LOG.info("Positions tab is selected...");
             } else {
-                registrations.get(this).forEach(Registration::cancel);
+                LOG.info("Deregister since selected tab is not positions tab");
+                deregister();
             }
         });
 
         addComponents(header, tabSheet);
         expand(tabSheet);
+
+        getUI().addDetachListener(e -> {
+            LOG.info("Deregister since the ui is detached");
+            deregister();
+        });
+
+    }
+
+    //Used to clean up the eventbus registrations we create
+    private void deregister() {
+        final List<Registration> r = this.registrations.get(this);
+        if(r != null) {
+            LOG.info("About to deregister {} registrations", this.registrations.size());
+            r.forEach(Registration::cancel);
+            registrations.remove(this);
+        } else {
+            LOG.info("No registrations found");
+        }
     }
 
     private Component createRobotsTab() {
@@ -117,19 +138,20 @@ public class UserView extends MVerticalLayout implements View {
     //Create the tab with the current open positions
     private Component createPositionsTab(Collection<DbDepot> depots) {
         MVerticalLayout tab = new MVerticalLayout();
-
+        LOG.info("Tab created: {}", tab.hashCode());
         MTable<Position> table = new MTable<>(Position.class)
                 .withCaption("Your open positions:")
                 .withProperties("currencyPair", "side", "quantity", "averagePricePerShare")
                 .withColumnHeaders("Currency pair", "Side", "Quantity", "Average price")
-                .withGeneratedColumn("Current price", new MTable.SimpleColumnGenerator<Position>() {
+                .withGeneratedColumn("Current price", new SimpleColumnGenerator<Position>() {
                     @Override
                     public Object generate(Position entity) {
                         Label label = new Label(priceService.getLatestPriceForCurrencyPair(entity.currencyPair).ask.toString());
                         LOG.info("Creating new registration for entity {}", entity.currencyPair);
                         final Registration registration = priceEventBus.on($("prices." + entity.currencyPair), e -> { //TODO how do we de-register...?
                             if (getUI() == null) { //Continue to push until gui is gone
-                                registrations.get(UserView.this).forEach(Registration::cancel);
+                                LOG.info("Deregister since ui is null in eventbus registration");
+                                deregister();
                                 return;
                             }
                             getUI().access(() -> {
@@ -141,12 +163,14 @@ public class UserView extends MVerticalLayout implements View {
                             });
                         });
                         List r = registrations.get(this) != null ? registrations.get(this) : new ArrayList();
+                        LOG.info("Deregister old registrations before adding new one");
+                        deregister();
                         r.add(registration);
                         registrations.put(UserView.this, r);
                         return label;
                     }
                 })
-                .withGeneratedColumn("Time", new MTable.SimpleColumnGenerator<Position>() {
+                .withGeneratedColumn("Time", new SimpleColumnGenerator<Position>() {
                     @Override
                     public Object generate(Position entity) {
                         return priceService.getLatestPriceForCurrencyPair(entity.currencyPair).time.truncatedTo(ChronoUnit.SECONDS);
