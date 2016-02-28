@@ -14,8 +14,8 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
-import hoggaster.web.vaadin.views.ListUserView;
 import hoggaster.web.vaadin.views.LoginView;
+import hoggaster.web.vaadin.views.user.ListUserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 
 @Title("FX2 Admin interface")
 @SpringUI(path = "fx2")
-@Theme("valo")
+@Theme("fx2")
 @Push(PushMode.MANUAL)
 public class AdminUI extends UI {
 
@@ -56,7 +56,7 @@ public class AdminUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
 
-        Header header = new Header("Welcome to the FX2 Administration application");
+        Header header = new Header("Welcome to FX2");
 
         final Panel viewContainer = new Panel();
         viewContainer.setSizeFull();
@@ -107,6 +107,7 @@ public class AdminUI extends UI {
         });
     }
 
+    //Create a button which navigates to the specified view upon click.
     private Button createNavigationButton(String caption, final String viewName) {
         Button button = new MButton(caption);
         button.addStyleName(ValoTheme.BUTTON_SMALL);

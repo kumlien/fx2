@@ -1,4 +1,4 @@
-package hoggaster.oanda.responses;
+package hoggaster.oanda.responses.positions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

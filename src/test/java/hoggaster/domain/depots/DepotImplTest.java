@@ -12,7 +12,7 @@ import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
-import hoggaster.oanda.responses.OandaCreateOrderResponse;
+import hoggaster.oanda.responses.OandaCreateTradeResponse;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -27,6 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Currency;
+import java.util.Optional;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -88,7 +89,7 @@ public class DepotImplTest extends TestCase {
     @Test
     public void testBuy() throws Exception {
         Candle candle = new Candle(cp,Broker.OANDA, CandleStickGranularity.END_OF_DAY,Instant.now(), new BigDecimal("10.0"), new BigDecimal("11.0"), new BigDecimal("20.0"), new BigDecimal("21.0"), new BigDecimal("5.0"), new BigDecimal("6.0"), new BigDecimal("18.0"), new BigDecimal("19.0"), 1000, true);
-        Mockito.when(brokerConnection.sendOrder(any(OrderRequest.class))).thenReturn(new OandaCreateOrderResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
+        Mockito.when(brokerConnection.sendOrder(any(OrderRequest.class))).thenReturn(new OandaCreateTradeResponse(cp, new BigDecimal("19.0"), Instant.now(), null, null, null, null));
 
         depot.openTrade(cp, OrderSide.buy, new BigDecimal("0.02"), candle, "robot_id");
         OrderRequest expectedRequest = new OrderRequest(EXTERNAL_DEPOT_ID, cp, 40000L, OrderSide.buy, OrderType.market, Instant.now(), null);
@@ -148,7 +149,7 @@ public class DepotImplTest extends TestCase {
         BigDecimal ask = new BigDecimal("1.600");
         Long expectedUnits = 1262L;
         Price baseOverHomePrice = new Price(cpBaseOverHome, bid, ask, Instant.now(), Broker.OANDA);
-        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHome))).thenReturn(baseOverHomePrice);
+        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHome))).thenReturn(Optional.of(baseOverHomePrice));
 
 
         DbDepot dbDepot = new DbDepot(
@@ -190,7 +191,7 @@ public class DepotImplTest extends TestCase {
         BigDecimal ask = new BigDecimal("1.100");
         long expectedUnits = 2148L;
         Price baseOverHomePrice = new Price(cpBaseOverHomeInverse, bid, ask, Instant.now(), Broker.OANDA);
-        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHomeInverse))).thenReturn(baseOverHomePrice);
+        when(priceService.getLatestPriceForCurrencyPair(eq(cpBaseOverHomeInverse))).thenReturn(Optional.of(baseOverHomePrice));
 
         DbDepot dbDepot = new DbDepot(
                 DEPOT_ID, "USER_ID", "The depots name", Broker.OANDA, Sets.newHashSet(),Sets.newHashSet(),

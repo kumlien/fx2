@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
+import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.users.User;
 import org.slf4j.Logger;

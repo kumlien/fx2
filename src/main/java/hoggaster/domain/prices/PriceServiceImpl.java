@@ -10,6 +10,7 @@ import reactor.bus.EventBus;
 import reactor.bus.selector.Selectors;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -33,8 +34,8 @@ public class PriceServiceImpl implements PriceService {
 
 
     @Override
-    public Price getLatestPriceForCurrencyPair(CurrencyPair currencyPair) {
-        return cache.get(currencyPair);
+    public Optional<Price> getLatestPriceForCurrencyPair(CurrencyPair currencyPair) {
+        return Optional.ofNullable(cache.get(currencyPair));
     }
 
     @Override

@@ -4,16 +4,12 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.positions.ClosePositionResponse;
+import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
-import hoggaster.oanda.responses.Instruments;
-import hoggaster.oanda.responses.OandaAccounts;
-import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.oanda.responses.OandaCreateOrderResponse;
-import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaPrices;
+import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +27,18 @@ public class BacktestingBrokerConnection implements BrokerConnection {
 
 
     @Override
-    public OandaCreateOrderResponse sendOrder(OrderRequest request) {
+    public OandaCreateTradeResponse sendOrder(OrderRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Set<Position> getPositions(String depotId) {
+        return null;
+    }
+
+    @Override
+    public ClosePositionResponse closePosition(Integer accountId, CurrencyPair instrument) {
         return null;
     }
 

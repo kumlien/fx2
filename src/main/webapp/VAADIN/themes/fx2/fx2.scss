@@ -1,0 +1,13 @@
+/* Import a base theme. */
+/* This only allows us to use the mixins defined in it and does not add any styles by itself. */
+@import "../valo/valo.scss";
+
+@mixin fx2 {
+  @include valo;
+    .svantes {
+      background-image: none;
+      background-color: yellow;
+    }
+}
+
+@include fx2

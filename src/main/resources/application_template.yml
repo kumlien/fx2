@@ -13,6 +13,7 @@ oanda:
   prices: ${oanda.restApiUrl}/prices
   orders: ${oanda.resources.account}/orders
   positions: ${oanda.resources.account}/positions
+  position: ${oanda.resources.account}/position/{instrument}
   trades: ${oanda.resources.account}/trades
   trade: ${oanda.resources.account}/trades/{id}
   

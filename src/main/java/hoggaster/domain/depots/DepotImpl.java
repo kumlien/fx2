@@ -230,7 +230,7 @@ public class DepotImpl implements Depot {
         baseAndHomePair = CurrencyPair.ofBaseAndQuote(baseCurrency, homeCurrency);
 
         //get the price...
-        final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair), "No price available for " + baseAndHomePair);
+        final Price lastPriceForBaseAndHome = Objects.requireNonNull(priceService.getLatestPriceForCurrencyPair(baseAndHomePair).get(), "No price available for " + baseAndHomePair);
         return lastPriceForBaseAndHome.bid;
     }
 }

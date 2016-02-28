@@ -1,21 +1,29 @@
 package hoggaster.web.vaadin.views.user;
 
+import com.vaadin.event.Action;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.TabSheet;
+import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.depots.Position;
+import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.positions.Position;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
-import hoggaster.web.vaadin.views.UserForm.FormUser;
+import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.label.Header;
@@ -23,11 +31,9 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
+import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -37,7 +43,7 @@ import static reactor.bus.selector.Selectors.$;
 
 /**
  * Main view for displaying info for a specific user.
- *
+ * <p>
  * Contains a top header with user info
  * Below is a tabbed pane with tabs for
  * <ul>
@@ -63,13 +69,20 @@ public class UserView extends MVerticalLayout implements View {
 
     private final EventBus priceEventBus;
 
+    private final BrokerConnection brokerConnection;
+
     private final Map<UserView, List<Registration>> registrations = new ConcurrentHashMap<>();
 
+    private static final Action CLOSE_POSITION_ACTION = new Action("Close this position");
+
+    Label testLabel = new Label("test...");
+
     @Autowired
-    public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus) {
+    public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus,@Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
         this.depotService = depotService;
         this.priceService = priceService;
         this.priceEventBus = priceEventBus;
+        this.brokerConnection = brokerConnection;
     }
 
     @Override
@@ -103,7 +116,7 @@ public class UserView extends MVerticalLayout implements View {
             }
         });
 
-        addComponents(header, tabSheet);
+        addComponents(header, tabSheet, testLabel);
         expand(tabSheet);
 
         getUI().addDetachListener(e -> {
@@ -116,7 +129,7 @@ public class UserView extends MVerticalLayout implements View {
     //Used to clean up the eventbus registrations we create
     private void deregister() {
         final List<Registration> r = this.registrations.get(this);
-        if(r != null) {
+        if (r != null) {
             LOG.info("About to deregister {} registrations", this.registrations.size());
             r.forEach(Registration::cancel);
             registrations.remove(this);
@@ -137,29 +150,41 @@ public class UserView extends MVerticalLayout implements View {
 
     //Create the tab with the current open positions
     private Component createPositionsTab(Collection<DbDepot> depots) {
+        final String deafaultPriceLabel = "Waiting for price updates...";
         MVerticalLayout tab = new MVerticalLayout();
         LOG.info("Tab created: {}", tab.hashCode());
-        MTable<Position> table = new MTable<>(Position.class)
+        MTable<UIPosition> table = new MTable<>(UIPosition.class)
                 .withCaption("Your open positions:")
-                .withProperties("currencyPair", "side", "quantity", "averagePricePerShare")
-                .withColumnHeaders("Currency pair", "Side", "Quantity", "Average price")
-                .withGeneratedColumn("Current price", new SimpleColumnGenerator<Position>() {
+                .withProperties("depotName", "currencyPair", "side", "quantity", "averagePricePerShare")
+                .withColumnHeaders("Depot", "Currency pair", "Side", "Quantity", "Average price")
+                .withGeneratedColumn("Current price", new SimpleColumnGenerator<UIPosition>() {
                     @Override
-                    public Object generate(Position entity) {
-                        Label label = new Label(priceService.getLatestPriceForCurrencyPair(entity.currencyPair).ask.toString());
-                        LOG.info("Creating new registration for entity {}", entity.currencyPair);
-                        final Registration registration = priceEventBus.on($("prices." + entity.currencyPair), e -> { //TODO how do we de-register...?
+                    public Object generate(UIPosition entity) {
+                        Label label = new Label("Waiting for price updates...");
+                        //Label label = new Label(priceService.getLatestPriceForCurrencyPair(CurrencyPair.valueOf(entity.currencyPair)).ask.toString());
+                        LOG.info("Creating new registration for entity {}", entity.getCurrencyPair());
+                        final Registration registration = priceEventBus.on($("prices." + entity.getCurrencyPair()), e -> {
                             if (getUI() == null) { //Continue to push until gui is gone
                                 LOG.info("Deregister since ui is null in eventbus registration");
                                 deregister();
                                 return;
                             }
+
+                            Double previous = Double.valueOf(label.getValue().equals(deafaultPriceLabel) ? "0" : label.getValue());
+                            Double current = ((Price) e.getData()).ask.doubleValue();
                             getUI().access(() -> {
-                                if (!label.getValue().equals(((Price) e.getData()).ask.toString())) {
-                                    LOG.info("Pushing new price to gui");
-                                    label.setValue(((Price) e.getData()).ask.toString());
-                                    getUI().push();
+                                if (current > previous) {
+                                    label.setValue(current.toString());
+                                    label.setIcon(FontAwesome.ARROW_CIRCLE_UP);
+                                } else if(current < previous) {
+                                    label.setValue(current.toString());
+                                    label.setIcon(FontAwesome.ARROW_CIRCLE_DOWN);
+                                } else {
+                                    label.setIcon(FontAwesome.ARROW_CIRCLE_RIGHT);
                                 }
+                                label.setStyleName("svantes");
+                                testLabel.setStyleName("svantes");
+                                getUI().push(); //If the icon is already circle right we could skip this push
                             });
                         });
                         List r = registrations.get(this) != null ? registrations.get(this) : new ArrayList();
@@ -170,14 +195,47 @@ public class UserView extends MVerticalLayout implements View {
                         return label;
                     }
                 })
-                .withGeneratedColumn("Time", new SimpleColumnGenerator<Position>() {
+                .withGeneratedColumn("Time", new SimpleColumnGenerator<UIPosition>() {
                     @Override
-                    public Object generate(Position entity) {
-                        return priceService.getLatestPriceForCurrencyPair(entity.currencyPair).time.truncatedTo(ChronoUnit.SECONDS);
+                    public Object generate(UIPosition entity) {
+                        Optional<Price> lastPrice = priceService.getLatestPriceForCurrencyPair(entity.getCurrencyPair());
+                        if(lastPrice.isPresent()) {
+                            return lastPrice.get().time.truncatedTo(ChronoUnit.SECONDS);
+                        }
+                        return "n/a";
                     }
                 })
                 .withFullWidth();
-        table.setBeans(depots.stream().map(DbDepot::getPositions).flatMap(Collection::stream).collect(Collectors.toList()));
+        List<UIPosition> allPositions = new ArrayList<>();
+        for(DbDepot depot:depots) {
+            allPositions.addAll(depot.getPositions().stream().map(p -> new UIPosition(depot, p)).collect(Collectors.toList()));
+        }
+        table.setBeans(allPositions);
+        table.setSelectable(true);
+        table.addActionHandler(new Action.Handler() {
+            @Override
+            public Action[] getActions(Object target, Object sender) {
+                if (target != null) {
+                    return new Action[]{CLOSE_POSITION_ACTION};
+                }
+                return new Action[]{};
+            }
+
+            @Override
+            public void handleAction(Action action, Object sender, Object target) {
+                ConfirmDialog.show(getUI(), "Really close position?", "Are you really sure you want to close your " + ((UIPosition) target).getCurrencyPair() + " position?",
+                        "Yes", "No", dialog -> {
+                            if (dialog.isConfirmed()) {
+                                try {
+                                    brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()),((UIPosition) target).getCurrencyPair());
+                                    LOG.info("Position closed {}, {}", sender, target);
+                                } catch (TradingHaltedException e) {
+                                    Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
+                                }
+                            }
+                        });
+            }
+        });
         tab.addComponent(table);
         tab.expand(table);
         return tab;
@@ -197,5 +255,41 @@ public class UserView extends MVerticalLayout implements View {
         depotsTab.addComponents(depotsTable);
         depotsTab.expand(depotsTable);
         return depotsTab;
+    }
+
+    public class UIPosition {
+
+        final DbDepot depot;
+        final Position position;
+
+        UIPosition(DbDepot depot, Position position) {
+            this.depot=depot;
+            this.position=position;
+        }
+        public String getBrokerDepotId() {
+            return depot.brokerId;
+        }
+
+        public String getDepotName() {
+            return depot.getName();
+        }
+
+        public CurrencyPair getCurrencyPair() {
+            return position.currencyPair;
+        }
+
+        public OrderSide getSide() {
+            return position.side;
+        }
+
+        public BigDecimal getQuantity() {
+            return position.getQuantity();
+        }
+
+        public BigDecimal getAveragePricePerShare() {
+            return position.getAveragePricePerShare();
+        }
+
+
     }
 }

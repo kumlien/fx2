@@ -1,4 +1,4 @@
-package hoggaster.web.vaadin.views;
+package hoggaster.web.vaadin.views.user;
 
 import com.google.common.collect.Sets;
 import com.vaadin.data.Validator.InvalidValueException;

@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * The response returned from an order request sent to Oanda
  */
-public class OandaCreateOrderResponse implements CreateOrderResponse {
+public class OandaCreateTradeResponse implements CreateOrderResponse {
 
     private final CurrencyPair currencyPair;
     private final Instant time;
@@ -31,7 +31,7 @@ public class OandaCreateOrderResponse implements CreateOrderResponse {
     private final Optional<List<OandaTrade>> tradesReduced;
 
     @JsonCreator
-    public OandaCreateOrderResponse(
+    public OandaCreateTradeResponse(
             @JsonProperty(value = "instrument", required = true) CurrencyPair currencyPair,
             @JsonProperty(value = "price", required = true) BigDecimal price,
             @JsonProperty(value = "time", required = true) Instant time,
@@ -214,7 +214,7 @@ public class OandaCreateOrderResponse implements CreateOrderResponse {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("OandaCreateOrderResponse [currencyPair=").append(currencyPair)
+        builder.append("OandaCreateTradeResponse [currencyPair=").append(currencyPair)
                 .append(", time=").append(time).append(", price=")
                 .append(price).append(", tradeOpened=").append(tradeOpened)
                 .append(", tradesClosed=").append(tradesClosed)

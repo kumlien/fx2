@@ -6,19 +6,23 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.CreateOrderResponse;
 import hoggaster.domain.orders.OrderRequest;
-import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.positions.ClosePositionResponse;
+import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;
+import hoggaster.oanda.responses.positions.OandaClosedPositionReponse;
+import hoggaster.oanda.responses.positions.OandaPositions;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -33,13 +37,20 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static hoggaster.domain.brokers.Broker.OANDA;
+import static hoggaster.domain.positions.ClosePositionResponse.ClosePositionResponseBuilder.aClosePositionResponse;
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
- * Access point to oanda
+ * Access point to oanda.
+ *
+ * @see hoggaster.OandaConnectionConfig
  */
-public class OandaApi implements BrokerConnection, OrderService {
+public class OandaApi implements BrokerConnection {
 
     private static final Logger LOG = LoggerFactory.getLogger(OandaApi.class);
 
@@ -53,16 +64,15 @@ public class OandaApi implements BrokerConnection, OrderService {
 
     private final HttpHeaders defaultHeaders;
 
-    @Autowired
     public OandaApi(OandaProperties oandaProps, RetryTemplate oandaRetryTemplate, RestTemplate restTemplate, OandaResourcesProperties resources) throws UnsupportedEncodingException {
         this.restTemplate = restTemplate;
         this.resources = resources;
         this.oandaRetryTemplate = oandaRetryTemplate;
         defaultHeaders = new HttpHeaders();
-        defaultHeaders.set(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate");
-        defaultHeaders.set(HttpHeaders.CONNECTION, "Keep-Alive");
-        defaultHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
-        defaultHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        defaultHeaders.set(ACCEPT_ENCODING, "gzip, deflate");
+        defaultHeaders.set(CONNECTION, "Keep-Alive");
+        defaultHeaders.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+        defaultHeaders.setContentType(APPLICATION_FORM_URLENCODED);
         defaultHttpEntity = new HttpEntity<>(defaultHeaders);
     }
 
@@ -139,16 +149,16 @@ public class OandaApi implements BrokerConnection, OrderService {
         LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", trade.depotId, trade.brokerId,  uri);
         ResponseEntity<OandaClosedTradeReponse> closedTradeEntity = oandaRetryTemplate
                 .execute(context -> {
-                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "deleteTrade");
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "closeTrade");
                     return restTemplate.exchange(uri, HttpMethod.DELETE, defaultHttpEntity, OandaClosedTradeReponse.class);
                 });
         OandaClosedTradeReponse closedTrade = closedTradeEntity.getBody();
 
-        return new CloseTradeResponse(Broker.OANDA,String.valueOf(closedTrade.id), closedTrade.price, closedTrade.instrument,closedTrade.profit, closedTrade.side, closedTrade.time);
+        return new CloseTradeResponse(OANDA,String.valueOf(closedTrade.id), closedTrade.price, closedTrade.instrument,closedTrade.profit, closedTrade.side, closedTrade.time);
     }
 
     private static final Trade fromOandaTrade(String fx2DepotId, OandaTradesResponse.Trade t) {
-        return new Trade(fx2DepotId, null, Broker.OANDA, t.id, t.units, t.side, t.instrument, t.time, t.price, t.takeProfit, t.stopLoss, t.trailingStop);
+        return new Trade(fx2DepotId, null, OANDA, t.id, t.units, t.side, t.instrument, t.time, t.price, t.takeProfit, t.stopLoss, t.trailingStop);
     }
 
     @Override
@@ -168,6 +178,31 @@ public class OandaApi implements BrokerConnection, OrderService {
                 .map(p -> new Position(p.instrument, p.side, p.units, p.avgPrice))
                 .collect(toSet());
     }
+
+    /**
+     * Close the position for the specified instrument and account
+     *
+     * @throws UnsupportedEncodingException
+     */
+    @Override
+    @Timed
+    public ClosePositionResponse closePosition(Integer accountId, CurrencyPair instrument) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPosition());
+        String uri = builder.buildAndExpand(accountId, instrument).toUriString();
+        LOG.info("Close position from oanda with account id {} and instrument {} using uri {}", accountId, instrument, uri);
+        ResponseEntity<OandaClosedPositionReponse> closedPosition = oandaRetryTemplate
+                .execute(context -> {
+                    context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "closePosition");
+                    return restTemplate.exchange(uri, HttpMethod.DELETE, defaultHttpEntity, OandaClosedPositionReponse.class);
+                });
+        OandaClosedPositionReponse response = closedPosition.getBody();
+        LOG.info("Found {} ", response);
+        return aClosePositionResponse().withBroker(OANDA).withCurrencyPair(response.instrument).withPrice(response.price).withTime(Instant.now())
+                .withTotalUnits(response.totalUnits)
+                .withTransactionIds(response.ids.stream().map(String::valueOf).collect(Collectors.toList()))
+                .build();
+    }
+
 
     /**
      * Get all available {@link CurrencyPair}s for the first account we find.
@@ -229,7 +264,6 @@ public class OandaApi implements BrokerConnection, OrderService {
             builder.queryParam("count", count);
         }
 
-        // String uri = builder.build(true).toUriString();
         URI uri = builder.build(true).toUri();
         LOG.debug("URI used: {}", uri);
         ResponseEntity<OandaBidAskCandlesResponse> candles = oandaRetryTemplate
@@ -273,10 +307,10 @@ public class OandaApi implements BrokerConnection, OrderService {
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();
         LOG.info("Sendning order to {}: {}", uri, request);
         HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<MultiValueMap<String, String>>(oandaRequest, defaultHeaders);
-        ResponseEntity<OandaCreateOrderResponse> orderResponse = oandaRetryTemplate
+        ResponseEntity<OandaCreateTradeResponse> orderResponse = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "sendOrder");
-                    return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaCreateOrderResponse.class);
+                    return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, OandaCreateTradeResponse.class);
                 });
         LOG.info("Received order response: {}", orderResponse.getBody());
         return orderResponse.getBody();
@@ -284,6 +318,6 @@ public class OandaApi implements BrokerConnection, OrderService {
 
     @Override
     public Broker getBrokerID() {
-        return Broker.OANDA;
+        return OANDA;
     }
 }

@@ -1,8 +1,9 @@
 package hoggaster.domain.brokers;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depots.Position;
 import hoggaster.domain.orders.OrderService;
+import hoggaster.domain.positions.ClosePositionResponse;
+import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
@@ -16,6 +17,8 @@ import java.util.Set;
 public interface BrokerConnection extends OrderService {
 
     Set<Position> getPositions(String depotId);
+
+    ClosePositionResponse closePosition(Integer accountId, CurrencyPair instrument);
 
     Instruments getInstrumentsForAccount(Integer accountId) throws UnsupportedEncodingException;
 

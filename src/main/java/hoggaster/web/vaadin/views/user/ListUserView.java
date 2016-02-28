@@ -1,4 +1,4 @@
-package hoggaster.web.vaadin.views;
+package hoggaster.web.vaadin.views.user;
 
 import com.vaadin.event.Action;
 import com.vaadin.navigator.View;
@@ -12,8 +12,7 @@ import com.vaadin.ui.VerticalLayout;
 import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
 import hoggaster.web.security.MongoUserDetailsService;
-import hoggaster.web.vaadin.views.UserForm.FormUser;
-import hoggaster.web.vaadin.views.user.UserView;
+import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.StringUtils;
