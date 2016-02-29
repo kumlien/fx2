@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.vaadin.ui.Notification.Type.ASSISTIVE_NOTIFICATION;
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_FRAMED;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
 import static reactor.bus.selector.Selectors.$;
@@ -235,7 +235,7 @@ public class UserView extends MVerticalLayout implements View {
                         try {
                             ClosePositionResponse response = brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()), ((UIPosition) target).getCurrencyPair());
                             LOG.info("Position closed {}, {}", sender, target);
-                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, ASSISTIVE_NOTIFICATION);
+                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
                         } catch (TradingHaltedException e) {
                             Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
                         }
