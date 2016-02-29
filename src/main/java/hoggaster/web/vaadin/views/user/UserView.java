@@ -65,21 +65,16 @@ public class UserView extends MVerticalLayout implements View {
     public static final String SESSION_ATTRIBUTE_SELECTED_USER = "SelectedUser";
 
     public static final Logger LOG = LoggerFactory.getLogger(UserView.class);
-
+    private static final Action CLOSE_POSITION_ACTION = new Action("Close this position");
     private final DepotService depotService;
-
     private final PriceService priceService;
-
     private final EventBus priceEventBus;
-
     private final BrokerConnection brokerConnection;
-
     private final Map<UserView, List<Registration>> registrations = new ConcurrentHashMap<>();
 
-    private static final Action CLOSE_POSITION_ACTION = new Action("Close this position");
-
     @Autowired
-    public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus,@Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
+    public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus,
+            @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
         this.depotService = depotService;
         this.priceService = priceService;
         this.priceEventBus = priceEventBus;
@@ -91,7 +86,6 @@ public class UserView extends MVerticalLayout implements View {
         LOG.info("Enter: " + event.getViewName());
 
         FormUser user = (FormUser) getUI().getSession().getAttribute(SESSION_ATTRIBUTE_SELECTED_USER);
-
 
         Header header = new Header("Details for " + user.getFirstName() + " " + user.getLastName());
         header.setHeaderLevel(2);
@@ -177,25 +171,25 @@ public class UserView extends MVerticalLayout implements View {
 
                             Double previous = Double.valueOf(label.getValue().equals(deafaultPriceLabel) ? "0" : label.getValue());
                             Double current = ((Price) e.getData()).ask.doubleValue();
-                            LOG.info("Got a new price: {}",e.getData());
+                            LOG.info("Got a new price: {}", e.getData());
                             getUI().access(() -> {
                                 label.setValue(current.toString());
                                 label.removeStyleName("pushPositive");
                                 label.removeStyleName("pushNegative");
                                 if (current > previous) {
                                     label.addStyleName("pushPositive");
-                                } else if(current < previous) {
+                                } else if (current < previous) {
                                     label.addStyleName("pushNegative");
                                 }
                                 LOG.info(label.getStyleName());
                                 getUI().push(); //If price same for second time in a row we dont need to push
                             });
+                            try {
+                                Thread.sleep(1000); //TODO Gahhhh...
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
                             getUI().access(() -> {
-                                try {
-                                    Thread.sleep(1000); //TODO Gahhhh...
-                                } catch (InterruptedException e1) {
-                                    e1.printStackTrace();
-                                }
                                 label.removeStyleName("pushPositive");
                                 label.removeStyleName("pushNegative");
                                 getUI().push();
@@ -213,7 +207,7 @@ public class UserView extends MVerticalLayout implements View {
                     @Override
                     public Object generate(UIPosition entity) {
                         Optional<Price> lastPrice = priceService.getLatestPriceForCurrencyPair(entity.getCurrencyPair());
-                        if(lastPrice.isPresent()) {
+                        if (lastPrice.isPresent()) {
                             return lastPrice.get().time.truncatedTo(ChronoUnit.SECONDS);
                         }
                         return "n/a";
@@ -221,7 +215,7 @@ public class UserView extends MVerticalLayout implements View {
                 })
                 .withFullWidth();
         List<UIPosition> allPositions = new ArrayList<>();
-        for(DbDepot depot:depots) {
+        for (DbDepot depot : depots) {
             allPositions.addAll(depot.getPositions().stream().map(p -> new UIPosition(depot, p)).collect(Collectors.toList()));
         }
         table.setBeans(allPositions);
@@ -230,24 +224,25 @@ public class UserView extends MVerticalLayout implements View {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[]{CLOSE_POSITION_ACTION};
+                    return new Action[] { CLOSE_POSITION_ACTION };
                 }
-                return new Action[]{};
+                return new Action[] {};
             }
 
             @Override
             public void handleAction(Action action, Object sender, Object target) {
-                ConfirmDialog.show(getUI(), "Really close position?", "Are you really sure you want to close your " + ((UIPosition) target).getCurrencyPair() + " position?",
+                ConfirmDialog.show(getUI(), "Really close position?",
+                        "Are you really sure you want to close your " + ((UIPosition) target).getCurrencyPair() + " position?",
                         "Yes", "No", dialog -> {
-                            if (dialog.isConfirmed()) {
-                                try {
-                                    brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()),((UIPosition) target).getCurrencyPair());
-                                    LOG.info("Position closed {}, {}", sender, target);
-                                } catch (TradingHaltedException e) {
-                                    Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
-                                }
-                            }
-                        });
+                    if (dialog.isConfirmed()) {
+                        try {
+                            brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()), ((UIPosition) target).getCurrencyPair());
+                            LOG.info("Position closed {}, {}", sender, target);
+                        } catch (TradingHaltedException e) {
+                            Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
+                        }
+                    }
+                });
             }
         });
         tab.addComponents(table);
@@ -277,9 +272,10 @@ public class UserView extends MVerticalLayout implements View {
         final Position position;
 
         UIPosition(DbDepot depot, Position position) {
-            this.depot=depot;
-            this.position=position;
+            this.depot = depot;
+            this.position = position;
         }
+
         public String getBrokerDepotId() {
             return depot.brokerId;
         }
@@ -303,7 +299,6 @@ public class UserView extends MVerticalLayout implements View {
         public BigDecimal getAveragePricePerShare() {
             return position.getAveragePricePerShare();
         }
-
 
     }
 }
