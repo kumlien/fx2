@@ -3,7 +3,6 @@ package hoggaster.web.vaadin.views.user;
 import com.vaadin.event.Action;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Label;
@@ -33,7 +32,11 @@ import reactor.bus.registry.Registration;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -75,8 +78,6 @@ public class UserView extends MVerticalLayout implements View {
 
     private static final Action CLOSE_POSITION_ACTION = new Action("Close this position");
 
-    Label testLabel = new Label("test...");
-
     @Autowired
     public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus,@Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
         this.depotService = depotService;
@@ -88,6 +89,7 @@ public class UserView extends MVerticalLayout implements View {
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
         LOG.info("Enter: " + event.getViewName());
+
         FormUser user = (FormUser) getUI().getSession().getAttribute(SESSION_ATTRIBUTE_SELECTED_USER);
 
 
@@ -116,7 +118,7 @@ public class UserView extends MVerticalLayout implements View {
             }
         });
 
-        addComponents(header, tabSheet, testLabel);
+        addComponents(header, tabSheet);
         expand(tabSheet);
 
         getUI().addDetachListener(e -> {
@@ -161,6 +163,9 @@ public class UserView extends MVerticalLayout implements View {
                     @Override
                     public Object generate(UIPosition entity) {
                         Label label = new Label("Waiting for price updates...");
+                        label.addStyleName("pushbox");
+                        //label.addStyleName("roundCorners3");
+                        label.setSizeFull();
                         //Label label = new Label(priceService.getLatestPriceForCurrencyPair(CurrencyPair.valueOf(entity.currencyPair)).ask.toString());
                         LOG.info("Creating new registration for entity {}", entity.getCurrencyPair());
                         final Registration registration = priceEventBus.on($("prices." + entity.getCurrencyPair()), e -> {
@@ -172,19 +177,28 @@ public class UserView extends MVerticalLayout implements View {
 
                             Double previous = Double.valueOf(label.getValue().equals(deafaultPriceLabel) ? "0" : label.getValue());
                             Double current = ((Price) e.getData()).ask.doubleValue();
+                            LOG.info("Got a new price: {}",e.getData());
                             getUI().access(() -> {
+                                label.setValue(current.toString());
+                                label.removeStyleName("pushPositive");
+                                label.removeStyleName("pushNegative");
                                 if (current > previous) {
-                                    label.setValue(current.toString());
-                                    label.setIcon(FontAwesome.ARROW_CIRCLE_UP);
+                                    label.addStyleName("pushPositive");
                                 } else if(current < previous) {
-                                    label.setValue(current.toString());
-                                    label.setIcon(FontAwesome.ARROW_CIRCLE_DOWN);
-                                } else {
-                                    label.setIcon(FontAwesome.ARROW_CIRCLE_RIGHT);
+                                    label.addStyleName("pushNegative");
                                 }
-                                label.setStyleName("svantes");
-                                testLabel.setStyleName("svantes");
-                                getUI().push(); //If the icon is already circle right we could skip this push
+                                LOG.info(label.getStyleName());
+                                getUI().push(); //If price same for second time in a row we dont need to push
+                            });
+                            getUI().access(() -> {
+                                try {
+                                    Thread.sleep(1000); //TODO Gahhhh...
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                                label.removeStyleName("pushPositive");
+                                label.removeStyleName("pushNegative");
+                                getUI().push();
                             });
                         });
                         List r = registrations.get(this) != null ? registrations.get(this) : new ArrayList();
@@ -236,7 +250,7 @@ public class UserView extends MVerticalLayout implements View {
                         });
             }
         });
-        tab.addComponent(table);
+        tab.addComponents(table);
         tab.expand(table);
         return tab;
     }

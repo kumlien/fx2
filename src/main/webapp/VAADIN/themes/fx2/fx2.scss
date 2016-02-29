@@ -1,12 +1,130 @@
 /* Import a base theme. */
+
+
 /* This only allows us to use the mixins defined in it and does not add any styles by itself. */
+
 @import "../valo/valo.scss";
 
+@keyframes arrowPushPositive {
+    80% {
+        border-left-color: #158C23;
+    }
+    100% {
+        border-left-color: #158C23;
+    }
+}
+
+@-webkit-keyframes arrowPushPositive {
+    80% {
+        border-left-color: #158C23;
+    }
+    100% {
+        border-left-color: #158C23;
+    }
+}
+
+@keyframes arrowPushNegative {
+    80% {
+        border-left-color: #ff501b;
+    }
+    100% {
+        border-left-color: #ff501b;
+    }
+}
+
+@-webkit-keyframes arrowPushNegative {
+    80% {
+        border-left-color: #ff501b;
+    }
+    100% {
+        border-left-color: #ff501b;
+    }
+}
+
+@keyframes pushPositive {
+    80% {
+        background-color: #158C23;
+        color: #fff;
+    }
+    100% {
+        background-color: #158C23;
+        color: #fff;
+    }
+}
+
+@-webkit-keyframes pushPositive {
+    80% {
+        background-color: #158C23;
+        color: #fff;
+    }
+    100% {
+        background-color: #158C23;
+        color: #fff;
+    }
+}
+
+@keyframes pushNegative {
+    80% {
+        background-color: #ff501b;
+        color: #fff;
+    }
+    100% {
+        background-color: #ff501b;
+        color: #fff;
+    }
+}
+
+@-webkit-keyframes pushNegative {
+    80% {
+        background-color: #ff501b;
+        color: #fff;
+    }
+    100% {
+        background-color: #ff501b;
+        color: #fff;
+    }
+}
+
+
+
 @mixin fx2 {
-  @include valo;
-    .svante{
-      background-color: yellow;
-      transition:color .2s ease-out, background 2s ease-in;
+    @include valo;
+    .pushPositive {
+        animation: pushPositive 0.5s linear;
+        -webkit-animation: pushPositive 0.5s ease-out;
+    }
+    .pushNegative {
+        animation: pushNegative 0.5s linear;
+        -webkit-animation: pushNegative 0.5s ease-out;
+    }
+    .pushPositive:after {
+        animation: arrowPushPositive 0.5s linear;
+        -webkit-animation: arrowPushPositive 0.5s ease-out;
+    }
+    .pushNegative:after {
+        animation: arrowPushNegative 0.5s linear;
+        -webkit-animation: arrowPushNegative 0.5s ease-out;
+    }
+    .roundCorners3 {
+        -moz-border-radius: 25 px;
+        -webkit-border-radius: 25 px;
+        border-radius: 25 px;
+    }
+
+    .pushbox {
+        background-color: transparent;
+        display: inline-block;
+        line-height: 1;
+        margin: 0 -4px;
+        padding: 4px 4px 3px 4px;
+        animation-direction: alternate;
+        -webkit-animation-direction: alternate;
+        animation-duration: 0.5s;
+        -webkit-animation-duration: 0.5s;
+        animation-iteration-count: 2;
+        -webkit-animation-iteration-count: 2;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
 }
 
