@@ -1,7 +1,7 @@
 package hoggaster.domain.users;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depots.Position;
+import hoggaster.domain.positions.Position;
 import org.junit.Before;
 import org.junit.Test;
 

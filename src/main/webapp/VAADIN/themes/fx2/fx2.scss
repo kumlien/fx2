@@ -4,9 +4,9 @@
 
 @mixin fx2 {
   @include valo;
-    .svantes {
-      background-image: none;
+    .svante{
       background-color: yellow;
+      transition:color .2s ease-out, background 2s ease-in;
     }
 }
 
