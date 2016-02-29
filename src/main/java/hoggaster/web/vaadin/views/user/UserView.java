@@ -146,7 +146,7 @@ public class UserView extends MVerticalLayout implements View {
 
     //Create the tab with the current open positions
     private Component createPositionsTab(Collection<DbDepot> depots) {
-        final String deafaultPriceLabel = "Waiting for price updates...";
+        final String defaultPriceLabel = "Waiting for price updates...";
         MVerticalLayout tab = new MVerticalLayout();
         LOG.info("Tab created: {}", tab.hashCode());
         MTable<UIPosition> table = new MTable<>(UIPosition.class)
@@ -158,7 +158,6 @@ public class UserView extends MVerticalLayout implements View {
                     public Object generate(UIPosition entity) {
                         Label label = new Label("Waiting for price updates...");
                         label.addStyleName("pushbox");
-                        //Label label = new Label(priceService.getLatestPriceForCurrencyPair(CurrencyPair.valueOf(entity.currencyPair)).ask.toString());
                         LOG.info("Creating new registration for entity {}", entity.getCurrencyPair());
                         final Registration registration = priceEventBus.on($("prices." + entity.getCurrencyPair()), e -> {
                             if (getUI() == null) { //Continue to push until gui is gone
@@ -167,7 +166,7 @@ public class UserView extends MVerticalLayout implements View {
                                 return;
                             }
 
-                            Double previous = Double.valueOf(label.getValue().equals(deafaultPriceLabel) ? "0" : label.getValue());
+                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? "0" : label.getValue());
                             Double current = ((Price) e.getData()).ask.doubleValue();
                             LOG.info("Got a new price: {}", e.getData());
                             getUI().access(() -> {
@@ -184,10 +183,8 @@ public class UserView extends MVerticalLayout implements View {
                             });
                             try {
                                 Thread.sleep(1000); //TODO Gahhhh...
-                            } catch (InterruptedException e1) {
-                                e1.printStackTrace();
-                            }
-                            getUI().access(() -> {
+                            } catch (InterruptedException e1) { }
+                            getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
                                 label.removeStyleName("pushPositive");
                                 label.removeStyleName("pushNegative");
                                 getUI().push();
@@ -237,6 +234,7 @@ public class UserView extends MVerticalLayout implements View {
                     if (dialog.isConfirmed()) {
                         try {
                             ClosePositionResponse response = brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
+                            depotService.syncDepot(position.depot);
                             LOG.info("Position closed {}, {}", sender, target);
                             Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
                         } catch (TradingHaltedException e) {
