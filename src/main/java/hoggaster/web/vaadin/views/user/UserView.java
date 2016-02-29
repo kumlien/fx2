@@ -1,5 +1,6 @@
 package hoggaster.web.vaadin.views.user;
 
+import com.google.common.base.MoreObjects;
 import com.vaadin.event.Action;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
@@ -37,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_FRAMED;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
@@ -228,16 +230,20 @@ public class UserView extends MVerticalLayout implements View {
 
             @Override
             public void handleAction(Action action, Object sender, Object target) {
+                final UIPosition position = (UIPosition) target;
                 ConfirmDialog.show(getUI(), "Really close position?",
-                        "Are you really sure you want to close your " + ((UIPosition) target).getCurrencyPair() + " position?",
+                        "Are you really sure you want to close your " + position.getCurrencyPair() + " position?",
                         "Yes", "No", dialog -> {
                     if (dialog.isConfirmed()) {
                         try {
-                            ClosePositionResponse response = brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()), ((UIPosition) target).getCurrencyPair());
+                            ClosePositionResponse response = brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
                             LOG.info("Position closed {}, {}", sender, target);
                             Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
                         } catch (TradingHaltedException e) {
-                            Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
+                            Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
+                        } catch (Exception e) {
+                            LOG.warn("Exception when closing position for position {}", position);
+                            Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
                         }
                     }
                 });
@@ -298,5 +304,12 @@ public class UserView extends MVerticalLayout implements View {
             return position.getAveragePricePerShare();
         }
 
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("depot", depot)
+                    .add("position", position)
+                    .toString();
+        }
     }
 }
