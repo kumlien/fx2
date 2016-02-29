@@ -13,6 +13,7 @@ import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.positions.ClosePositionResponse;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
@@ -32,14 +33,11 @@ import reactor.bus.registry.Registration;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.vaadin.ui.Notification.Type.ASSISTIVE_NOTIFICATION;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_FRAMED;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
 import static reactor.bus.selector.Selectors.$;
@@ -158,8 +156,6 @@ public class UserView extends MVerticalLayout implements View {
                     public Object generate(UIPosition entity) {
                         Label label = new Label("Waiting for price updates...");
                         label.addStyleName("pushbox");
-                        //label.addStyleName("roundCorners3");
-                        label.setSizeFull();
                         //Label label = new Label(priceService.getLatestPriceForCurrencyPair(CurrencyPair.valueOf(entity.currencyPair)).ask.toString());
                         LOG.info("Creating new registration for entity {}", entity.getCurrencyPair());
                         final Registration registration = priceEventBus.on($("prices." + entity.getCurrencyPair()), e -> {
@@ -214,6 +210,7 @@ public class UserView extends MVerticalLayout implements View {
                     }
                 })
                 .withFullWidth();
+        table.setColumnExpandRatio("depotName", 0.1f);
         List<UIPosition> allPositions = new ArrayList<>();
         for (DbDepot depot : depots) {
             allPositions.addAll(depot.getPositions().stream().map(p -> new UIPosition(depot, p)).collect(Collectors.toList()));
@@ -236,8 +233,9 @@ public class UserView extends MVerticalLayout implements View {
                         "Yes", "No", dialog -> {
                     if (dialog.isConfirmed()) {
                         try {
-                            brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()), ((UIPosition) target).getCurrencyPair());
+                            ClosePositionResponse response = brokerConnection.closePosition(Integer.valueOf(((UIPosition) target).getBrokerDepotId()), ((UIPosition) target).getCurrencyPair());
                             LOG.info("Position closed {}, {}", sender, target);
+                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, ASSISTIVE_NOTIFICATION);
                         } catch (TradingHaltedException e) {
                             Notification.show("Sorry, unable to close the position since the trading is currently halted", Notification.Type.ERROR_MESSAGE);
                         }

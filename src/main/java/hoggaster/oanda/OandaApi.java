@@ -195,12 +195,14 @@ public class OandaApi implements BrokerConnection {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "closePosition");
                     return restTemplate.exchange(uri, HttpMethod.DELETE, defaultHttpEntity, OandaClosedPositionReponse.class);
                 });
+
         OandaClosedPositionReponse response = closedPosition.getBody();
-        LOG.info("Found {} ", response);
+        LOG.info("Response from close position {} ", response);
         return aClosePositionResponse().withBroker(OANDA).withCurrencyPair(response.instrument).withPrice(response.price).withTime(Instant.now())
                 .withTotalUnits(response.totalUnits)
                 .withTransactionIds(response.ids.stream().map(String::valueOf).collect(Collectors.toList()))
                 .build();
+
     }
 
 

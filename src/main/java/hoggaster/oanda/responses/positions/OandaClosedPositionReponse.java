@@ -14,7 +14,7 @@ import java.util.List;
 public class OandaClosedPositionReponse {
 
      // The ID of the close trade transaction (on oanda side)
-    public final List<Integer> ids;
+    public final List<Long> ids;
 
     public final BigDecimal price; // The price the trade was closed at
 
@@ -26,7 +26,7 @@ public class OandaClosedPositionReponse {
 
 
     @JsonCreator
-    public OandaClosedPositionReponse(@JsonProperty("ids") List<Integer> ids, @JsonProperty("price")BigDecimal price, @JsonProperty("instrument") CurrencyPair instrument, @JsonProperty("totalUnits") BigDecimal totalUnits) {
+    public OandaClosedPositionReponse(@JsonProperty("ids") List<Long> ids, @JsonProperty("price")BigDecimal price, @JsonProperty("instrument") CurrencyPair instrument, @JsonProperty("totalUnits") BigDecimal totalUnits) {
         this.ids = ids;
         this.price = price;
         this.instrument = instrument;

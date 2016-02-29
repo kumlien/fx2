@@ -75,7 +75,6 @@ public class HttpConfig {
     }
 
     private static class LoggingRetryListener implements RetryListener {
-
         @Override
         public <T, E extends Throwable> boolean open(final RetryContext context, final RetryCallback<T, E> callback) {
             return true;
