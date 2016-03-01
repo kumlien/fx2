@@ -7,7 +7,6 @@ import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 import hoggaster.domain.users.User;
 import hoggaster.domain.users.UserService;
@@ -19,14 +18,18 @@ import org.springframework.util.StringUtils;
 import org.vaadin.viritin.button.ConfirmButton;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import javax.annotation.PostConstruct;
 import java.util.stream.Collectors;
 
+import static com.vaadin.ui.Notification.Type.ASSISTIVE_NOTIFICATION;
+
 /**
+ * Displays a list of all users. Should probably only be available for admins...
+ * Also gives the possibility to add/delete/edit users.
+ *
  * Created by svante2 on 2016-02-18.
  */
 @SpringView(name = ListUserView.VIEW_NAME)
@@ -46,11 +49,9 @@ public class ListUserView extends VerticalLayout implements View {
             .setSortableProperties("firstName", "lastName")
             .withFullWidth();
 
-
     private Button addNew = new MButton(FontAwesome.PLUS, this::add);
     private Button edit = new MButton(FontAwesome.PENCIL_SQUARE_O, this::edit);
     private Button delete = new ConfirmButton(FontAwesome.TRASH_O, "Are you sure you want to delete the user?", this::remove);
-    private TextField pushed = new MTextField();
 
 
     @Autowired
@@ -64,7 +65,7 @@ public class ListUserView extends VerticalLayout implements View {
     void init() {
         addComponent(
                 new MVerticalLayout(
-                        new MHorizontalLayout(addNew, edit, delete, pushed),
+                        new MHorizontalLayout(addNew, edit, delete),
                         usersTable
                 ).expand(usersTable)
         );
@@ -90,7 +91,6 @@ public class ListUserView extends VerticalLayout implements View {
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-
     }
 
     private void listEntities() {
@@ -137,11 +137,11 @@ public class ListUserView extends VerticalLayout implements View {
         if (StringUtils.hasText(formUser.id)) { //Existing user
             User user = new User(formUser.username, formUser.firstName, formUser.lastName, formUser.email, password, formUser.id, formUser.roles.stream().map(r -> new SimpleGrantedAuthority(r.toString())).collect(Collectors.toSet()));
             userDetailsManager.updateUser(user);
-            Notification.show("User updated", Notification.Type.ASSISTIVE_NOTIFICATION);
+            Notification.show("User updated", ASSISTIVE_NOTIFICATION);
         } else {
             User user = new User(formUser.username, formUser.firstName, formUser.lastName, formUser.email, password, formUser.id, formUser.roles.stream().map(r -> new SimpleGrantedAuthority(r.toString())).collect(Collectors.toSet()));
             userDetailsManager.createUser(user);
-            Notification.show("User created", Notification.Type.ASSISTIVE_NOTIFICATION);
+            Notification.show("User created", ASSISTIVE_NOTIFICATION);
         }
         listEntities();
         closeWindow();
