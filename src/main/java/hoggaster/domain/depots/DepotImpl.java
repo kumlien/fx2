@@ -29,7 +29,7 @@ import java.util.Currency;
 import java.util.Objects;
 
 /**
- * Used to handle logic for a depots.
+ * Used to handle logic for a positions.
  * Not so found of this approach, splitting persistent stuff and business logic
  * <p>
  * Created by svante2 on 2015-10-11.
@@ -64,7 +64,7 @@ public class DepotImpl implements Depot {
     public DepotImpl(String dbDepotId, BrokerConnection brokerConnection, DepotService depotService, PriceService priceService, TradeService tradeService) {
         this.priceService = priceService;
         this.tradeService = tradeService;
-        Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a depots with id '" + dbDepotId + "'");
+        Objects.requireNonNull(depotService.findDepotById(dbDepotId), "Unable to find a positions with id '" + dbDepotId + "'");
         this.depotService = depotService;
         this.dbDepotId = dbDepotId;
         this.brokerConnection = brokerConnection;
@@ -92,7 +92,7 @@ public class DepotImpl implements Depot {
     /**
      * Buy something...
      * First -  for now, check if we already own the currencyPair, in that case we bail out.
-     * Second - Calculate the value of the order in the depots currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
+     * Second - Calculate the value of the order in the positions currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance
      * Fourth -
      *
@@ -110,7 +110,7 @@ public class DepotImpl implements Depot {
         DbDepot dbDepot = depotService.findDepotById(dbDepotId);
         //Don't allow the trade if the last sync is too old
         if(dbDepot.getLastSynchronizedWithBroker() == null || dbDepot.getLastSynchronizedWithBroker().isBefore(Instant.now().minus(MAX_TIME_SINCE_LAST_DEPOT_SYNC))) {
-            LOG.warn("Unable to sendOrder since the depots hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
+            LOG.warn("Unable to sendOrder since the positions hasn't been synced with the broker ({}) since {}", dbDepot.broker, dbDepot.getLastSynchronizedWithBroker());
             return null;
         }
 

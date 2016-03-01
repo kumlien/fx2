@@ -8,9 +8,9 @@ import com.vaadin.ui.TabSheet;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.prices.PriceService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
-import hoggaster.web.vaadin.views.user.depots.ListPositionsComponent;
+import hoggaster.web.vaadin.views.user.positions.ListPositionsComponent;
+import hoggaster.web.vaadin.views.user.trades.ListTradesComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-import reactor.bus.EventBus;
 
 import java.util.Collection;
 
-import static com.vaadin.ui.themes.ValoTheme.TABSHEET_FRAMED;
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
 
 /**
@@ -48,20 +46,18 @@ public class UserView extends MVerticalLayout implements View {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserView.class);
     private final DepotService depotService;
-    public final PriceService priceService;
-    public final EventBus priceEventBus;
     public final BrokerConnection brokerConnection;
-    private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of depots
+    private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of positions
+
+    private final ListTradesComponent listTradesComponent;
 
 
     @Autowired
-    public UserView(DepotService depotService, PriceService priceService, @Qualifier("priceEventBus") EventBus priceEventBus,
-                    @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent) {
+    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListTradesComponent listTradesComponent) {
         this.depotService = depotService;
-        this.priceService = priceService;
-        this.priceEventBus = priceEventBus;
         this.brokerConnection = brokerConnection;
         this.listPositionsComponent = listPositionsComponent;
+        this.listTradesComponent = listTradesComponent;
     }
 
     @Override
@@ -76,13 +72,14 @@ public class UserView extends MVerticalLayout implements View {
         Collection<DbDepot> depots = depotService.findByUserId(user.getId());
 
         TabSheet tabSheet = new TabSheet();
-        tabSheet.addStyleName(TABSHEET_FRAMED);
+        //tabSheet.addStyleName(TABSHEET_FRAMED);
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
         tabSheet.addTab(createDepotsTab(depots), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
-        tabSheet.addTab(createTradesTab(), "Trades");
+        tabSheet.addTab(listTradesComponent.setUp(user, this), "Trades");
+        tabSheet.addTab(createTransactionsTab(), "Transactions");
         tabSheet.addTab(createRobotsTab(), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
@@ -111,7 +108,7 @@ public class UserView extends MVerticalLayout implements View {
         return tab;
     }
 
-    private Component createTradesTab() {
+    private Component createTransactionsTab() {
         MVerticalLayout tab = new MVerticalLayout();
         return tab;
     }
@@ -119,7 +116,7 @@ public class UserView extends MVerticalLayout implements View {
     private MVerticalLayout createDepotsTab(Collection<DbDepot> depots) {
         MVerticalLayout depotsTab = new MVerticalLayout();
         MTable<DbDepot> depotsTable = new MTable(DbDepot.class)
-                .withCaption("Depots")
+                //.withCaption("Depots")
                 .withProperties("name", "type", "balance", "currency", "marginRate", "marginAvailable", "numberOfOpenTrades", "realizedPl", "unrealizedPl",
                         "lastSynchronizedWithBroker")
                 .withColumnHeaders("Name", "Type", "Balance", "Currency", "Margin rate", "Margin available", "Number of open trades", "Realized profit/loss",

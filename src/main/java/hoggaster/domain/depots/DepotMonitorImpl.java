@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * This component is responsible for monitoring the depots, in particular the margins.
+ * This component is responsible for monitoring the positions, in particular the margins.
  * <p>
  * Created by svante on 15-09-20.
  */

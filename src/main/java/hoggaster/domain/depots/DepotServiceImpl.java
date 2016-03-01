@@ -50,7 +50,7 @@ public class DepotServiceImpl implements DepotService {
 
         Preconditions.checkArgument(!depotRepo.findByBrokerId(brokerId).isPresent(), "There is already a Depot connected with broker " + broker + " with the id '" + brokerId + "'");
         BrokerDepot brokerDepot = brokerConnection.getDepot(brokerId);
-        Preconditions.checkArgument(brokerDepot != null, "Unable to fetch a depots from " + broker + " with id '" + brokerId + "'");
+        Preconditions.checkArgument(brokerDepot != null, "Unable to fetch a positions from " + broker + " with id '" + brokerId + "'");
 
         DbDepot newDbDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true, type);
         newDbDepot = depotRepo.save(newDbDepot);

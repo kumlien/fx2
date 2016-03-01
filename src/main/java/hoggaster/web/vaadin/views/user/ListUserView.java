@@ -63,6 +63,7 @@ public class ListUserView extends VerticalLayout implements View {
 
     @PostConstruct
     void init() {
+        delete.addStyleName("danger");
         addComponent(
                 new MVerticalLayout(
                         new MHorizontalLayout(addNew, edit, delete),

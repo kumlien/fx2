@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(User user) {
-        //TODO Delete depots and stuff...
+        //TODO Delete positions and stuff...
         throw new RuntimeException("not done yet...");
     }
 

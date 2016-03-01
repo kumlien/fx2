@@ -142,5 +142,71 @@ public class Trade {
                 .toString();
     }
 
+    public String getDepotId() {
+        return depotId;
+    }
 
+    public String getRobotId() {
+        return robotId;
+    }
+
+    public Broker getBroker() {
+        return broker;
+    }
+
+    public Long getBrokerId() {
+        return brokerId;
+    }
+
+    public BigDecimal getUnits() {
+        return units;
+    }
+
+    public OrderSide getSide() {
+        return side;
+    }
+
+    public CurrencyPair getInstrument() {
+        return instrument;
+    }
+
+    public Instant getOpenTime() {
+        return openTime;
+    }
+
+    public BigDecimal getOpenPrice() {
+        return openPrice;
+    }
+
+    public BigDecimal getTakeProfit() {
+        return takeProfit;
+    }
+
+    public BigDecimal getStopLoss() {
+        return stopLoss;
+    }
+
+    public BigDecimal getTrailingStop() {
+        return trailingStop;
+    }
+
+    public BigDecimal getTrailingAmount() {
+        return trailingAmount;
+    }
+
+    public BigDecimal getClosePrice() {
+        return closePrice;
+    }
+
+    public BigDecimal getGainPerUnit() {
+        return gainPerUnit;
+    }
+
+    public BigDecimal getTotalGain() {
+        return totalGain;
+    }
+
+    public Instant getCloseTime() {
+        return closeTime;
+    }
 }

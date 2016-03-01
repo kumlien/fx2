@@ -1,4 +1,4 @@
-package hoggaster.web.vaadin.views.user.depots;
+package hoggaster.web.vaadin.views.user.positions;
 
 import com.google.common.base.MoreObjects;
 import hoggaster.domain.CurrencyPair;
@@ -9,7 +9,7 @@ import hoggaster.domain.positions.Position;
 import java.math.BigDecimal;
 
 /**
- * Represents a position
+ * Represents a position which also keeps a ref to the depot it belongs to. Used in the vaadin table.
  *
  * Created by svante.kumlien on 01.03.16.
  */

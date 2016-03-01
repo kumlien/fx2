@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.robot.RobotDefinition;
 import hoggaster.robot.RobotDefinitionRepo;
-import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ public class RobotDefinitionController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    @ApiOperation("Get all configured robot definitions for the given depots")
     public List<RobotDefinition> getByDepotId(@RequestParam("depotId") String depotId) {
         List<RobotDefinition> all = repo.findByDepotId(depotId);
         LOG.info("Found these robot defs: {}", all);
@@ -39,7 +37,6 @@ public class RobotDefinitionController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(CREATED)
-    @ApiOperation(value = "Create a new robot definition")
     public RobotDefinition create(@RequestParam("name") String name, @RequestParam("instrument") CurrencyPair currencyPair, @RequestParam("depotId") String depotId) {
         RobotDefinition def = new RobotDefinition(name, currencyPair, depotId);
         repo.save(def);

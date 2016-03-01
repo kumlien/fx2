@@ -435,6 +435,10 @@ public class DbDepot {
         return openTrades.stream().filter(t -> t.getId().equals(tradeId)).findFirst();
     }
 
+    public Collection<Trade> getOpenTrades() {
+        return Collections.unmodifiableCollection(openTrades);
+    }
+
     public enum Type {
         LIVE, DEMO, SIMULATION;
     }

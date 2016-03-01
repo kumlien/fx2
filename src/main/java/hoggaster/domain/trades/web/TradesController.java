@@ -7,7 +7,6 @@ import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.depots.web.DepotNotFoundException;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.trades.TradeService;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -40,7 +39,6 @@ public class TradesController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation("Get all open trades for the specified depotId, directly from the broker right now" )
     public Collection<Trade> getAll(@RequestParam("depotId") String depotId) {
         DbDepot dbDepot = depotService.findDepotById(depotId);
         if(dbDepot == null) {
@@ -51,7 +49,6 @@ public class TradesController {
 
     @RequestMapping(value = "{tradeId}", method = RequestMethod.DELETE)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiOperation("Close the trade with the specified id" )
     public void closeTrade(@RequestParam("depotId") String depotId, @PathVariable("tradeId") String tradeId) {
         final DbDepot dbDepot = Objects.requireNonNull(depotService.findDepotById(depotId));
         Optional<Trade> trade = dbDepot.getOpenTrade(tradeId);
@@ -61,7 +58,6 @@ public class TradesController {
 
     @RequestMapping(value = "{tradeId}", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation("Get a specific trade for the specified depotId, directly from the broker right now" )
     public Trade getById(@RequestParam("depotId") String depotId, @PathVariable("tradeId") String tradeId) {
         DbDepot dbDepot = depotService.findDepotById(depotId);
         Optional<Trade> trade = brokerConnection.getTrade(depotId, dbDepot.brokerId, tradeId);

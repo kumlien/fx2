@@ -33,7 +33,7 @@ public interface DepotService {
     void deleteDepot(DbDepot dbDepot);
 
     /**
-     * Get a depots by id
+     * Get a positions by id
      * @param id
      * @return The DbDepot or null if not found.
      */

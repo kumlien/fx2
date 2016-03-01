@@ -68,7 +68,7 @@ public class DbDepotServiceTest {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
         String brokerId = "9678914";
-        BrokerDepot brokerDepot = new BrokerDepot(brokerId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        BrokerDepot brokerDepot = new BrokerDepot(brokerId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(brokerId))).thenReturn(brokerDepot);
         try {
             DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", OANDA, brokerId, DbDepot.Type.DEMO);
@@ -85,7 +85,7 @@ public class DbDepotServiceTest {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
-        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
             DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", OANDA, externalDepotId, DbDepot.Type.DEMO);
@@ -106,7 +106,7 @@ public class DbDepotServiceTest {
         String externalDepotId = "123123123";
         DbDepot dbDepot = null;
         CurrencyPair cp = CurrencyPair.AUD_JPY;
-        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake depots", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
             dbDepot = depotService.createDepot(user, "DummyDepot", OANDA, externalDepotId, DbDepot.Type.DEMO);
