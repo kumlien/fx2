@@ -2,6 +2,8 @@ package hoggaster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
+import hoggaster.domain.InvalidInstrumentException;
+import hoggaster.domain.NotAuthorizedException;
 import hoggaster.domain.trades.web.TradeNotFoundException;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.exceptions.RateLimitExceededException;
@@ -106,8 +108,10 @@ public class HttpConfig {
                     LOG.info("Error with body {}", body);
                     ErrorResponse errorResponse = objectMapper.readValue(body, ErrorResponse.class);
                     switch(errorResponse.code) {
+                        case 3: throw new NotAuthorizedException(errorResponse.message);
                         case 12: throw new TradeNotFoundException(errorResponse.message);
                         case 24: throw new TradingHaltedException(errorResponse.message);
+                        case 46: throw new InvalidInstrumentException(errorResponse.message);
                         case 68: throw new RateLimitExceededException(errorResponse.message);
                         default: LOG.warn("Unhandled error code from Oanda: {} ({})", errorResponse.code, errorResponse.message);
                     }
