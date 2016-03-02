@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static reactor.bus.selector.Selectors.$;
 
 /**
@@ -48,7 +50,7 @@ public class ListTradesComponent implements Serializable {
 
     private final DepotService depotService;
 
-    private final Map<Trade, Registration> registrations = new ConcurrentHashMap<>();
+    private final Map<Long, Registration> registrations = new ConcurrentHashMap<>();
 
     public final EventBus priceEventBus;
 
@@ -83,8 +85,8 @@ public class ListTradesComponent implements Serializable {
                                 return;
                             }
 
-                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? "0" : label.getValue());
                             Double current = ((Price) e.getData()).ask.doubleValue();
+                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
                             LOG.info("Got a new price: {}", e.getData());
                             parentView.getUI().access(() -> {
                                 label.setValue(current.toString());
@@ -97,17 +99,17 @@ public class ListTradesComponent implements Serializable {
                                 }
                                 parentView.getUI().push(); //If price same for second time in a row we dont need to push
                             });
-                            try {
-                                Thread.sleep(1000); //TODO Gahhhh...
-                            } catch (InterruptedException e1) {}
-                            parentView.getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
-                                label.removeStyleName("pushPositive");
-                                label.removeStyleName("pushNegative");
-                                parentView.getUI().push();
-                            });
+
+                            Environment.get().getTimer().submit(l -> {
+                                parentView.getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
+                                    label.removeStyleName("pushPositive");
+                                    label.removeStyleName("pushNegative");
+                                    parentView.getUI().push();
+                                });
+                            },1, SECONDS);
                         });
                         deregister(trade); //cancel any existing registrations for this instrument
-                        registrations.put(trade, registration);
+                        registrations.put(trade.brokerId, registration);
                         return label;
                     }
                 })
@@ -175,10 +177,10 @@ public class ListTradesComponent implements Serializable {
     }
 
     private final void deregister(Trade trade) {
-        final Registration registration = registrations.get(trade);
+        final Registration registration = registrations.get(trade.brokerId);
         if(registration != null) {
             registration.cancel();
-            registrations.remove(trade);
+            registrations.remove(trade.brokerId);
         }
     }
 }

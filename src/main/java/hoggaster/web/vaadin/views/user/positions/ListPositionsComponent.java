@@ -22,6 +22,7 @@ import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static reactor.bus.selector.Selectors.$;
 
 /**
@@ -101,14 +103,13 @@ public class ListPositionsComponent implements Serializable {
                                 }
                                 parentView.getUI().push(); //If price same for second time in a row we dont need to push
                             });
-                            try {
-                                Thread.sleep(1000); //TODO Gahhhh...
-                            } catch (InterruptedException e1) {}
-                            parentView.getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
-                                label.removeStyleName("pushPositive");
-                                label.removeStyleName("pushNegative");
-                                parentView.getUI().push();
-                            });
+                            Environment.get().getTimer().submit(l -> {
+                                parentView.getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
+                                    label.removeStyleName("pushPositive");
+                                    label.removeStyleName("pushNegative");
+                                    parentView.getUI().push();
+                                });
+                            },1, SECONDS);
                         });
                         deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
                         registrations.put(position.getCurrencyPair(), registration);
