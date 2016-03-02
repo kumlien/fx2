@@ -4,10 +4,13 @@ import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.prices.Price;
+import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
+import hoggaster.oanda.exceptions.TradingHaltedException;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
 import org.slf4j.Logger;
@@ -15,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
@@ -30,6 +34,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static reactor.bus.selector.Selectors.$;
 
@@ -54,7 +60,7 @@ public class ListTradesComponent implements Serializable {
 
     public final EventBus priceEventBus;
 
-    private MTable<Trade> tradesTable;
+    private MTable<UITrade> tradesTable;
 
     private FormUser user;
 
@@ -69,17 +75,16 @@ public class ListTradesComponent implements Serializable {
         this.user = user;
         final String defaultPriceLabel = "Fetching...";
         MVerticalLayout tab = new MVerticalLayout();
-        tradesTable = new MTable<>(Trade.class)
-                .withCaption("Your active trades:")
-                .withProperties("instrument", "side", "units")
-                .withColumnHeaders("Currency pair", "Side", "Quantity")
-                .withGeneratedColumn("Current price", new SimpleColumnGenerator<Trade>() {
+        tradesTable = new MTable<>(UITrade.class)
+                .withProperties("instrument", "side","openPrice", "openTime", "units")
+                .withColumnHeaders("Currency pair", "Side", "Open price", "Open time", "Quantity")
+                .withGeneratedColumn("Current price", new SimpleColumnGenerator<UITrade>() {
                     @Override
-                    public Object generate(Trade trade) {
+                    public Object generate(UITrade trade) {
                         Label label = new Label(defaultPriceLabel);
                         label.addStyleName("pushbox");
-                        LOG.info("Creating new registration for trade {}", trade.instrument);
-                        final Registration registration = priceEventBus.on($("prices." + trade.instrument), e -> {
+                        LOG.info("Creating new registration for trade {}", trade.getInstrument());
+                        final Registration registration = priceEventBus.on($("prices." + trade.getInstrument()), e -> {
                             if (parentView.getUI() == null) { //Continue to push until gui is gone
                                 deregisterAll();
                                 return;
@@ -108,8 +113,8 @@ public class ListTradesComponent implements Serializable {
                                 });
                             },1, SECONDS);
                         });
-                        deregister(trade); //cancel any existing registrations for this instrument
-                        registrations.put(trade.brokerId, registration);
+                        deregister(trade.trade); //cancel any existing registrations for this instrument
+                        registrations.put(trade.trade.brokerId, registration);
                         return label;
                     }
                 })
@@ -128,26 +133,25 @@ public class ListTradesComponent implements Serializable {
 
             @Override
             public void handleAction(Action action, Object sender, Object target) {
-                /*
-                final UIPosition position = (UIPosition) target;
-                ConfirmDialog.show(parentView.getUI(), "Really close position?",
-                        "Are you really sure you want to close your " + position.getCurrencyPair() + " position?", "Yes", "No", dialog -> {
+                final UITrade trade = (UITrade) target;
+                ConfirmDialog.show(parentView.getUI(), "Really close trade?",
+                        "Are you really sure you want to close your trade?", "Yes", "No", dialog -> {
                     if (dialog.isConfirmed()) {
                         try {
-                            ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
-                            depotService.syncDepot(position.depot);
-                            deregister(position.getCurrencyPair());
-                            listEntities(); //TODO do this async. Publish/subscribe on updated depot events
-                            LOG.info("Position closed {}, {}", sender, target);
-                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
+                            CloseTradeResponse response = parentView.brokerConnection.closeTrade(trade.trade, trade.depot.getBrokerId());
+                            depotService.syncDepot(trade.depot);
+                            deregister(trade.trade);
+                            listEntities(); //TODO do this async. Publish/subscribe on updated trades events
+                            LOG.info("trade closed {}, {}", sender, target);
+                            Notification.show("Your trade was closed to a price of " + response.price, WARNING_MESSAGE);
                         } catch (TradingHaltedException e) {
                             Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
                         } catch (Exception e) {
-                            LOG.warn("Exception when closing position for position {}", position);
+                            LOG.warn("Exception when closing trade {}", trade);
                             Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
                         }
                     }
-                });*/
+                });
             }
         });
         listEntities();
@@ -157,9 +161,9 @@ public class ListTradesComponent implements Serializable {
     }
 
     private void listEntities() {
-        List<Trade> allTrades = new ArrayList<>();
+        List<UITrade> allTrades = new ArrayList<>();
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
-            allTrades.addAll(depot.getOpenTrades().stream().collect(Collectors.toList()));
+            allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(Collectors.toList()));
         }
         tradesTable.setBeans(allTrades);
     }
