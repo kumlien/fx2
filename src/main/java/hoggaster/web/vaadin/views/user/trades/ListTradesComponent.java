@@ -76,8 +76,8 @@ public class ListTradesComponent implements Serializable {
         final String defaultPriceLabel = "Fetching...";
         MVerticalLayout tab = new MVerticalLayout();
         tradesTable = new MTable<>(UITrade.class)
-                .withProperties("instrument", "side", "openTime", "units", "openPrice")
-                .withColumnHeaders("Currency pair", "Side", "Open time", "Quantity", "Open price")
+                .withProperties("instrument", "side","openPrice", "openTime", "units")
+                .withColumnHeaders("Currency pair", "Side", "Open price", "Open time", "Quantity")
                 .withGeneratedColumn("Current price", new SimpleColumnGenerator<UITrade>() {
                     @Override
                     public Object generate(UITrade trade) {
