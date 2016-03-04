@@ -126,7 +126,7 @@ public class OandaScheduledTask {
     }
 
 
-    @Scheduled(cron = "*/5 * * * * *")
+    //@Scheduled(cron = "*/5 * * * * *")
     void fetchPrices() throws UnsupportedEncodingException {
         try {
             if (instrumentsForMainAccount == null) {

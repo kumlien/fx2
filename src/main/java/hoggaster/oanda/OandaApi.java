@@ -207,7 +207,7 @@ public class OandaApi implements BrokerConnection {
 
 
     /**
-     * Get all available {@link CurrencyPair}s for the first account we find.
+     * Get all available {@link CurrencyPair}s for the specified account
      *
      * @throws UnsupportedEncodingException
      */

@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.function.Function;
 
+import static hoggaster.domain.brokers.Broker.OANDA;
+
 @Document
 @CompoundIndexes({@CompoundIndex(name = "currencypair_time_idx", def = "{'currencyPair':1, 'time': 1}", unique = true)})
 public class Price extends MarketUpdate {
@@ -48,7 +50,7 @@ public class Price extends MarketUpdate {
         this.bid = p.bid;
         this.ask = p.ask;
         this.time = p.time.toInstant();
-        this.broker = Broker.OANDA;
+        this.broker = OANDA;
     }
 
     @Override

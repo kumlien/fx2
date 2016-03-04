@@ -2,7 +2,7 @@ oanda:
  fetchPricesRegex: "*/1 * * * * *"
  fetchCandlesRegex: "*/30 * * * * *"
  restApiUrl: https://api-fxpractice.oanda.com/v1
- streamingApiUrl: https://stream-fxpractice.oanda.com
+ streamingApiUrl: https://stream-fxpractice.oanda.com/v1
  apiKey:
  mainAccountId:
  resources:
@@ -16,6 +16,7 @@ oanda:
   position: ${oanda.resources.account}/position/{instrument}
   trades: ${oanda.resources.account}/trades
   trade: ${oanda.resources.account}/trades/{id}
+  streamingPrices: ${oanda.streamingApiUrl}/prices?accountId={id}&instruments={instruments}
   
 ig:
  restApiUrl: https://demo-api.ig.com/gateway/deal/
