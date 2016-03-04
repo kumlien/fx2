@@ -11,6 +11,7 @@ import hoggaster.domain.prices.Price;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.web.vaadin.GuiUtils;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static reactor.bus.selector.Selectors.$;
 
 /**
@@ -93,25 +92,7 @@ public class ListTradesComponent implements Serializable {
                             Double current = ((Price) e.getData()).ask.doubleValue();
                             Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
                             LOG.info("Got a new price: {}", e.getData());
-                            parentView.getUI().access(() -> {
-                                label.setValue(current.toString());
-                                label.removeStyleName("pushPositive");
-                                label.removeStyleName("pushNegative");
-                                if (current > previous) {
-                                    label.addStyleName("pushPositive");
-                                } else if (current < previous) {
-                                    label.addStyleName("pushNegative");
-                                }
-                                parentView.getUI().push(); //If price same for second time in a row we dont need to push
-                            });
-
-                            Environment.get().getTimer().submit(l -> {
-                                parentView.getUI().access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
-                                    label.removeStyleName("pushPositive");
-                                    label.removeStyleName("pushNegative");
-                                    parentView.getUI().push();
-                                });
-                            },1, SECONDS);
+                            GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
                         });
                         deregister(trade.trade); //cancel any existing registrations for this instrument
                         registrations.put(trade.trade.brokerId, registration);
