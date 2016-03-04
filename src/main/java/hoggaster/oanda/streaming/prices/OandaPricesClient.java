@@ -89,34 +89,34 @@ public class OandaPricesClient {
         cps.forEach(cp -> sb.append(cp).append(","));
 
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
+        oandaClient.execute(uri, HttpMethod.GET, request -> {
+            HttpHeaders headers = request.getHeaders();
+            headers.set(ACCEPT_ENCODING, "gzip, deflate");
+            headers.set(CONNECTION, "Keep-Alive");
+            headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+            headers.setContentType(APPLICATION_FORM_URLENCODED);
+        }, (ResponseExtractor<Object>) r -> {
+            ClientHttpResponse response = r;
+            InputStream stream = response.getBody();
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+            String line;
+            while((line = br.readLine()) != null) {
+                if(line.startsWith("{\"tick\"")) {
+                    try {
+                        final TickContainer container = objectMapper.readValue(line, TickContainer.class);
+                        pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
+                                container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
+                    } catch (Exception e) {
+                        LOG.error("Failed...", e);
+                    }
+                } else if(line.startsWith("{\"heartbeat\"")) {
+                    LOG.info("Got a heartbeat");
+                }
+            }
+            return r;
+        });
         LOG.info("Using uri {}", uri.toString());
         Environment.get().getTimer().submit(l -> {
-            oandaClient.execute(uri, HttpMethod.GET, request -> {
-                HttpHeaders headers = request.getHeaders();
-                headers.set(ACCEPT_ENCODING, "gzip, deflate");
-                headers.set(CONNECTION, "Keep-Alive");
-                headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
-                headers.setContentType(APPLICATION_FORM_URLENCODED);
-            }, (ResponseExtractor<Object>) r -> {
-                ClientHttpResponse response = r;
-                InputStream stream = response.getBody();
-                BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-                String line;
-                while((line = br.readLine()) != null) {
-                    if(line.startsWith("{\"tick\"")) {
-                        try {
-                            final TickContainer container = objectMapper.readValue(line, TickContainer.class);
-                            pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
-                                    container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
-                        } catch (Exception e) {
-                            LOG.error("Failed...", e);
-                        }
-                    } else if(line.startsWith("{\"heartbeat\"")) {
-                        LOG.info("Got a heartbeat");
-                    }
-                }
-                return r;
-            });
         },10, SECONDS);
 
     }
