@@ -10,6 +10,7 @@ import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
+import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.exceptions.TradingHaltedException;
 import hoggaster.web.vaadin.GuiUtils;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
@@ -40,7 +41,7 @@ import static reactor.bus.selector.Selectors.$;
 
 /**
  * Used to display a list of all active trades for a user.
- *
+ * <p>
  * Created by svante.kumlien on 01.03.16.
  */
 @Component
@@ -55,6 +56,8 @@ public class ListTradesComponent implements Serializable {
 
     private final DepotService depotService;
 
+    private final TradeService tradeService;
+
     private final Map<Long, Registration> registrations = new ConcurrentHashMap<>();
 
     public final EventBus priceEventBus;
@@ -64,8 +67,9 @@ public class ListTradesComponent implements Serializable {
     private FormUser user;
 
     @Autowired
-    public ListTradesComponent(DepotService depotService, @Qualifier("priceEventBus") EventBus priceEventBus) {
+    public ListTradesComponent(DepotService depotService, TradeService tradeService, @Qualifier("priceEventBus") EventBus priceEventBus) {
         this.depotService = depotService;
+        this.tradeService = tradeService;
         this.priceEventBus = priceEventBus;
     }
 
@@ -75,7 +79,7 @@ public class ListTradesComponent implements Serializable {
         final String defaultPriceLabel = "Fetching...";
         MVerticalLayout tab = new MVerticalLayout();
         tradesTable = new MTable<>(UITrade.class)
-                .withProperties("instrument", "side","openPrice", "openTime", "units")
+                .withProperties("instrument", "side", "openPrice", "openTime", "units")
                 .withColumnHeaders("Currency pair", "Side", "Open price", "Open time", "Quantity")
                 .withGeneratedColumn("Current price", new SimpleColumnGenerator<UITrade>() {
                     @Override
@@ -107,34 +111,36 @@ public class ListTradesComponent implements Serializable {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[] { EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION };
+                    return new Action[]{EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
                 }
-                return new Action[] {};
+                return new Action[]{};
             }
 
             @Override
             public void handleAction(Action action, Object sender, Object target) {
                 final UITrade trade = (UITrade) target;
-                ConfirmDialog.show(parentView.getUI(), "Really close trade?",
-                        "Are you really sure you want to close your trade?", "Yes", "No", dialog -> {
-                    if (dialog.isConfirmed()) {
-                        try {
-                            CloseTradeResponse response = parentView.brokerConnection.closeTrade(trade.trade, trade.depot.getBrokerId());
-                            depotService.syncDepot(trade.depot);
-                            deregister(trade.trade);
-                            listEntities(); //TODO do this async. Publish/subscribe on updated trades events
-                            LOG.info("trade closed {}, {}", sender, target);
-                            Notification.show("Your trade was closed to a price of " + response.price, WARNING_MESSAGE);
-                        } catch (TradingHaltedException e) {
-                            Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
-                        } catch (Exception e) {
-                            LOG.warn("Exception when closing trade {}", trade);
-                            Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
+                if (action == CLOSE_TRADE_ACTION) {
+                    ConfirmDialog.show(parentView.getUI(), "Really close trade?", "Are you really sure you want to close your trade?", "Yes", "No", dialog -> {
+                        if (dialog.isConfirmed()) {
+                            try {
+                                CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
+                                depotService.syncDepot(trade.depot);
+                                deregister(trade.trade);
+                                listEntities(); //TODO do this async. Publish/subscribe on updated trades events
+                                LOG.info("trade closed {}, {}", sender, target);
+                                Notification.show("Your trade was closed to a price of " + response.price, WARNING_MESSAGE);
+                            } catch (TradingHaltedException e) {
+                                Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
+                            } catch (Exception e) {
+                                LOG.warn("Exception when closing trade {}", trade);
+                                Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
+
         listEntities();
         tab.addComponents(tradesTable);
         tab.expand(tradesTable);
@@ -163,7 +169,7 @@ public class ListTradesComponent implements Serializable {
 
     private final void deregister(Trade trade) {
         final Registration registration = registrations.get(trade.brokerId);
-        if(registration != null) {
+        if (registration != null) {
             registration.cancel();
             registrations.remove(trade.brokerId);
         }

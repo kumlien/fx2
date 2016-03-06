@@ -2,6 +2,8 @@ package hoggaster.domain.trades;
 
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.brokers.Broker;
+import hoggaster.domain.brokers.BrokerConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -15,6 +17,8 @@ import java.util.Collection;
 public class TradeServiceImpl implements TradeService {
 
     private final TradeRepo tradeRepo;
+
+    private final BrokerConnection brokerConnection;
 
     @Autowired
     public TradeServiceImpl(TradeRepo tradeRepo) {
@@ -62,5 +66,20 @@ public class TradeServiceImpl implements TradeService {
     public Collection<Trade> getClosedTrades(String depotId) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "Please provide a depotId which contains some text");
         return tradeRepo.findByDepotIdAndStatus(depotId, TradeStatus.CLOSED);
+    }
+
+    @Override
+    public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
+        CloseTradeResponse closeTradeResponse = brokerConnection.closeTrade(trade, brokerAccountId);
+        Trade tradeToSave = Trade.TradeBuilder.aTrade()
+                                    .withBroker(Broker.OANDA)
+                                    .withBrokerId(trade.brokerId)
+                                    .withClosePrice(closeTradeResponse.price)
+                                    .withCloseTime(closeTradeResponse.time)
+                                    .withDepotId(trade.depotId)
+                                    .withInstrument(trade.instrument)
+                                    .with
+        tradeRepo.save(trade);
+        return null;
     }
 }

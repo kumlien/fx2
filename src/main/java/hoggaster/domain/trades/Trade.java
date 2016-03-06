@@ -209,4 +209,132 @@ public class Trade {
     public Instant getCloseTime() {
         return closeTime;
     }
+
+    public static class TradeBuilder {
+        public String depotId;
+        public String robotId;
+        public Broker broker;
+        public Long brokerId;
+        public BigDecimal units;
+        public OrderSide side;
+        public CurrencyPair instrument;
+        public Instant openTime;
+        public BigDecimal openPrice;
+        public BigDecimal takeProfit;
+        public BigDecimal stopLoss;
+        public BigDecimal trailingStop;
+        public BigDecimal trailingAmount;
+        private TradeStatus status;
+        //Below stuff set when trade is closed.
+        private BigDecimal closePrice;
+        private BigDecimal gainPerUnit;
+        private BigDecimal totalGain;
+        private Instant closeTime;
+
+        private TradeBuilder() {
+        }
+
+        public static TradeBuilder aTrade() {
+            return new TradeBuilder();
+        }
+
+        public TradeBuilder withStatus(TradeStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public TradeBuilder withDepotId(String depotId) {
+            this.depotId = depotId;
+            return this;
+        }
+
+        public TradeBuilder withRobotId(String robotId) {
+            this.robotId = robotId;
+            return this;
+        }
+
+        public TradeBuilder withBroker(Broker broker) {
+            this.broker = broker;
+            return this;
+        }
+
+        public TradeBuilder withBrokerId(Long brokerId) {
+            this.brokerId = brokerId;
+            return this;
+        }
+
+        public TradeBuilder withUnits(BigDecimal units) {
+            this.units = units;
+            return this;
+        }
+
+        public TradeBuilder withSide(OrderSide side) {
+            this.side = side;
+            return this;
+        }
+
+        public TradeBuilder withInstrument(CurrencyPair instrument) {
+            this.instrument = instrument;
+            return this;
+        }
+
+        public TradeBuilder withOpenTime(Instant openTime) {
+            this.openTime = openTime;
+            return this;
+        }
+
+        public TradeBuilder withOpenPrice(BigDecimal openPrice) {
+            this.openPrice = openPrice;
+            return this;
+        }
+
+        public TradeBuilder withTakeProfit(BigDecimal takeProfit) {
+            this.takeProfit = takeProfit;
+            return this;
+        }
+
+        public TradeBuilder withStopLoss(BigDecimal stopLoss) {
+            this.stopLoss = stopLoss;
+            return this;
+        }
+
+        public TradeBuilder withTrailingStop(BigDecimal trailingStop) {
+            this.trailingStop = trailingStop;
+            return this;
+        }
+
+        public TradeBuilder withTrailingAmount(BigDecimal trailingAmount) {
+            this.trailingAmount = trailingAmount;
+            return this;
+        }
+
+        public TradeBuilder withClosePrice(BigDecimal closePrice) {
+            this.closePrice = closePrice;
+            return this;
+        }
+
+        public TradeBuilder withGainPerUnit(BigDecimal gainPerUnit) {
+            this.gainPerUnit = gainPerUnit;
+            return this;
+        }
+
+        public TradeBuilder withTotalGain(BigDecimal totalGain) {
+            this.totalGain = totalGain;
+            return this;
+        }
+
+        public TradeBuilder withCloseTime(Instant closeTime) {
+            this.closeTime = closeTime;
+            return this;
+        }
+
+        public TradeBuilder but() {
+            return aTrade().withStatus(status).withDepotId(depotId).withRobotId(robotId).withBroker(broker).withBrokerId(brokerId).withUnits(units).withSide(side).withInstrument(instrument).withOpenTime(openTime).withOpenPrice(openPrice).withTakeProfit(takeProfit).withStopLoss(stopLoss).withTrailingStop(trailingStop).withTrailingAmount(trailingAmount).withClosePrice(closePrice).withGainPerUnit(gainPerUnit).withTotalGain(totalGain).withCloseTime(closeTime);
+        }
+
+        public Trade build() {
+            Trade trade = new Trade(status, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, trailingAmount, closePrice, gainPerUnit, totalGain, closeTime);
+            return trade;
+        }
+    }
 }

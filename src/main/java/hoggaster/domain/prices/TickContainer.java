@@ -2,12 +2,15 @@ package hoggaster.domain.prices;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import hoggaster.domain.CurrencyPair;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
+ * Carries a Tick.
+ *
  * Created by svante.kumlien on 04.03.16.
  */
 public final class TickContainer {
@@ -31,5 +34,16 @@ public final class TickContainer {
             this.bid = bid;
             this.ask = ask;
         }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("instrument", instrument)
+                    .add("time", time)
+                    .add("bid", bid)
+                    .add("ask", ask)
+                    .toString();
+        }
+
     }
 }

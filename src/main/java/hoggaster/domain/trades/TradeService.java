@@ -25,4 +25,5 @@ public interface TradeService {
     //Paging...
     Collection<Trade> getClosedTrades(String depotId);
 
+    CloseTradeResponse closeTrade(Trade trade, String brokerId);
 }

@@ -17,15 +17,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -34,10 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONNECTION;
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
@@ -79,45 +75,69 @@ public class OandaPricesClient {
         defaultHttpEntity = new HttpEntity<>(defaultHeaders);
     }
 
+    //A lot of things to do on this one... Check heartbeats, re-connect on failure etc
     @PostConstruct
-    public void start() {
+    public void init() {
+       startListenForPrices();
+    }
+
+    public void startListenForPrices(){
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getStreamingPrices());
         StringBuilder sb = new StringBuilder();
         List<CurrencyPair> cps = Lists.newArrayList(Arrays.asList(CurrencyPair.MAJORS));
         cps.addAll(Arrays.asList(CurrencyPair.MINORS));
         cps.addAll(Arrays.asList(CurrencyPair.EXOTICS));
         cps.forEach(cp -> sb.append(cp).append(","));
-
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
-        oandaClient.execute(uri, HttpMethod.GET, request -> {
-            HttpHeaders headers = request.getHeaders();
-            headers.set(ACCEPT_ENCODING, "gzip, deflate");
-            headers.set(CONNECTION, "Keep-Alive");
-            headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
-            headers.setContentType(APPLICATION_FORM_URLENCODED);
-        }, (ResponseExtractor<Object>) r -> {
-            ClientHttpResponse response = r;
-            InputStream stream = response.getBody();
-            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-            String line;
-            while((line = br.readLine()) != null) {
-                if(line.startsWith("{\"tick\"")) {
-                    try {
-                        final TickContainer container = objectMapper.readValue(line, TickContainer.class);
-                        pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
-                                container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
-                    } catch (Exception e) {
-                        LOG.error("Failed...", e);
-                    }
-                } else if(line.startsWith("{\"heartbeat\"")) {
+        while (true) { //Or while something else
+            try {
+                oandaClient.execute(uri, HttpMethod.GET, request -> {
+                    HttpHeaders headers = request.getHeaders();
+                    headers.set(ACCEPT_ENCODING, "gzip, deflate");
+                    headers.set(CONNECTION, "Keep-Alive");
+                    headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+                    headers.setContentType(APPLICATION_FORM_URLENCODED);
+                }, r -> {
+                    return fetchPrices(r);
+                });
+                LOG.info("Using uri {}", uri.toString());
+
+            } catch (Exception e) {
+                LOG.debug("Exception while listening for streaming prices: {}", e);
+                LOG.warn("Exception while listening for streaming prices: {}", e.getMessage());
+            }
+        }
+    }
+
+
+
+    private Object fetchPrices(ClientHttpResponse r) throws IOException {
+        ClientHttpResponse response = r;
+        InputStream stream = response.getBody();
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        try {
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("{\"tick\"")) {
+                    parseAndSendTick(line);
+                } else if (line.startsWith("{\"heartbeat\"")) {
                     LOG.info("Got a heartbeat");
                 }
             }
-            return r;
-        });
-        LOG.info("Using uri {}", uri.toString());
-        Environment.get().getTimer().submit(l -> {
-        },10, SECONDS);
+        } finally {
+            r.close();
+        }
+        return r;
+    }
 
+    private void parseAndSendTick(String line) {
+        try {
+            final TickContainer container = objectMapper.readValue(line, TickContainer.class);
+            LOG.info("Got a tick {}", container.tick);
+            pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
+                    container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
+        } catch (Exception e) {
+            LOG.error("Failed...", e);
+        }
     }
 }
