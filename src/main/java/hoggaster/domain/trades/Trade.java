@@ -109,6 +109,10 @@ public class Trade {
         this(null, TradeStatus.OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, null, null, null, null, null);
     }
 
+    public Trade(TradeStatus status, String depotId, String robotId, Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair instrument, Instant openTime, BigDecimal openPrice, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop, BigDecimal trailingAmount, BigDecimal closePrice, BigDecimal gainPerUnit, BigDecimal totalGain, Instant closeTime) {
+        this(null, status, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, trailingAmount, closePrice, gainPerUnit, totalGain, closeTime);
+    }
+
     public String getId() {
         return id;
     }

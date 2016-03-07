@@ -46,7 +46,6 @@ public class OandaCreateTradeResponse implements CreateOrderResponse {
         this.tradesClosed = Optional.ofNullable(tradesClosed);
         this.tradesReduced = Optional.ofNullable(tradesReduced);
 
-
     }
 
     public OandaTrade getTradeOpened() {
@@ -68,14 +67,25 @@ public class OandaCreateTradeResponse implements CreateOrderResponse {
 
     @Override
     public Optional<Trade> getOpenedTrade(String depotId, String robotId) {
-        if(tradeOpened.isPresent()) {
+        if (tradeOpened.isPresent()) {
             OandaTradeOpened ot = tradeOpened.get();
-            return Optional.of(new Trade(depotId, robotId, Broker.OANDA, ot.id, ot.units, ot.side, currencyPair, time, price, ot.takeProfit, ot.stopLoss, ot.trailingStop));
+            return Optional.of(new Trade(depotId, robotId, Broker.OANDA, ot.id, ot.units, ot.side, currencyPair, time, price, ot.takeProfit, ot.stopLoss,
+                    ot.trailingStop));
         } else {
             return Optional.empty();
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("OandaCreateTradeResponse [currencyPair=").append(currencyPair)
+                .append(", time=").append(time).append(", price=")
+                .append(price).append(", tradeOpened=").append(tradeOpened)
+                .append(", tradesClosed=").append(tradesClosed)
+                .append(", tradesReduced=").append(tradesReduced).append("]");
+        return builder.toString();
+    }
 
     public static class OandaTrade {
         public final Long id;
@@ -92,7 +102,6 @@ public class OandaCreateTradeResponse implements CreateOrderResponse {
             this.side = side;
         }
     }
-
 
     public static class OandaTradeOpened extends OandaTrade {
         public final BigDecimal takeProfit;
@@ -124,7 +133,6 @@ public class OandaCreateTradeResponse implements CreateOrderResponse {
             return builder.toString();
         }
     }
-
 
     public static class OrderOpened {
         private Long id;
@@ -209,18 +217,5 @@ public class OandaCreateTradeResponse implements CreateOrderResponse {
             this.expiry = expiry;
         }
     }
-
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("OandaCreateTradeResponse [currencyPair=").append(currencyPair)
-                .append(", time=").append(time).append(", price=")
-                .append(price).append(", tradeOpened=").append(tradeOpened)
-                .append(", tradesClosed=").append(tradesClosed)
-                .append(", tradesReduced=").append(tradesReduced).append("]");
-        return builder.toString();
-    }
-
 
 }

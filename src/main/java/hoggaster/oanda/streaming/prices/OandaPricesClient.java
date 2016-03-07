@@ -19,6 +19,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 
@@ -31,9 +32,12 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
-import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONNECTION;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
@@ -89,24 +93,27 @@ public class OandaPricesClient {
         cps.addAll(Arrays.asList(CurrencyPair.EXOTICS));
         cps.forEach(cp -> sb.append(cp).append(","));
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
-        while (true) { //Or while something else
-            try {
-                oandaClient.execute(uri, HttpMethod.GET, request -> {
-                    HttpHeaders headers = request.getHeaders();
-                    headers.set(ACCEPT_ENCODING, "gzip, deflate");
-                    headers.set(CONNECTION, "Keep-Alive");
-                    headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
-                    headers.setContentType(APPLICATION_FORM_URLENCODED);
-                }, r -> {
-                    return fetchPrices(r);
-                });
-                LOG.info("Using uri {}", uri.toString());
+        Environment.timer().submit(time -> {
+            while (true) { //Or while something else
+                try {
+                    oandaClient.execute(uri, HttpMethod.GET, request -> {
+                        HttpHeaders headers = request.getHeaders();
+                        headers.set(ACCEPT_ENCODING, "gzip, deflate");
+                        headers.set(CONNECTION, "Keep-Alive");
+                        headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+                        headers.setContentType(APPLICATION_FORM_URLENCODED);
+                    }, r -> {
+                        return fetchPrices(r);
+                    });
+                    LOG.info("Using uri {}", uri.toString());
 
-            } catch (Exception e) {
-                LOG.debug("Exception while listening for streaming prices: {}", e);
-                LOG.warn("Exception while listening for streaming prices: {}", e.getMessage());
+                } catch (Exception e) {
+                    LOG.debug("Exception while listening for streaming prices: {}", e);
+                    LOG.warn("Exception while listening for streaming prices: {}", e.getMessage());
+                    break;
+                }
             }
-        }
+        }, 10, TimeUnit.SECONDS);
     }
 
 
@@ -133,7 +140,7 @@ public class OandaPricesClient {
     private void parseAndSendTick(String line) {
         try {
             final TickContainer container = objectMapper.readValue(line, TickContainer.class);
-            LOG.info("Got a tick {}", container.tick);
+            LOG.debug("Got a tick {}", container.tick);
             pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
                     container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
         } catch (Exception e) {

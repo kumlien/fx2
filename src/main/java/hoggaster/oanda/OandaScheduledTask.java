@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.core.processor.RingBufferWorkProcessor;
@@ -29,7 +30,7 @@ import reactor.rx.Streams;
 import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -88,9 +89,11 @@ public class OandaScheduledTask {
         instrumentStream.consume(ic);
         instrumentStream.consume(ic);
 
-        Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
-        Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
-        publisher.onComplete();
+        Environment.timer().submit(time -> {
+            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
+            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
+            publisher.onComplete();
+        }, 10, TimeUnit.SECONDS);
     }
 
 

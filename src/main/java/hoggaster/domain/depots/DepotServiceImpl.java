@@ -6,6 +6,8 @@ import com.google.common.base.Strings;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
+import hoggaster.domain.depots.events.DepotUpdateFailedEvent;
+import hoggaster.domain.depots.events.DepotUpdatedEvent;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.users.User;
@@ -14,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import reactor.bus.EventBus;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by svante on 15-09-22.
@@ -33,10 +37,13 @@ public class DepotServiceImpl implements DepotService {
     //Only support one broker connection for now (oanda)
     private final BrokerConnection brokerConnection;
 
+    private final EventBus depotEventBus;
+
     @Autowired
-    public DepotServiceImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
+    public DepotServiceImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, @Qualifier("depotEventBus") EventBus depotEventBus) {
         this.depotRepo = depotRepo;
         this.brokerConnection = brokerConnection;
+        this.depotEventBus = depotEventBus;
     }
 
 
@@ -82,7 +89,7 @@ public class DepotServiceImpl implements DepotService {
 
     @Override
     @Timed
-    public void syncDepot(DbDepot dbDepot) {
+    public DbDepot syncDepot(DbDepot dbDepot) {
         LOG.info("Start syncing dbDepot {}", dbDepot);
         BrokerDepot depotFromBroker = brokerConnection.getDepot(dbDepot.getBrokerId());
         if (depotFromBroker == null) {
@@ -95,7 +102,19 @@ public class DepotServiceImpl implements DepotService {
             dbDepot.updateWithValuesFrom(depotFromBroker, positions, openTrades);
         }
         dbDepot.setLastSynchronizedWithBroker(Instant.now());
-        depotRepo.save(dbDepot);
+        return depotRepo.save(dbDepot);
+    }
+
+    @Override
+    public CompletableFuture syncDepotAsync(DbDepot dbDepot) {
+        return  CompletableFuture.supplyAsync(() -> syncDepot(dbDepot))
+                .whenComplete((v,t) -> {
+                    if(t != null) {
+                        depotEventBus.notify("depots" + v.getId(), new DepotUpdateFailedEvent(v, t));
+                    } else {
+                        depotEventBus.notify("depots" + v.getId(), new DepotUpdatedEvent(v));
+                    }
+                });
     }
 
     @Override

@@ -142,7 +142,7 @@ public class DepotImpl implements Depot {
         }
         CreateOrderResponse response = null;
         try {
-            response = brokerConnection.sendOrder(order);
+            response = brokerConnection.sendOrder(order); //TODO Async?
             LOG.info("Order away and we got a response! {}", response);
             if (response != null && response.tradeWasOpened()) {
                 Trade newTrade = response.getOpenedTrade(dbDepotId, robotId).get();
@@ -151,8 +151,7 @@ public class DepotImpl implements Depot {
             } else {
                 LOG.warn("No trade opened, better check open orders!");
             }
-            depotService.save(dbDepot);
-            depotService.syncDepot(dbDepot);
+            depotService.syncDepotAsync(dbDepot);
         } catch (TradingHaltedException the) {
             LOG.info("No order placed since the trading is halted for {} ({})", currencyPair, the.getMessage());
         }
