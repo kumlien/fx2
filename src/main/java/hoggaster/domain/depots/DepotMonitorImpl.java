@@ -53,7 +53,7 @@ public class DepotMonitorImpl {
 
     public void checkDepotMargin(DbDepot dbDepot, boolean doSync) {
         if (doSync) {
-            depotService.syncDepot(dbDepot);
+            depotService.syncDepotAsync(dbDepot);
         }
         LOG.warn("Implement dbDepot margin check here...");
     }

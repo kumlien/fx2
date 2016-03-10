@@ -32,12 +32,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
-import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONNECTION;
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
@@ -93,7 +90,7 @@ public class OandaPricesClient {
         cps.addAll(Arrays.asList(CurrencyPair.EXOTICS));
         cps.forEach(cp -> sb.append(cp).append(","));
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
-        Environment.timer().submit(time -> {
+        Environment.workDispatcher().dispatch("hej", o -> {
             while (true) { //Or while something else
                 try {
                     oandaClient.execute(uri, HttpMethod.GET, request -> {
@@ -113,7 +110,9 @@ public class OandaPricesClient {
                     break;
                 }
             }
-        }, 10, TimeUnit.SECONDS);
+        }, error -> {
+            LOG.warn("Error dispatching work to fetch prices", error);
+        });
     }
 
 

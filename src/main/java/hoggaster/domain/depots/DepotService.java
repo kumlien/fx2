@@ -6,7 +6,6 @@ import hoggaster.domain.users.User;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Service dealing with our internal DbDepot:s
@@ -42,12 +41,13 @@ public interface DepotService {
 
     List<DbDepot> findAll();
 
-
     DbDepot save(DbDepot dbDepot);
 
-    DbDepot syncDepot(DbDepot dbDepot);
-
-    CompletableFuture syncDepotAsync(DbDepot dbDepot);
+    void syncDepot(DbDepot dbDepot);
 
     Collection<DbDepot> findByUserId(String userId);
+
+    void syncDepotAsync(String depotId);
+
+    void syncDepotAsync(DbDepot dbDepot);
 }

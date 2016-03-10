@@ -117,7 +117,7 @@ public class ListPositionsComponent implements Serializable {
                     if (dialog.isConfirmed()) {
                         try {
                             ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
-                            depotService.syncDepot(position.depot);
+                            depotService.syncDepot(position.depot); //TODO do this using a service.
                             deregister(position.getCurrencyPair());
                             listEntities(); //TODO do this async. Publish/subscribe on updated depot events
                             LOG.info("Position closed {}, {}", sender, target);

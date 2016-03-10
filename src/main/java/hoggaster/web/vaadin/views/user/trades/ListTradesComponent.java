@@ -124,7 +124,6 @@ public class ListTradesComponent implements Serializable {
                         if (dialog.isConfirmed()) {
                             try {
                                 CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
-                                depotService.syncDepot(trade.depot);
                                 deregister(trade.trade);
                                 listEntities(); //TODO do this async. Publish/subscribe on updated trades events
                                 LOG.info("trade closed {}, {}", sender, target);
@@ -132,7 +131,7 @@ public class ListTradesComponent implements Serializable {
                             } catch (TradingHaltedException e) {
                                 Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
                             } catch (Exception e) {
-                                LOG.warn("Exception when closing trade {}", trade);
+                                LOG.warn("Exception when closing trade {}", trade, e);
                                 Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
                             }
                         }

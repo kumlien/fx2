@@ -4,14 +4,18 @@ import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.depots.DepotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+
+import static hoggaster.domain.trades.Trade.TradeBuilder.aTrade;
+import static hoggaster.domain.trades.TradeStatus.CLOSED;
 
 /**
  * @author svante
@@ -23,10 +27,13 @@ public class TradeServiceImpl implements TradeService {
 
     private final BrokerConnection brokerConnection;
 
+    private final DepotService depotService;
+
     @Autowired
-    public TradeServiceImpl(TradeRepo tradeRepo, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection) {
+    public TradeServiceImpl(TradeRepo tradeRepo, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, DepotService depotService) {
         this.tradeRepo = tradeRepo;
         this.brokerConnection = brokerConnection;
+        this.depotService = depotService;
     }
 
     @Override
@@ -69,47 +76,40 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public Collection<Trade> getClosedTrades(String depotId) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "Please provide a depotId which contains some text");
-        return tradeRepo.findByDepotIdAndStatus(depotId, TradeStatus.CLOSED);
+        return tradeRepo.findByDepotIdAndStatus(depotId, CLOSED);
     }
 
+    //Calculate some stuff on the trade
+    //Move the trade to collection with historic trades
+    //Update the depot afterwards
     @Override
-    public CloseTradeResponse closeTrade(Trade trade, String brokerId) {
-        return null;
+    public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
+        CloseTradeResponse closeTradeResponse = brokerConnection.closeTrade(trade, brokerAccountId);
+        Trade tradeToSave = aTrade()
+                .withBroker(Broker.OANDA)
+                .withBrokerId(trade.brokerId)
+                .withClosePrice(closeTradeResponse.price)
+                .withCloseTime(closeTradeResponse.time)
+                .withDepotId(trade.depotId)
+                .withInstrument(trade.instrument)
+                .withTotalGain(closeTradeResponse.profit)
+                .withGainPerUnit(closeTradeResponse.price.divide(trade.units, MathContext.DECIMAL32))
+                .withOpenPrice(trade.openPrice)
+                .withOpenTime(trade.openTime)
+                .withStatus(CLOSED)
+                .withStopLoss(trade.stopLoss)
+                .withTakeProfit(trade.takeProfit)
+                .withTrailingAmount(trade.trailingAmount)
+                .withTrailingStop(trade.trailingStop)
+                .build();
+
+        tradeRepo.save(tradeToSave);
+        depotService.syncDepotAsync(trade.depotId);
+        return closeTradeResponse;
     }
 
-    //Close the trade on the broker side, save the trade to the historic trade collection and sync the depot.
     @Override
     public CompletableFuture<CloseTradeResponse> closeTradeAsync(Trade trade, String brokerAccountId) {
-        CloseTradeResponse closeTradeResponse = brokerConnection.closeTrade(trade, brokerAccountId);
-        Trade tradeToSave = Trade.TradeBuilder.aTrade()
-                                    .withBroker(Broker.OANDA)
-                                    .withBrokerId(trade.brokerId)
-                                    .withClosePrice(closeTradeResponse.price)
-                                    .withCloseTime(closeTradeResponse.time)
-                                    .withDepotId(trade.depotId)
-                                    .withInstrument(trade.instrument)
-                                    .withOpenPrice(trade.openPrice)
-                                    .withOpenTime(trade.openTime)
-                                    .withGainPerUnit(calculateGainPerUnit(trade, closeTradeResponse)) //TODO
-                                    .withTotalGain(calculateTotalGain(trade, closeTradeResponse)) //TODO
-                                    .withRobotId(trade.robotId)
-                                    .withSide(trade.side)
-                                    .withStatus(TradeStatus.CLOSED)
-                                    .withStopLoss(trade.stopLoss)
-                                    .withTakeProfit(trade.takeProfit)
-                                    .withTrailingAmount(trade.trailingAmount)
-                                    .withUnits(trade.units)
-                                    .build();
-        tradeRepo.save(tradeToSave);
-
-        return null;
-    }
-
-    private BigDecimal calculateGainPerUnit(Trade trade, CloseTradeResponse closeTradeResponse) {
-        return null;
-    }
-
-    private BigDecimal calculateTotalGain(Trade trade, CloseTradeResponse closeTradeResponse) {
         return null;
     }
 }

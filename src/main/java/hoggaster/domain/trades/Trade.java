@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static hoggaster.domain.trades.TradeStatus.OPEN;
+
 /**
  * Represents a single Trade. When a trade is open it lives in the Depot document. Once it is closed
  * it is moved to it's own collection.
@@ -106,7 +108,11 @@ public class Trade {
      * @param trailingStop
      */
     public Trade(String depotId, String robotId, Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair instrument, Instant openTime, BigDecimal openPrice, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop) {
-        this(null, TradeStatus.OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, null, null, null, null, null);
+        this(null, OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, null, null, null, null, null);
+    }
+
+    public Trade(String depotId, String robotId, Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair instrument, Instant openTime, BigDecimal openPrice, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop, BigDecimal trailingAmount, BigDecimal closePrice, BigDecimal gainPerUnit, BigDecimal totalGain, Instant closeTime) {
+        this(null, OPEN, depotId, robotId, broker, brokerId, units, side, instrument, openTime, openPrice, takeProfit, stopLoss, trailingStop, trailingAmount, closePrice, gainPerUnit, totalGain, closeTime);
     }
 
     public Trade(TradeStatus status, String depotId, String robotId, Broker broker, Long brokerId, BigDecimal units, OrderSide side, CurrencyPair instrument, Instant openTime, BigDecimal openPrice, BigDecimal takeProfit, BigDecimal stopLoss, BigDecimal trailingStop, BigDecimal trailingAmount, BigDecimal closePrice, BigDecimal gainPerUnit, BigDecimal totalGain, Instant closeTime) {

@@ -6,8 +6,6 @@ import com.google.common.base.Strings;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.depots.events.DepotUpdateFailedEvent;
-import hoggaster.domain.depots.events.DepotUpdatedEvent;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.users.User;
@@ -16,13 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import reactor.Environment;
+import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Created by svante on 15-09-22.
@@ -89,7 +89,7 @@ public class DepotServiceImpl implements DepotService {
 
     @Override
     @Timed
-    public DbDepot syncDepot(DbDepot dbDepot) {
+    public void syncDepot(DbDepot dbDepot) {
         LOG.info("Start syncing dbDepot {}", dbDepot);
         BrokerDepot depotFromBroker = brokerConnection.getDepot(dbDepot.getBrokerId());
         if (depotFromBroker == null) {
@@ -102,23 +102,34 @@ public class DepotServiceImpl implements DepotService {
             dbDepot.updateWithValuesFrom(depotFromBroker, positions, openTrades);
         }
         dbDepot.setLastSynchronizedWithBroker(Instant.now());
-        return depotRepo.save(dbDepot);
-    }
-
-    @Override
-    public CompletableFuture syncDepotAsync(DbDepot dbDepot) {
-        return  CompletableFuture.supplyAsync(() -> syncDepot(dbDepot))
-                .whenComplete((v,t) -> {
-                    if(t != null) {
-                        depotEventBus.notify("depots" + v.getId(), new DepotUpdateFailedEvent(v, t));
-                    } else {
-                        depotEventBus.notify("depots" + v.getId(), new DepotUpdatedEvent(v));
-                    }
-                });
+        depotRepo.save(dbDepot);
+        depotEventBus.notify(dbDepot.getId(), Event.wrap(dbDepot));
     }
 
     @Override
     public Collection<DbDepot> findByUserId(String userId) {
         return depotRepo.findByUserId(userId);
+    }
+
+    @Override
+    public void syncDepotAsync(String depotId) {
+        if (!StringUtils.hasText(depotId)) {
+            throw new IllegalArgumentException("The provided depotId must contain some text!");
+        }
+        DbDepot depot = depotRepo.findOne(depotId);
+        if (depot == null) {
+            throw new IllegalArgumentException("No depot found with id " + depotId);
+        }
+
+    }
+
+    @Override
+    public void syncDepotAsync(DbDepot dbDepot) {
+        Environment.workDispatcher().dispatch(dbDepot, d -> {
+                    syncDepot(d);
+                },
+                error -> {
+                    LOG.warn("Error occurred when dispatching event", error);
+                });
     }
 }
