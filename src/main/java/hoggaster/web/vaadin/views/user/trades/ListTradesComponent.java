@@ -52,6 +52,8 @@ public class ListTradesComponent implements Serializable {
 
     private static final Action CLOSE_TRADE_ACTION = new Action("Close this trade");
 
+    private static final Action NEW_TRADE_ACTION = new Action("New trade");
+
     private static final Action EDIT_TRADE_ACTION = new Action("Edit this trade");
 
     private final DepotService depotService;
@@ -111,7 +113,7 @@ public class ListTradesComponent implements Serializable {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[]{EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
+                    return new Action[]{NEW_TRADE_ACTION, EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
                 }
                 return new Action[]{};
             }
