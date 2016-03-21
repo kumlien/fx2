@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +33,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
-import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONNECTION;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
@@ -93,7 +95,7 @@ public class OandaPricesClient {
         Environment.workDispatcher().dispatch("hej", o -> {
             while (true) { //Or while something else
                 try {
-                    oandaClient.execute(uri, HttpMethod.GET, request -> {
+                    oandaClient.execute(uri, GET, request -> {
                         HttpHeaders headers = request.getHeaders();
                         headers.set(ACCEPT_ENCODING, "gzip, deflate");
                         headers.set(CONNECTION, "Keep-Alive");
@@ -107,7 +109,6 @@ public class OandaPricesClient {
                 } catch (Exception e) {
                     LOG.debug("Exception while listening for streaming prices: {}", e);
                     LOG.warn("Exception while listening for streaming prices: {}", e.getMessage());
-                    break;
                 }
             }
         }, error -> {

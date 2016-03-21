@@ -72,7 +72,6 @@ public class UserView extends MVerticalLayout implements View {
         Collection<DbDepot> depots = depotService.findByUserId(user.getId());
 
         TabSheet tabSheet = new TabSheet();
-        //tabSheet.addStyleName(TABSHEET_FRAMED);
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
@@ -116,7 +115,6 @@ public class UserView extends MVerticalLayout implements View {
     private MVerticalLayout createDepotsTab(Collection<DbDepot> depots) {
         MVerticalLayout depotsTab = new MVerticalLayout();
         MTable<DbDepot> depotsTable = new MTable(DbDepot.class)
-                //.withCaption("Depots")
                 .withProperties("name", "type", "balance", "currency", "marginRate", "marginAvailable", "numberOfOpenTrades", "realizedPl", "unrealizedPl",
                         "lastSynchronizedWithBroker")
                 .withColumnHeaders("Name", "Type", "Balance", "Currency", "Margin rate", "Margin available", "Number of open trades", "Realized profit/loss",

@@ -113,9 +113,9 @@ public class ListTradesComponent implements Serializable {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[]{NEW_TRADE_ACTION, EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
+                    return new Action[]{EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
                 }
-                return new Action[]{};
+                return new Action[]{NEW_TRADE_ACTION};
             }
 
             @Override
