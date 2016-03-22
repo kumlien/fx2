@@ -11,17 +11,21 @@ import java.time.Instant;
 
 /**
  * Represents a trade which also keeps a ref to the depot it belongs to. Used in the vaadin table.
- *
+ * <p>
  * Created by svante.kumlien on 01.03.16.
  */
 public class UITrade {
 
-    final DbDepot depot;
-    final Trade trade;
+    DbDepot depot;
+    Trade trade;
 
     UITrade(DbDepot depot, Trade trade) {
         this.depot = depot;
         this.trade = trade;
+    }
+
+    public UITrade() {
+
     }
 
     public String getBrokerId() {
@@ -44,9 +48,13 @@ public class UITrade {
         return trade.units;
     }
 
-    public Instant getOpenTime() {return trade.getOpenTime();}
+    public Instant getOpenTime() {
+        return trade.getOpenTime();
+    }
 
-    public BigDecimal getOpenPrice(){return trade.getOpenPrice();}
+    public BigDecimal getOpenPrice() {
+        return trade.getOpenPrice();
+    }
 
 
     @Override

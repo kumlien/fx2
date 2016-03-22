@@ -2,7 +2,6 @@ package hoggaster.web.vaadin.views.user;
 
 import com.google.common.collect.Sets;
 import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.PasswordField;
@@ -17,12 +16,12 @@ import org.vaadin.viritin.form.AbstractForm;
 import org.vaadin.viritin.layouts.MFormLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
+ * Component used to add/edit a user
+ *
  * Created by svante2 on 2016-02-14.
  */
 public class UserForm extends AbstractForm<UserForm.FormUser> {
@@ -65,6 +64,7 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
         });
         roles.setOptions(Role.values());
         roles.setSizeFull();
+
 
         return new MVerticalLayout(
                 new MFormLayout(
@@ -155,30 +155,6 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
 
         public void setPassword2(String password2) {
             this.password2 = password2;
-        }
-    }
-
-    class SetToStringConverter implements Converter<String, Collection> {
-
-        @Override
-        public Collection convertToModel(String value, Class<? extends Collection> targetType, Locale locale) throws ConversionException {
-            value = value != null ? value : "";
-            return (Arrays.asList(value.split(",")).stream().map(String::trim).collect(Collectors.toSet()));
-        }
-
-        @Override
-        public String convertToPresentation(Collection value, Class<? extends String> targetType, Locale locale) throws ConversionException {
-            return value != null ? value.stream().map(Object::toString).collect(Collectors.joining(",")).toString() : "";
-        }
-
-        @Override
-        public Class<Collection> getModelType() {
-            return Collection.class;
-        }
-
-        @Override
-        public Class<String> getPresentationType() {
-            return String.class;
         }
     }
 }

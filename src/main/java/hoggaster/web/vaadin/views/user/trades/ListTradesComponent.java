@@ -5,6 +5,8 @@ import com.vaadin.event.Action.Handler;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.prices.Price;
@@ -138,6 +140,15 @@ public class ListTradesComponent implements Serializable {
                             }
                         }
                     });
+                } else if (action == NEW_TRADE_ACTION) {
+                    TradeForm tradeForm = new TradeForm();
+                    final Window tradeFormWindow = tradeForm.openInModalPopup();
+                    tradeForm.setSavedHandler(t -> {UI.getCurrent().removeWindow(tradeFormWindow);});
+                    tradeForm.setResetHandler(t -> {UI.getCurrent().removeWindow(tradeFormWindow);});
+                    //UserForm userForm = new UserForm(new FormUser());
+                    //userForm.openInModalPopup();
+                    //userForm.setSavedHandler(this::saveUser);
+                    //userForm.setResetHandler(this::resetEntry);
                 }
             }
         });
