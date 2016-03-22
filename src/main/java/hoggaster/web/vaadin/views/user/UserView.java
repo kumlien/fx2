@@ -6,20 +6,17 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.TabSheet;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
+import hoggaster.web.vaadin.views.user.depots.ListDepotsComponent;
 import hoggaster.web.vaadin.views.user.positions.ListPositionsComponent;
 import hoggaster.web.vaadin.views.user.trades.ListTradesComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-
-import java.util.Collection;
 
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
 
@@ -47,15 +44,17 @@ public class UserView extends MVerticalLayout implements View {
     private static final Logger LOG = LoggerFactory.getLogger(UserView.class);
     private final DepotService depotService;
     public final BrokerConnection brokerConnection;
-    private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of positions
 
+    private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of positions
+    private final ListDepotsComponent listDepotsComponent;
     private final ListTradesComponent listTradesComponent;
 
 
     @Autowired
-    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListTradesComponent listTradesComponent) {
+    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent) {
         this.depotService = depotService;
         this.brokerConnection = brokerConnection;
+        this.listDepotsComponent = listDepotsComponent;
         this.listPositionsComponent = listPositionsComponent;
         this.listTradesComponent = listTradesComponent;
     }
@@ -69,13 +68,11 @@ public class UserView extends MVerticalLayout implements View {
         Header header = new Header("Details for " + user.getFirstName() + " " + user.getLastName());
         header.setHeaderLevel(3);
 
-        Collection<DbDepot> depots = depotService.findByUserId(user.getId());
-
         TabSheet tabSheet = new TabSheet();
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
-        tabSheet.addTab(createDepotsTab(depots), "Depots");
+        tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
         tabSheet.addTab(listTradesComponent.setUp(user, this), "Trades");
         tabSheet.addTab(createTransactionsTab(), "Transactions");
@@ -110,21 +107,6 @@ public class UserView extends MVerticalLayout implements View {
     private Component createTransactionsTab() {
         MVerticalLayout tab = new MVerticalLayout();
         return tab;
-    }
-
-    private MVerticalLayout createDepotsTab(Collection<DbDepot> depots) {
-        MVerticalLayout depotsTab = new MVerticalLayout();
-        MTable<DbDepot> depotsTable = new MTable(DbDepot.class)
-                .withProperties("name", "type", "balance", "currency", "marginRate", "marginAvailable", "numberOfOpenTrades", "realizedPl", "unrealizedPl",
-                        "lastSynchronizedWithBroker")
-                .withColumnHeaders("Name", "Type", "Balance", "Currency", "Margin rate", "Margin available", "Number of open trades", "Realized profit/loss",
-                        "Unrealized profit/loss", "Last synchronized with broker")
-                .withFullWidth();
-
-        depotsTable.setBeans(depots);
-        depotsTab.addComponents(depotsTable);
-        depotsTab.expand(depotsTable);
-        return depotsTab;
     }
 
 }

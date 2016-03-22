@@ -1,46 +1,25 @@
 package hoggaster.web.vaadin.views.user.depots;
 
-import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
-import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
-import static reactor.bus.selector.Selectors.$;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
+import com.vaadin.spring.annotation.ViewScope;
+import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.depots.DepotService;
+import hoggaster.web.vaadin.views.user.UserForm.FormUser;
+import hoggaster.web.vaadin.views.user.UserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.spring.annotation.ViewScope;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-
-import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depots.DbDepot;
-import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.positions.ClosePositionResponse;
-import hoggaster.domain.prices.Price;
-import hoggaster.oanda.exceptions.TradingHaltedException;
-import hoggaster.web.vaadin.GuiUtils;
-import hoggaster.web.vaadin.views.user.UserForm.FormUser;
-import hoggaster.web.vaadin.views.user.UserView;
-import hoggaster.web.vaadin.views.user.positions.UIPosition;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Used to display a list of all depots for a user.
@@ -59,7 +38,7 @@ public class ListDepotsComponent implements Serializable {
 
     public final EventBus priceEventBus;
 
-    private MTable<UIPosition> positionsTable;
+    private MTable<DbDepot> depotsTable;
 
     private FormUser user;
 
@@ -87,11 +66,8 @@ public class ListDepotsComponent implements Serializable {
     }
 
     private void listEntities() {
-        List<UIPosition> allPositions = new ArrayList<>();
-        for (DbDepot depot : depotService.findByUserId(user.getId())) {
-            allPositions.addAll(depot.getPositions().stream().map(p -> new UIPosition(depot, p)).collect(Collectors.toList()));
-        }
-        positionsTable.setBeans(allPositions);
+        Collection<DbDepot> allDepots =  depotService.findByUserId(user.getId());
+        depotsTable.setBeans(allDepots);
     }
 
     //Used to clean up the eventbus registrations we create
