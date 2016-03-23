@@ -1,5 +1,6 @@
 package hoggaster.web.vaadin;
 
+import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import reactor.Environment;
@@ -30,5 +31,35 @@ public class GuiUtils {
                 ui.push();
             });
         },1, SECONDS);
+    }
+
+    public static void setAndPushDoubleField(UI ui, AbstractTextField field, Double newValue, Double oldValue) {
+        System.out.println("New value: " + newValue + ", old value: " +  oldValue);
+        if(newValue == oldValue) return;
+        ui.access(() -> {
+            field.setValue(newValue.toString());
+            setStyles(field, newValue, oldValue);
+            ui.push(); //If price same for second time in a row we don't need to push
+        });
+        Environment.get().getTimer().submit(l -> {
+            ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
+                removeStyles(field);
+                ui.push();
+            });
+        },1, SECONDS);
+    }
+
+    private static void removeStyles(AbstractTextField field) {
+        field.removeStyleName("pushPositive");
+        field.removeStyleName("pushNegative");
+    }
+
+    private static void setStyles(AbstractTextField field, Double newValue, Double oldValue) {
+        removeStyles(field);
+        if (newValue > oldValue) {
+            field.addStyleName("pushPositive");
+        } else if (newValue < oldValue) {
+            field.addStyleName("pushNegative");
+        }
     }
 }

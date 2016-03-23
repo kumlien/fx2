@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
-import hoggaster.domain.orders.CreateOrderResponse;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.trades.Trade;
 
@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * The response returned from an order request sent to Oanda
  */
-public class OandaCreateTradeResponse implements CreateOrderResponse {
+public class OandaCreateTradeResponse implements OrderResponse {
 
     private final CurrencyPair currencyPair;
     private final Instant time;

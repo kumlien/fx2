@@ -6,7 +6,11 @@ import hoggaster.domain.positions.ClosePositionResponse;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
-import hoggaster.oanda.responses.*;
+import hoggaster.oanda.responses.Instruments;
+import hoggaster.oanda.responses.OandaAccounts;
+import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
+import hoggaster.oanda.responses.OandaInstrument;
+import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
@@ -30,7 +34,8 @@ public interface BrokerConnection extends OrderService {
     Broker getBrokerID();
 
     // TODO remove Oanda
-    OandaBidAskCandlesResponse getBidAskCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer periods, Instant start, Instant end, boolean includeFirst);
+    OandaBidAskCandlesResponse getBidAskCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer periods, Instant start, Instant end,
+            boolean includeFirst);
 
     BrokerDepot getDepot(String depotId);
 

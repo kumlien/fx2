@@ -7,7 +7,7 @@ import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotImpl;
 import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.orders.CreateOrderResponse;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
@@ -44,7 +44,7 @@ public class OrdersController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateOrderResponse placeOrderNew(@RequestParam("depotId") String depotId, @RequestParam("instrument")CurrencyPair currencyPair, @RequestParam("side") OrderSide side, @RequestParam("partOfMargin")BigDecimal partOfMargin) {
+    public OrderResponse placeOrderNew(@RequestParam("depotId") String depotId, @RequestParam("instrument")CurrencyPair currencyPair, @RequestParam("side") OrderSide side, @RequestParam("partOfMargin")BigDecimal partOfMargin) {
         Preconditions.checkArgument(StringUtils.hasText(depotId), "The provided depotId doesn't contain any text");
         DbDepot dbDepot = depotService.findDepotById(depotId);
         Preconditions.checkArgument(dbDepot != null, "No positions found with id " + depotId);

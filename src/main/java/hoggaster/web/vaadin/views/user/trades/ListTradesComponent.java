@@ -9,6 +9,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.orders.OrderServiceImpl;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
@@ -54,13 +55,15 @@ public class ListTradesComponent implements Serializable {
 
     private static final Action CLOSE_TRADE_ACTION = new Action("Close this trade");
 
-    private static final Action NEW_TRADE_ACTION = new Action("New trade");
+    private static final Action OPEN_TRADE_ACTION = new Action("Open trade");
 
     private static final Action EDIT_TRADE_ACTION = new Action("Edit this trade");
 
     private final DepotService depotService;
 
     private final TradeService tradeService;
+
+    private final OrderServiceImpl orderService;
 
     private final Map<Long, Registration> registrations = new ConcurrentHashMap<>();
 
@@ -70,10 +73,13 @@ public class ListTradesComponent implements Serializable {
 
     private FormUser user;
 
+    private Map<Price, Long> lastReceivedPrice = new ConcurrentHashMap<>();
+
     @Autowired
-    public ListTradesComponent(DepotService depotService, TradeService tradeService, @Qualifier("priceEventBus") EventBus priceEventBus) {
+    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus) {
         this.depotService = depotService;
         this.tradeService = tradeService;
+        this.orderService = orderService;
         this.priceEventBus = priceEventBus;
     }
 
@@ -96,11 +102,14 @@ public class ListTradesComponent implements Serializable {
                                 deregisterAll();
                                 return;
                             }
-
-                            Double current = ((Price) e.getData()).ask.doubleValue();
-                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                            LOG.info("Got a new price: {}", e.getData());
-                            GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                            Long lastUpdate = lastReceivedPrice.get(e.getData());
+                            if(lastUpdate == null || System.currentTimeMillis() - lastUpdate > 2500) {
+                                Double current = ((Price) e.getData()).ask.doubleValue();
+                                Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
+                                LOG.info("Got a new price: {}", e.getData());
+                                GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                                lastReceivedPrice.put((Price) e.getData(), System.currentTimeMillis());
+                            }
                         });
                         deregister(trade.trade); //cancel any existing registrations for this instrument
                         registrations.put(trade.trade.brokerId, registration);
@@ -117,7 +126,7 @@ public class ListTradesComponent implements Serializable {
                 if (target != null) {
                     return new Action[]{EDIT_TRADE_ACTION, CLOSE_TRADE_ACTION};
                 }
-                return new Action[]{NEW_TRADE_ACTION};
+                return new Action[]{OPEN_TRADE_ACTION};
             }
 
             @Override
@@ -140,15 +149,12 @@ public class ListTradesComponent implements Serializable {
                             }
                         }
                     });
-                } else if (action == NEW_TRADE_ACTION) {
-                    TradeForm tradeForm = new TradeForm();
+                } else if (action == OPEN_TRADE_ACTION) {
+                    TradeForm tradeForm = new TradeForm(priceEventBus);
                     final Window tradeFormWindow = tradeForm.openInModalPopup();
-                    tradeForm.setSavedHandler(t -> {UI.getCurrent().removeWindow(tradeFormWindow);});
-                    tradeForm.setResetHandler(t -> {UI.getCurrent().removeWindow(tradeFormWindow);});
-                    //UserForm userForm = new UserForm(new FormUser());
-                    //userForm.openInModalPopup();
-                    //userForm.setSavedHandler(this::saveUser);
-                    //userForm.setResetHandler(this::resetEntry);
+                    tradeFormWindow.setCaption("Open new market trade");
+                    tradeForm.setSavedHandler(t -> sendOrderForNewTrade(t, tradeFormWindow));
+                    tradeForm.setResetHandler(t -> {LOG.info("Trade: " + t); UI.getCurrent().removeWindow(tradeFormWindow);});
                 }
             }
         });
@@ -157,6 +163,14 @@ public class ListTradesComponent implements Serializable {
         tab.addComponents(tradesTable);
         tab.expand(tradesTable);
         return tab;
+    }
+
+    private void sendOrderForNewTrade(TradeForm.FormTrade formTrade, Window tradeFormWindow) {
+        /*OrderRequest request = OrderRequest.Builder.anOrderRequest()
+                .withCurrencyPair(formTrade.getInstrument())
+                .withExternalDepotId(dbD)
+        orderService.sendOrder(null);*/
+        UI.getCurrent().removeWindow(tradeFormWindow);
     }
 
     private void listEntities() {

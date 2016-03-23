@@ -122,4 +122,101 @@ public class OrderRequest {
         sb.append('}');
         return sb.toString();
     }
+
+    public static class Builder {
+        public String externalDepotId;
+        public CurrencyPair currencyPair;
+        public Long units;
+        public OrderSide side;
+        public OrderType type;
+        public Instant expiry;
+        public BigDecimal price;
+        //Optional fields
+        private Double stopLoss;
+        private BigDecimal takeProfit;
+        private BigDecimal trailingStop;
+        private BigDecimal lowerBound;
+        private BigDecimal upperBound;
+
+        private Builder() {
+        }
+
+        public static Builder anOrderRequest() {
+            return new Builder();
+        }
+
+        public Builder withStopLoss(Double stopLoss) {
+            this.stopLoss = stopLoss;
+            return this;
+        }
+
+        public Builder withTakeProfit(BigDecimal takeProfit) {
+            this.takeProfit = takeProfit;
+            return this;
+        }
+
+        public Builder withTrailingStop(BigDecimal trailingStop) {
+            this.trailingStop = trailingStop;
+            return this;
+        }
+
+        public Builder withLowerBound(BigDecimal lowerBound) {
+            this.lowerBound = lowerBound;
+            return this;
+        }
+
+        public Builder withUpperBound(BigDecimal upperBound) {
+            this.upperBound = upperBound;
+            return this;
+        }
+
+        public Builder withExternalDepotId(String externalDepotId) {
+            this.externalDepotId = externalDepotId;
+            return this;
+        }
+
+        public Builder withCurrencyPair(CurrencyPair currencyPair) {
+            this.currencyPair = currencyPair;
+            return this;
+        }
+
+        public Builder withUnits(Long units) {
+            this.units = units;
+            return this;
+        }
+
+        public Builder withSide(OrderSide side) {
+            this.side = side;
+            return this;
+        }
+
+        public Builder withType(OrderType type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder withExpiry(Instant expiry) {
+            this.expiry = expiry;
+            return this;
+        }
+
+        public Builder withPrice(BigDecimal price) {
+            this.price = price;
+            return this;
+        }
+
+        public Builder but() {
+            return anOrderRequest().withStopLoss(stopLoss).withTakeProfit(takeProfit).withTrailingStop(trailingStop).withLowerBound(lowerBound).withUpperBound(upperBound).withExternalDepotId(externalDepotId).withCurrencyPair(currencyPair).withUnits(units).withSide(side).withType(type).withExpiry(expiry).withPrice(price);
+        }
+
+        public OrderRequest build() {
+            OrderRequest orderRequest = new OrderRequest(externalDepotId, currencyPair, units, side, type, expiry, price);
+            orderRequest.setStopLoss(stopLoss);
+            orderRequest.setTakeProfit(takeProfit);
+            orderRequest.setTrailingStop(trailingStop);
+            orderRequest.setLowerBound(lowerBound);
+            orderRequest.setUpperBound(upperBound);
+            return orderRequest;
+        }
+    }
 }

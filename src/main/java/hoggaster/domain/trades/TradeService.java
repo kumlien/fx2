@@ -3,9 +3,10 @@ package hoggaster.domain.trades;
 import hoggaster.domain.CurrencyPair;
 
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 /**
+ * Service interface for Trades. To create a trade we first need to send a new {@link hoggaster.domain.orders.OrderRequest}
+ *
  * @author svante
  */
 public interface TradeService {
@@ -22,12 +23,8 @@ public interface TradeService {
 
     Collection<Trade> findByInstrumentAndRobotId(CurrencyPair instrument, String robotId);
 
-
     //Paging...
     Collection<Trade> getClosedTrades(String depotId);
 
     CloseTradeResponse closeTrade(Trade trade, String brokerId);
-
-    //Close the trade on the broker side, save the trade to the historic trade collection and sync the depot.
-    CompletableFuture<CloseTradeResponse> closeTradeAsync(Trade trade, String brokerAccountId);
 }

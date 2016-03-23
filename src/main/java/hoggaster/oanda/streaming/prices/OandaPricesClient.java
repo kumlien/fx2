@@ -108,7 +108,6 @@ public class OandaPricesClient {
 
                 } catch (Exception e) {
                     LOG.debug("Exception while listening for streaming prices: {}", e);
-                    LOG.warn("Exception while listening for streaming prices: {}", e.getMessage());
                 }
             }
         }, error -> {

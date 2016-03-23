@@ -12,7 +12,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.MathContext;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import static hoggaster.domain.trades.Trade.TradeBuilder.aTrade;
 import static hoggaster.domain.trades.TradeStatus.CLOSED;
@@ -79,6 +78,7 @@ public class TradeServiceImpl implements TradeService {
         return tradeRepo.findByDepotIdAndStatus(depotId, CLOSED);
     }
 
+
     //Calculate some stuff on the trade
     //Move the trade to collection with historic trades
     //Update the depot afterwards
@@ -106,10 +106,5 @@ public class TradeServiceImpl implements TradeService {
         tradeRepo.save(tradeToSave);
         depotService.syncDepotAsync(trade.depotId);
         return closeTradeResponse;
-    }
-
-    @Override
-    public CompletableFuture<CloseTradeResponse> closeTradeAsync(Trade trade, String brokerAccountId) {
-        return null;
     }
 }

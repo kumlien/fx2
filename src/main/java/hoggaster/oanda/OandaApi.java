@@ -6,7 +6,7 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.orders.CreateOrderResponse;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.positions.ClosePositionResponse;
 import hoggaster.domain.positions.Position;
@@ -141,6 +141,7 @@ public class OandaApi implements BrokerConnection {
         }
         return Optional.empty();
     }
+
 
     @Override
     public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
@@ -303,7 +304,8 @@ public class OandaApi implements BrokerConnection {
 
     @Override
     @Timed
-    public CreateOrderResponse sendOrder(OrderRequest request) {
+    @Deprecated
+    public OrderResponse sendOrder(OrderRequest request) {
         MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());
         String uri = builder.buildAndExpand(request.externalDepotId).toUriString();

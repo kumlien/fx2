@@ -5,5 +5,5 @@ package hoggaster.domain.orders;
  */
 public interface OrderService {
 
-    CreateOrderResponse sendOrder(OrderRequest request);
+    OrderResponse sendOrder(OrderRequest request);
 }

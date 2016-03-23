@@ -6,7 +6,7 @@ import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.orders.CreateOrderResponse;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderRequest;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
@@ -99,7 +99,7 @@ public class DepotImpl implements Depot {
      * TODO Refactor MarketUpdate -> BigDecimal ('triggerPrice' or something along those lines)
      * TODO Throw exceptions instead of returning null
      */
-    public CreateOrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
+    public OrderResponse openTrade(CurrencyPair currencyPair, OrderSide side, BigDecimal partOfAvailableMargin, MarketUpdate marketUpdate, String robotId) {
         LOG.info("We are told by robot '{}' to {} {} of available margin on {}", robotId, side, partOfAvailableMargin, currencyPair);
         Preconditions.checkArgument(StringUtils.hasText(robotId), "No robotId specified");
         Preconditions.checkArgument(currencyPair != null, "The currency pair must not be null");
@@ -140,7 +140,7 @@ public class DepotImpl implements Depot {
         if(marketUpdate != null) { //marketUpdate might be null if triggered interactively
             order.setUpperBound(calculateUpperBound(marketUpdate));
         }
-        CreateOrderResponse response = null;
+        OrderResponse response = null;
         try {
             response = brokerConnection.sendOrder(order); //TODO Async?
             LOG.info("Order away and we got a response! {}", response);
