@@ -15,6 +15,7 @@ import java.util.Collection;
 
 import static hoggaster.domain.trades.Trade.TradeBuilder.aTrade;
 import static hoggaster.domain.trades.TradeStatus.CLOSED;
+import static reactor.Environment.workDispatcher;
 
 /**
  * @author svante
@@ -102,8 +103,12 @@ public class TradeServiceImpl implements TradeService {
                 .withTrailingAmount(trade.trailingAmount)
                 .withTrailingStop(trade.trailingStop)
                 .build();
+        workDispatcher().dispatch(tradeToSave, t -> {
+                    tradeRepo.save(t);
+                },
+                error -> {
+                });
 
-        tradeRepo.save(tradeToSave);
         depotService.syncDepotAsync(trade.depotId);
         return closeTradeResponse;
     }

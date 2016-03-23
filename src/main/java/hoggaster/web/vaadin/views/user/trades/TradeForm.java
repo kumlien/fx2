@@ -1,11 +1,14 @@
 package hoggaster.web.vaadin.views.user.trades;
 
-import com.vaadin.data.validator.IntegerRangeValidator;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.data.validator.LongRangeValidator;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.OptionGroup;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.themes.ValoTheme;
 import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
@@ -20,6 +23,8 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 import reactor.bus.selector.Selectors;
+
+import java.util.Collection;
 
 /**
  * Form for add/edit a trade. Use the stuff from viritn https://github.com/viritin/viritin
@@ -38,9 +43,11 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
     final TypedSelect<OrderType> orderType = new EnumSelect<>().withSelectType(OptionGroup.class).withNullSelection(false)
             .withStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 
-    final TextField units = new TextField("Units");
+    final ComboBox depot = new ComboBox("Depot");
 
-    final TextField price = new TextField("Price");
+    final TextField units = new TextField("Units to order");
+
+    final TextField price = new TextField("Last market price");
 
     private final boolean editMode;
 
@@ -50,26 +57,27 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
 
     private Long lastPriceUpdate = System.currentTimeMillis();
 
-    public TradeForm(EventBus pricesEventBus, FormTrade trade) {
-        this(pricesEventBus, trade, true);
+    public TradeForm(EventBus pricesEventBus, Collection<DbDepot> depots, FormTrade trade) {
+        this(pricesEventBus, depots, trade, true);
     }
 
-    public TradeForm(EventBus pricesEventBus) {
-        this(pricesEventBus, new FormTrade(), false);
+    public TradeForm(EventBus pricesEventBus, Collection<DbDepot> depots) {
+        this(pricesEventBus, depots, new FormTrade(), false);
     }
 
-    private TradeForm(EventBus pricesEventBus, FormTrade trade, boolean editMode) {
+    private TradeForm(EventBus pricesEventBus, Collection<DbDepot> depots, FormTrade trade, boolean editMode) {
         this.pricesEventBus = pricesEventBus;
         this.editMode = editMode;
         setEntity(trade);
 
-        units.setConverter(Integer.class);
+        units.setConverter(Long.class);
         units.setValue("0");
-        units.addValidator(new IntegerRangeValidator("Invalid value", 0, 1_000_000));
+        units.addValidator(new LongRangeValidator("Invalid value", 1L, 1_000_000L));
 
         price.setConverter(String.class);
         price.setEnabled(false);
         price.setValue("0.0");
+        price.addStyleName("pushbox");
 
         side.setCaption("Buy or Sell");
         side.selectFirst();
@@ -78,8 +86,19 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
         orderType.selectFirst();
         orderType.setEnabled(false);
 
+        BeanItemContainer<DbDepot> depotContainer = new BeanItemContainer<DbDepot>(DbDepot.class);
+        depotContainer.addAll(depots);
+        depot.setContainerDataSource(depotContainer);
+        depot.setNullSelectionAllowed(false);
+        depot.setTextInputAllowed(false);
+        depot.setItemCaptionPropertyId("name");
+        depot.setInputPrompt("Please select a depot for this order");
+
         instrument.setSizeFull();
         instrument.addMValueChangeListener(v -> {
+            if(getUI() != null) { //reset the price when we change instrument
+                GuiUtils.setAndPushDoubleField(getUI(), price, 0.0, price.getValue() != null ? Double.valueOf(price.getValue()) : 0.0);
+            }
             if(registration != null) registration.cancel();
             registration = pricesEventBus.on(Selectors.$("prices."+v.getValue()), e -> {
                 if(System.currentTimeMillis() - lastPriceUpdate < 2500) {
@@ -93,20 +112,20 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
                 }
                 lastPriceUpdate = System.currentTimeMillis();
             });
-            LOG.info("Value changed -> {}", v);
         });
         instrument.selectFirst();
-
-
     }
 
     @Override
     protected Component createContent() {
         instrument.setOptions(CurrencyPair.values());
+        instrument.selectFirst();
+
         side.setOptions(OrderSide.values());
 
         return new MVerticalLayout(
                 new MFormLayout(
+                        depot,
                         instrument,
                         side,
                         orderType,
@@ -117,11 +136,13 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
 
     public static class FormTrade {
 
+        private DbDepot depot;
+
         private CurrencyPair instrument;
 
         private OrderSide side;
 
-        private Integer units;
+        private Long units;
 
         private String price;
 
@@ -135,11 +156,11 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
             this.price = price;
         }
 
-        public Integer getUnits() {
+        public Long getUnits() {
             return units;
         }
 
-        public void setUnits(Integer units) {
+        public void setUnits(Long units) {
             this.units = units;
         }
 
@@ -165,6 +186,14 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
 
         public void setOrderType(OrderType orderType) {
             this.orderType = orderType;
+        }
+
+        public DbDepot getDepot() {
+            return depot;
+        }
+
+        public void setDepot(DbDepot depot) {
+            this.depot = depot;
         }
     }
 }

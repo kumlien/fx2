@@ -33,9 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
-import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONNECTION;
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
@@ -127,7 +125,7 @@ public class OandaPricesClient {
                 if (line.startsWith("{\"tick\"")) {
                     parseAndSendTick(line);
                 } else if (line.startsWith("{\"heartbeat\"")) {
-                    LOG.info("Got a heartbeat");
+                    LOG.debug("Got a heartbeat");
                 }
             }
         } finally {

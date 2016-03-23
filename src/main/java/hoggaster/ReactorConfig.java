@@ -16,11 +16,6 @@ public class ReactorConfig {
 
     public static final Logger LOG = LoggerFactory.getLogger(ReactorConfig.class);
 
-    @Bean(name = "priceEventBus_old")
-    EventBus createPriceEventBus(Environment environment) {
-        return EventBus.create(environment, Environment.THREAD_POOL);
-    }
-
     @Bean(name = "priceEventBus")
     public EventBus priceEventBus() {
         return EventBus.config()

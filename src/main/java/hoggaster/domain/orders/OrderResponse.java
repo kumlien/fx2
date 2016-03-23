@@ -15,4 +15,7 @@ public interface OrderResponse {
     Optional<Trade> getOpenedTrade(String depotId, String robotId);
 
 
+
+
+
 }

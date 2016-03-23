@@ -9,6 +9,8 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderServiceImpl;
 import hoggaster.domain.prices.Price;
 import hoggaster.domain.trades.CloseTradeResponse;
@@ -36,10 +38,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
+import static java.util.stream.Collectors.toList;
 import static reactor.bus.selector.Selectors.$;
 
 /**
@@ -69,24 +71,39 @@ public class ListTradesComponent implements Serializable {
 
     public final EventBus priceEventBus;
 
+    private final EventBus depotEventBus;
+
     private MTable<UITrade> tradesTable;
 
     private FormUser user;
 
-    private Map<Price, Long> lastReceivedPrice = new ConcurrentHashMap<>();
+    private Map<Trade, Long> lastReceivedPricePerTrade = new ConcurrentHashMap<>();
+
+    //Read this once
+    private Collection<DbDepot> userDepots;
 
     @Autowired
-    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus) {
+    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus")EventBus depotEventBus) {
         this.depotService = depotService;
         this.tradeService = tradeService;
         this.orderService = orderService;
         this.priceEventBus = priceEventBus;
+        this.depotEventBus = depotEventBus;
     }
 
-    //Create the tab with the current active trades
+    //Create the tab with the (active) trades
     public MVerticalLayout setUp(FormUser user, UserView parentView) {
         this.user = user;
-        final String defaultPriceLabel = "Fetching...";
+        userDepots = depotService.findByUserId(user.getId());
+
+        userDepots.forEach(d -> {
+            depotEventBus.on($(d.getId()), e -> {
+                LOG.info("Depot {} is updated, refresh list with trades", e.getData());
+                populateTradeListFromDb();
+            });
+        });
+
+        final String defaultPriceLabel = "Waiting for prices...";
         MVerticalLayout tab = new MVerticalLayout();
         tradesTable = new MTable<>(UITrade.class)
                 .withProperties("instrument", "side", "openPrice", "openTime", "units")
@@ -102,13 +119,13 @@ public class ListTradesComponent implements Serializable {
                                 deregisterAll();
                                 return;
                             }
-                            Long lastUpdate = lastReceivedPrice.get(e.getData());
-                            if(lastUpdate == null || System.currentTimeMillis() - lastUpdate > 2500) {
+                            Long lastUpdate = lastReceivedPricePerTrade.get(trade.trade);
+                            if (lastUpdate == null || System.currentTimeMillis() - lastUpdate > 2500) {
                                 Double current = ((Price) e.getData()).ask.doubleValue();
                                 Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
                                 LOG.info("Got a new price: {}", e.getData());
                                 GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
-                                lastReceivedPrice.put((Price) e.getData(), System.currentTimeMillis());
+                                lastReceivedPricePerTrade.put(trade.trade, System.currentTimeMillis());
                             }
                         });
                         deregister(trade.trade); //cancel any existing registrations for this instrument
@@ -138,8 +155,8 @@ public class ListTradesComponent implements Serializable {
                             try {
                                 CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
                                 deregister(trade.trade);
-                                listEntities(); //TODO do this async. Publish/subscribe on updated trades events
-                                LOG.info("trade closed {}, {}", sender, target);
+                                populateTradeListFromDb(); //TODO do this async. Publish/subscribe on updated trades events
+                                LOG.debug("trade closed {}, {}", sender, target);
                                 Notification.show("Your trade was closed to a price of " + response.price, WARNING_MESSAGE);
                             } catch (TradingHaltedException e) {
                                 Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
@@ -150,33 +167,48 @@ public class ListTradesComponent implements Serializable {
                         }
                     });
                 } else if (action == OPEN_TRADE_ACTION) {
-                    TradeForm tradeForm = new TradeForm(priceEventBus);
+                    TradeForm tradeForm = new TradeForm(priceEventBus, userDepots);
                     final Window tradeFormWindow = tradeForm.openInModalPopup();
                     tradeFormWindow.setCaption("Open new market trade");
                     tradeForm.setSavedHandler(t -> sendOrderForNewTrade(t, tradeFormWindow));
-                    tradeForm.setResetHandler(t -> {LOG.info("Trade: " + t); UI.getCurrent().removeWindow(tradeFormWindow);});
+                    tradeForm.setResetHandler(t -> {
+                        LOG.info("Trade: " + t);
+                        UI.getCurrent().removeWindow(tradeFormWindow);
+                    });
                 }
             }
         });
 
-        listEntities();
+        populateTradeListFromDb();
         tab.addComponents(tradesTable);
         tab.expand(tradesTable);
         return tab;
     }
 
+    //Send a request to open a new trade
     private void sendOrderForNewTrade(TradeForm.FormTrade formTrade, Window tradeFormWindow) {
-        /*OrderRequest request = OrderRequest.Builder.anOrderRequest()
+        OrderRequest request = OrderRequest.Builder.anOrderRequest()
                 .withCurrencyPair(formTrade.getInstrument())
-                .withExternalDepotId(dbD)
-        orderService.sendOrder(null);*/
+                .withExternalDepotId(formTrade.getDepot().brokerId)
+                .withSide(formTrade.getSide())
+                .withType(formTrade.getOrderType())
+                .withUnits(formTrade.getUnits())
+                .build();
+        OrderResponse orderResponse = orderService.sendOrder(request);
         UI.getCurrent().removeWindow(tradeFormWindow);
+        if (orderResponse.tradeWasOpened()) {
+            Notification.show("Trade opened! " + orderResponse.getOpenedTrade(null, null).get());
+        } else {
+            Notification.show("No trade opened " + orderResponse.toString());
+        }
+        depotService.syncDepotAsync(formTrade.getDepot());
     }
 
-    private void listEntities() {
+    //Read all depots from db and their open trades.
+    private void populateTradeListFromDb() {
         List<UITrade> allTrades = new ArrayList<>();
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
-            allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(Collectors.toList()));
+            allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(toList()));
         }
         tradesTable.setBeans(allTrades);
     }

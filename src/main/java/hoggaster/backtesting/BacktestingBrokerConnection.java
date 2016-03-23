@@ -55,7 +55,7 @@ public class BacktestingBrokerConnection implements BrokerConnection {
     }
 
     @Override
-    public OandaPrices getAllPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException {
+    public OandaPrices getPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException {
         // TODO Auto-generated method stub
         return null;
     }

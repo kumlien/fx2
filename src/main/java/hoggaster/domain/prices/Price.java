@@ -70,4 +70,54 @@ public class Price extends MarketUpdate {
         //return (BigDecimal bd) -> bd.multiply(
         return null;
     }
+
+
+    public static class Builder {
+        public CurrencyPair currencyPair;
+        public BigDecimal bid;
+        public BigDecimal ask;
+        public Instant time;
+        public Broker broker;
+
+        private Builder() {
+        }
+
+        public static Builder aPrice() {
+            return new Builder();
+        }
+
+        public Builder withCurrencyPair(CurrencyPair currencyPair) {
+            this.currencyPair = currencyPair;
+            return this;
+        }
+
+        public Builder withBid(BigDecimal bid) {
+            this.bid = bid;
+            return this;
+        }
+
+        public Builder withAsk(BigDecimal ask) {
+            this.ask = ask;
+            return this;
+        }
+
+        public Builder withTime(Instant time) {
+            this.time = time;
+            return this;
+        }
+
+        public Builder withBroker(Broker broker) {
+            this.broker = broker;
+            return this;
+        }
+
+        public Builder but() {
+            return aPrice().withCurrencyPair(currencyPair).withBid(bid).withAsk(ask).withTime(time).withBroker(broker);
+        }
+
+        public Price build() {
+            Price price = new Price(currencyPair, bid, ask, time, broker);
+            return price;
+        }
+    }
 }

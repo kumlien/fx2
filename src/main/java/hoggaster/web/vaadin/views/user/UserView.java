@@ -79,7 +79,6 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addTab(createRobotsTab(), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
-            LOG.info("Selected tab change detected, selected tab is now {}", e.getTabSheet().getSelectedTab());
             if (e.getTabSheet().getSelectedTab() == positionsTab) {
                 LOG.info("Positions tab is selected...");
             } else {

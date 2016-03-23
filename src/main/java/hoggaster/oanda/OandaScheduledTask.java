@@ -140,7 +140,7 @@ public class OandaScheduledTask {
                 return;
             }
 
-            OandaPrices allPrices = oanda.getAllPrices(instrumentsForMainAccount);
+            OandaPrices allPrices = oanda.getPrices(instrumentsForMainAccount);
             LOG.info("Got {} prices, send them to priceEventBus", allPrices.prices.size());
             allPrices.prices.forEach(p -> priceEventBus.notify("prices." + p.instrument, Event.wrap(new Price(p))));
         } catch (Exception e) {

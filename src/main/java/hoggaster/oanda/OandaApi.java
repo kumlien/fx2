@@ -6,8 +6,8 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.brokers.BrokerDepot;
-import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.positions.ClosePositionResponse;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
@@ -280,7 +280,7 @@ public class OandaApi implements BrokerConnection {
 
     @Override
     @Timed
-    public OandaPrices getAllPrices(Set<OandaInstrument> instruments) throws UnsupportedEncodingException {
+    public OandaPrices getPrices(Set<OandaInstrument> instruments) throws UnsupportedEncodingException {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPrices());
         StringBuilder sb = new StringBuilder();
         instruments.forEach(instrument -> sb.append(instrument.instrument).append("%2C"));
@@ -289,7 +289,7 @@ public class OandaApi implements BrokerConnection {
         try {
             prices = oandaRetryTemplate
                     .execute(context -> {
-                        context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAllPrices");
+                        context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getPrices");
                         return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaPrices.class);
                     });
             LOG.debug("Got {}", prices.getBody().prices);
@@ -304,7 +304,6 @@ public class OandaApi implements BrokerConnection {
 
     @Override
     @Timed
-    @Deprecated
     public OrderResponse sendOrder(OrderRequest request) {
         MultiValueMap<String, String> oandaRequest = new OandaOrderRequest(request.currencyPair, request.units, request.side, request.type, request.expiry, request.price, request.getLowerBound(), request.getUpperBound());
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getOrders());

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 
@@ -23,6 +22,8 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static reactor.Environment.workDispatcher;
 
 /**
  * Created by svante on 15-09-22.
@@ -116,16 +117,17 @@ public class DepotServiceImpl implements DepotService {
         if (!StringUtils.hasText(depotId)) {
             throw new IllegalArgumentException("The provided depotId must contain some text!");
         }
-        DbDepot depot = depotRepo.findOne(depotId);
-        if (depot == null) {
-            throw new IllegalArgumentException("No depot found with id " + depotId);
-        }
-
+        workDispatcher().dispatch(depotId, id -> {
+                    syncDepot(depotRepo.findOne(id));
+                },
+                error -> {
+                    LOG.warn("Error occurred when dispatching event", error);
+                });
     }
 
     @Override
     public void syncDepotAsync(DbDepot dbDepot) {
-        Environment.workDispatcher().dispatch(dbDepot, d -> {
+        workDispatcher().dispatch(dbDepot, d -> {
                     syncDepot(d);
                 },
                 error -> {

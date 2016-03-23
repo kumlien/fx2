@@ -6,11 +6,7 @@ import hoggaster.domain.positions.ClosePositionResponse;
 import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
-import hoggaster.oanda.responses.Instruments;
-import hoggaster.oanda.responses.OandaAccounts;
-import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaPrices;
+import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 
 import java.io.UnsupportedEncodingException;
@@ -29,7 +25,7 @@ public interface BrokerConnection extends OrderService {
     OandaAccounts getAccounts();
 
     // TODO remove Oanda x 2
-    OandaPrices getAllPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
+    OandaPrices getPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
 
     Broker getBrokerID();
 
