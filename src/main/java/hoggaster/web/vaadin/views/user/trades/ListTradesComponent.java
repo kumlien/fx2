@@ -234,6 +234,7 @@ public class ListTradesComponent implements Serializable {
     }
 
     private final void deregister(Trade trade) {
+        does this work when closing a trade??
         final Registration registration = registrations.get(trade.brokerId);
         if (registration != null) {
             registration.cancel();
