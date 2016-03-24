@@ -197,9 +197,10 @@ public class ListTradesComponent implements Serializable {
         OrderResponse orderResponse = orderService.sendOrder(request);
         UI.getCurrent().removeWindow(tradeFormWindow);
         if (orderResponse.tradeWasOpened()) {
-            Notification.show("Trade opened! " + orderResponse.getOpenedTrade(null, null).get());
+            final Trade trade = orderResponse.getOpenedTrade(null, null).get();
+            Notification.show("Trade opened for " + trade.getUnits() + " units of " + trade.getInstrument() + " to price " + trade.getOpenPrice(), WARNING_MESSAGE);
         } else {
-            Notification.show("No trade opened " + orderResponse.toString());
+            Notification.show("No trade opened " + orderResponse.toString(), WARNING_MESSAGE);
         }
         depotService.syncDepotAsync(formTrade.getDepot());
     }
@@ -210,6 +211,13 @@ public class ListTradesComponent implements Serializable {
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
             allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(toList()));
         }
+        allTrades.forEach(t -> {
+            if(tradesTable.containsId(t)) {
+                LOG.info("The table already contains trade with id {}", t.getBrokerId());
+            } else {
+                LOG.info("No trade with id {} in the table", t.getBrokerId());
+            }
+        });
         tradesTable.setBeans(allTrades);
     }
 
