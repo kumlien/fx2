@@ -4,15 +4,50 @@ import com.google.common.base.Preconditions;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
-import reactor.Environment;
+import reactor.fn.tuple.Tuple2;
+
+import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static reactor.Environment.get;
 
 /**
  * Created by svante.kumlien on 03.03.16.
  */
 public class GuiUtils {
 
+    /**
+     *
+     * @param ui
+     * @param values a {@link Map} with a {@link Label} as key and a {@link Tuple2} as value where the first tuple value is the new value for the label and the second tuple value is the old value for the label.
+     */
+    public static void setAndPushDoubleLabels(UI ui, Map<Label, Tuple2<Double, Double>> values) {
+        values.entrySet().forEach(entry -> {
+            if(! (entry.getValue().getT1() == entry.getValue().getT2())) {
+                entry.getKey().setValue(entry.getValue().getT1().toString());
+                entry.getKey().removeStyleName("pushPositive");
+                entry.getKey().removeStyleName("pushNegative");
+                if (entry.getValue().getT2() > entry.getValue().getT1()) {
+                    entry.getKey().addStyleName("pushPositive");
+                } else {
+                    entry.getKey().addStyleName("pushNegative");
+                }
+            }
+        });
+        ui.access(ui::push);
+
+        values.keySet().forEach(label -> {
+            label.removeStyleName("pushPositive");
+            label.removeStyleName("pushNegative");
+        });
+
+        get().getTimer().submit(l -> {
+            ui.access(ui::push);
+        },2, SECONDS);
+
+    }
+
+    //Works for labels
     public static void setAndPushDoubleLabel(UI ui, Label label, Double newValue, Double oldValue) {
         Preconditions.checkArgument(ui != null, "UI can't be null!");
         if(newValue == oldValue) return;
@@ -25,9 +60,10 @@ public class GuiUtils {
             } else if (oldValue < newValue) {
                 label.addStyleName("pushNegative");
             }
-            ui.push(); //If price same for second time in a row we dont need to push
+            ui.push();
         });
-        Environment.get().getTimer().submit(l -> {
+
+        get().getTimer().submit(l -> {
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
                 label.removeStyleName("pushPositive");
                 label.removeStyleName("pushNegative");
@@ -36,6 +72,7 @@ public class GuiUtils {
         },2, SECONDS);
     }
 
+    //Works for text fields
     public static void setAndPushDoubleField(UI ui, AbstractTextField field, Double newValue, Double oldValue) {
         Preconditions.checkArgument(ui != null, "UI can't be null!");
         if(newValue == oldValue) return;
@@ -44,7 +81,7 @@ public class GuiUtils {
             setStyles(field, newValue, oldValue);
             ui.push(); //If price same for second time in a row we don't need to push
         });
-        Environment.get().getTimer().submit(l -> {
+        get().getTimer().submit(l -> {
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
                 removeStyles(field);
                 ui.push();

@@ -94,9 +94,10 @@ public class TradeServiceImpl implements TradeService {
                 .withDepotId(trade.depotId)
                 .withInstrument(trade.instrument)
                 .withTotalGain(closeTradeResponse.profit)
-                .withGainPerUnit(closeTradeResponse.price.divide(trade.units, MathContext.DECIMAL32))
+                .withGainPerUnit(closeTradeResponse.profit.divide(trade.units, MathContext.DECIMAL32))
                 .withOpenPrice(trade.openPrice)
                 .withOpenTime(trade.openTime)
+                .withUnits(trade.getUnits())
                 .withStatus(CLOSED)
                 .withStopLoss(trade.stopLoss)
                 .withTakeProfit(trade.takeProfit)
@@ -109,7 +110,7 @@ public class TradeServiceImpl implements TradeService {
                 error -> {
                 });
 
-        depotService.syncDepotAsync(trade.depotId);
+        depotService.syncDepotAsync(trade.depotId);//Should we do this here??
         return closeTradeResponse;
     }
 }

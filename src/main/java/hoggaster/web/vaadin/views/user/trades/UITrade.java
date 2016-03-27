@@ -1,6 +1,7 @@
 package hoggaster.web.vaadin.views.user.trades;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.orders.OrderSide;
@@ -63,5 +64,18 @@ public class UITrade {
                 .add("depot", depot)
                 .add("trade", trade)
                 .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UITrade uiTrade = (UITrade) o;
+        return Objects.equal(trade.brokerId, uiTrade.trade.brokerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(trade);
     }
 }
