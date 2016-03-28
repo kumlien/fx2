@@ -1,5 +1,6 @@
 package hoggaster.web.vaadin.views.user.trades;
 
+import com.google.common.base.Preconditions;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.spring.annotation.ViewScope;
@@ -37,6 +38,7 @@ import reactor.fn.tuple.Tuple2;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -179,6 +181,7 @@ public class ListTradesComponent implements Serializable {
     }
 
     private Pusher getPusherForTrade(UITrade trade, UserView parentView) {
+        Preconditions.checkArgument(trade.trade.getBrokerId() != null, "No brokerId set on the trade!");
         Pusher pusher = pushers.getOrDefault(trade.trade.getBrokerId(), new Pusher(trade.trade, parentView));
         pushers.put(trade.trade.getBrokerId(), pusher);
         return pusher;
@@ -216,6 +219,7 @@ public class ListTradesComponent implements Serializable {
         UI.getCurrent().removeWindow(tradeFormWindow);
         if (orderResponse.tradeWasOpened()) {
             final Trade trade = orderResponse.getOpenedTrade(null, null).get();
+            LOG.info("Trade received from oanda: {}", trade);
             UITrade newTrade = new UITrade(formTrade.getDepot(), trade);
             tradesTable.addBeans(newTrade);
             UI.getCurrent().access(UI.getCurrent()::push);
@@ -313,7 +317,7 @@ public class ListTradesComponent implements Serializable {
                 started = true;
             }
             registration = priceEventBus.on($("prices." + instrument), e -> {
-                LOG.info("Got a new price: {}", e.getData());
+                LOG.debug("Got a new price: {}", e.getData());
                 if (parentView.getUI() == null) { //Continue to push until gui is gone
                     stop();
                     return;
@@ -332,8 +336,8 @@ public class ListTradesComponent implements Serializable {
                         values.put(bidLabel, Tuple2.of(currentBid, lastBid));
                     }
                     if(profitLossLabel != null) {
-                        Double currentPrice = trade.side == OrderSide.buy ? ((Price) e.getData()).bid.doubleValue() : ((Price) e.getData()).ask.doubleValue();
-                        Double currentPL = trade.openPrice.doubleValue() - currentPrice;
+                        BigDecimal currentPrice = trade.side == OrderSide.buy ? ((Price) e.getData()).bid : ((Price) e.getData()).ask;
+                        Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
                         Double lastPL = Double.valueOf(profitLossLabel.getValue().equals(DEFAULT_LABEL) ? currentPL.toString() : profitLossLabel.getValue());
                         values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
                     }

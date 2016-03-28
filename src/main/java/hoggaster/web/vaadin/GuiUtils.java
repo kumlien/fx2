@@ -36,12 +36,12 @@ public class GuiUtils {
         });
         ui.access(ui::push);
 
-        values.keySet().forEach(label -> {
-            label.removeStyleName("pushPositive");
-            label.removeStyleName("pushNegative");
-        });
 
         get().getTimer().submit(l -> {
+            values.keySet().forEach(label -> {
+                label.removeStyleName("pushPositive");
+                label.removeStyleName("pushNegative");
+            });
             ui.access(ui::push);
         },2, SECONDS);
 
