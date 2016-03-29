@@ -4,8 +4,11 @@ import com.google.common.base.Preconditions;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.fn.tuple.Tuple2;
 
+import java.text.DecimalFormat;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -16,26 +19,32 @@ import static reactor.Environment.get;
  */
 public class GuiUtils {
 
+    public static final Logger LOG = LoggerFactory.getLogger(GuiUtils.class);
+
+    public static final DecimalFormat df = new DecimalFormat("#.0000");
+
     /**
      *
      * @param ui
-     * @param values a {@link Map} with a {@link Label} as key and a {@link Tuple2} as value where the first tuple value is the new value for the label and the second tuple value is the old value for the label.
+     * @param values
+     *            a {@link Map} with a {@link Label} as key and a {@link Tuple2} as value where the first tuple value is the new value for the label and the
+     *            second tuple value is the old value for the label.
      */
     public static void setAndPushDoubleLabels(UI ui, Map<Label, Tuple2<Double, Double>> values) {
         values.entrySet().forEach(entry -> {
-            if(! (entry.getValue().getT1() == entry.getValue().getT2())) {
-                entry.getKey().setValue(entry.getValue().getT1().toString());
+            Double newValue = entry.getValue().getT1();
+            Double oldValue = entry.getValue().getT2();
+                LOG.info("Updating from  {} to {}", oldValue, newValue);
+                entry.getKey().setValue(df.format(newValue));
                 entry.getKey().removeStyleName("pushPositive");
                 entry.getKey().removeStyleName("pushNegative");
-                if (entry.getValue().getT2() > entry.getValue().getT1()) {
+                if (newValue >= oldValue) {
                     entry.getKey().addStyleName("pushPositive");
                 } else {
                     entry.getKey().addStyleName("pushNegative");
                 }
-            }
         });
         ui.access(ui::push);
-
 
         get().getTimer().submit(l -> {
             values.keySet().forEach(label -> {
@@ -43,14 +52,15 @@ public class GuiUtils {
                 label.removeStyleName("pushNegative");
             });
             ui.access(ui::push);
-        },2, SECONDS);
+        } , 2, SECONDS);
 
     }
 
     //Works for labels
     public static void setAndPushDoubleLabel(UI ui, Label label, Double newValue, Double oldValue) {
         Preconditions.checkArgument(ui != null, "UI can't be null!");
-        if(newValue == oldValue) return;
+        if (newValue == oldValue)
+            return;
         ui.access(() -> {
             label.setValue(newValue.toString());
             label.removeStyleName("pushPositive");
@@ -69,13 +79,14 @@ public class GuiUtils {
                 label.removeStyleName("pushNegative");
                 ui.push();
             });
-        },2, SECONDS);
+        } , 2, SECONDS);
     }
 
     //Works for text fields
     public static void setAndPushDoubleField(UI ui, AbstractTextField field, Double newValue, Double oldValue) {
         Preconditions.checkArgument(ui != null, "UI can't be null!");
-        if(newValue == oldValue) return;
+        if (newValue == oldValue)
+            return;
         ui.access(() -> {
             field.setValue(newValue.toString());
             setStyles(field, newValue, oldValue);
@@ -86,7 +97,7 @@ public class GuiUtils {
                 removeStyles(field);
                 ui.push();
             });
-        },2, SECONDS);
+        } , 2, SECONDS);
     }
 
     private static void removeStyles(AbstractTextField field) {

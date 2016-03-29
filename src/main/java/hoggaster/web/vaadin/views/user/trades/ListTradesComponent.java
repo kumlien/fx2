@@ -39,6 +39,7 @@ import reactor.fn.tuple.Tuple2;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -244,7 +245,6 @@ public class ListTradesComponent implements Serializable {
                 tradesTable.addBeans(t);
             }
         });
-        //tradesTable.setBeans(allTrades);
     }
 
     //Used to clean up the eventbus registrations we create
@@ -278,7 +278,7 @@ public class ListTradesComponent implements Serializable {
         final CurrencyPair instrument;
         Registration registration;
         Boolean started = false;
-        Long lastPush = null;
+        Long lastPush = System.currentTimeMillis();
 
         private Label askLabel;
         private Label bidLabel;
@@ -323,26 +323,30 @@ public class ListTradesComponent implements Serializable {
                     return;
                 }
                 Map<Label, Tuple2<Double, Double>> values = new HashMap<>();
-                if (lastPush == null || System.currentTimeMillis() - lastPush > 5000) {
+                if (System.currentTimeMillis() - lastPush > 5000) {
                     lastPush = System.currentTimeMillis();
-                    if(askLabel != null) {
-                        Double currentAsk = ((Price) e.getData()).ask.doubleValue();
-                        Double lastAsk = Double.valueOf(askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk.toString() : askLabel.getValue());
-                        values.put(askLabel, Tuple2.of(currentAsk, lastAsk));
-                    }
-                    if(bidLabel != null) {
-                        Double currentBid = ((Price) e.getData()).bid.doubleValue();
-                        Double lastBid = Double.valueOf(bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid.toString() : bidLabel.getValue());
-                        values.put(bidLabel, Tuple2.of(currentBid, lastBid));
-                    }
-                    if(profitLossLabel != null) {
-                        BigDecimal currentPrice = trade.side == OrderSide.buy ? ((Price) e.getData()).bid : ((Price) e.getData()).ask;
-                        Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
-                        Double lastPL = Double.valueOf(profitLossLabel.getValue().equals(DEFAULT_LABEL) ? currentPL.toString() : profitLossLabel.getValue());
-                        values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
+                    try {
+                        if (askLabel != null) {
+                            Double currentAsk = ((Price) e.getData()).ask.doubleValue();
+                            Number lastAsk = GuiUtils.df.parse(askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk.toString() : askLabel.getValue());
+                            values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
+                        }
+                        if (bidLabel != null) {
+                            Double currentBid = ((Price) e.getData()).bid.doubleValue();
+                            Double lastBid = GuiUtils.df.parse(bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid.toString() : bidLabel.getValue()).doubleValue();
+                            values.put(bidLabel, Tuple2.of(currentBid, lastBid));
+                        }
+                        if (profitLossLabel != null) {
+                            BigDecimal currentPrice = trade.side == OrderSide.buy ? ((Price) e.getData()).bid : ((Price) e.getData()).ask;
+                            Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
+                            Double lastPL = GuiUtils.df.parse(profitLossLabel.getValue().equals(DEFAULT_LABEL) ? currentPL.toString() : profitLossLabel.getValue()).doubleValue();
+                            values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
+                        }
+                        GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
+                    } catch (ParseException p) {
+                        LOG.error("Dohh", p);
                     }
                 }
-                GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
             });
             LOG.info("Registration for trade {} created", trade.getId());
         }
