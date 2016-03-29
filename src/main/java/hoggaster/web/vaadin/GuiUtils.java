@@ -44,6 +44,7 @@ public class GuiUtils {
                     entry.getKey().addStyleName("pushNegative");
                 }
         });
+
         ui.access(ui::push);
 
         get().getTimer().submit(l -> {

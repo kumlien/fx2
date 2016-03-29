@@ -7,6 +7,7 @@ import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UIDetachedException;
 import com.vaadin.ui.Window;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
@@ -39,8 +40,11 @@ import reactor.fn.tuple.Tuple2;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
@@ -348,27 +352,35 @@ public class ListTradesComponent implements Serializable {
 
                         if (askLabel != null) {
                             Double currentAsk = tick.ask.doubleValue();
-                            Number lastAsk = GuiUtils.df.parse(askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk.toString() : askLabel.getValue());
+                            LOG.info("Value of askLabel: {}", askLabel.getValue());
+                            Double lastAsk = askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk : GuiUtils.df.parse(askLabel.getValue()).doubleValue();
                             values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
                         }
                         if (bidLabel != null) {
                             Double currentBid = tick.bid.doubleValue();
-                            Double lastBid = GuiUtils.df.parse(bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid.toString() : bidLabel.getValue()).doubleValue();
+                            LOG.info("Value of bidLabel: {}", bidLabel.getValue());
+                            Double lastBid = bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid : GuiUtils.df.parse(bidLabel.getValue()).doubleValue();
                             values.put(bidLabel, Tuple2.of(currentBid, lastBid));
                         }
                         if (profitLossLabel != null) {
                             BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
+                            String currentLabelValue = profitLossLabel.getValue();
+                            LOG.info("Value of PLLabel: {}", currentLabelValue);
                             Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
-                            Double lastPL = GuiUtils.df.parse(profitLossLabel.getValue().equals(DEFAULT_LABEL) ? currentPL.toString() : profitLossLabel.getValue()).doubleValue();
+                            Double lastPL = currentLabelValue.equals(DEFAULT_LABEL) ? currentPL : GuiUtils.df.parse(currentLabelValue).doubleValue();
                             values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
                         }
-                        if(spreadLabel != null) {
+                        if (spreadLabel != null) {
                             Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
-                            Double lastSpread = GuiUtils.df.parse(spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread.toString() : spreadLabel.getValue()).doubleValue();
+                            LOG.info("Value of spreadLabel: {}", spreadLabel.getValue());
+                            Double lastSpread = spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread : GuiUtils.df.parse(spreadLabel.getValue()).doubleValue();
                             values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
                         }
                         GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
-                    } catch (ParseException p) {
+                    } catch (UIDetachedException ude) {
+                        LOG.info("Ui is detached...");
+                        stop();
+                    } catch (Exception p) {
                         LOG.error("Dohh", p);
                     }
                 }

@@ -80,7 +80,7 @@ public class AdminUI extends UI {
             @Override
             public boolean beforeViewChange(ViewChangeEvent event) {
 
-                LOG.info("View changed to {}", event.getNewView());
+                LOG.debug("View changed to {}", event.getNewView().getClass().getSimpleName());
                 // Check if a user has logged in
                 boolean isLoggedIn = getSession().getAttribute(LoginView.USER_SESSION_ATTR) != null;
                 boolean isLoginView = event.getNewView() instanceof LoginView;
