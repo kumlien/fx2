@@ -144,6 +144,14 @@ public class ListTradesComponent implements Serializable {
                         return p.createProfitLossLabel();
                     }
                 })
+                .withGeneratedColumn("Spread (%)", new SimpleColumnGenerator<UITrade>() {
+                    @Override
+                    public Object generate(UITrade trade) {
+                        Pusher p = getPusherForTrade(trade, parentView);
+                        p.start();
+                        return p.createSpreadLabel();
+                    }
+                })
                 .setSortableProperties("instrument", "side")
                 .withFullWidth();
         tradesTable.expandFirstColumn();
@@ -273,6 +281,8 @@ public class ListTradesComponent implements Serializable {
 
         static final String DEFAULT_LABEL = "waiting...";
 
+        final BigDecimal ONE_HUNDRED = new BigDecimal("100.0");
+
         final Trade trade;
         final UserView parentView;
         final CurrencyPair instrument;
@@ -283,6 +293,7 @@ public class ListTradesComponent implements Serializable {
         private Label askLabel;
         private Label bidLabel;
         private Label profitLossLabel;
+        private Label spreadLabel;
 
         private Pusher(Trade trade, UserView parentView) {
             this.trade = trade;
@@ -311,6 +322,13 @@ public class ListTradesComponent implements Serializable {
             return label;
         }
 
+        Label createSpreadLabel() {
+            Label label = new Label(DEFAULT_LABEL);
+            label.addStyleName("pushbox");
+            spreadLabel = label;
+            return label;
+        }
+
         void start() {
             synchronized (started) {
                 if (started) return;
@@ -326,21 +344,28 @@ public class ListTradesComponent implements Serializable {
                 if (System.currentTimeMillis() - lastPush > 5000) {
                     lastPush = System.currentTimeMillis();
                     try {
+                        Price tick = (Price) e.getData();
+
                         if (askLabel != null) {
-                            Double currentAsk = ((Price) e.getData()).ask.doubleValue();
+                            Double currentAsk = tick.ask.doubleValue();
                             Number lastAsk = GuiUtils.df.parse(askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk.toString() : askLabel.getValue());
                             values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
                         }
                         if (bidLabel != null) {
-                            Double currentBid = ((Price) e.getData()).bid.doubleValue();
+                            Double currentBid = tick.bid.doubleValue();
                             Double lastBid = GuiUtils.df.parse(bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid.toString() : bidLabel.getValue()).doubleValue();
                             values.put(bidLabel, Tuple2.of(currentBid, lastBid));
                         }
                         if (profitLossLabel != null) {
-                            BigDecimal currentPrice = trade.side == OrderSide.buy ? ((Price) e.getData()).bid : ((Price) e.getData()).ask;
+                            BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
                             Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
                             Double lastPL = GuiUtils.df.parse(profitLossLabel.getValue().equals(DEFAULT_LABEL) ? currentPL.toString() : profitLossLabel.getValue()).doubleValue();
                             values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
+                        }
+                        if(spreadLabel != null) {
+                            Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
+                            Double lastSpread = GuiUtils.df.parse(spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread.toString() : spreadLabel.getValue()).doubleValue();
+                            values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
                         }
                         GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
                     } catch (ParseException p) {
@@ -355,6 +380,7 @@ public class ListTradesComponent implements Serializable {
             LOG.info("Stopping and cancel registration for trade {} ", trade.getId());
             registration.cancel();
         }
+
 
     }
 }

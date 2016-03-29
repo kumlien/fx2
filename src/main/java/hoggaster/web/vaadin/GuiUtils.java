@@ -21,7 +21,7 @@ public class GuiUtils {
 
     public static final Logger LOG = LoggerFactory.getLogger(GuiUtils.class);
 
-    public static final DecimalFormat df = new DecimalFormat("#.0000");
+    public static final DecimalFormat df = new DecimalFormat("0.0000");
 
     /**
      *
@@ -34,7 +34,7 @@ public class GuiUtils {
         values.entrySet().forEach(entry -> {
             Double newValue = entry.getValue().getT1();
             Double oldValue = entry.getValue().getT2();
-                LOG.info("Updating from  {} to {}", oldValue, newValue);
+                LOG.debug("Updating from  {} to {}", oldValue, newValue);
                 entry.getKey().setValue(df.format(newValue));
                 entry.getKey().removeStyleName("pushPositive");
                 entry.getKey().removeStyleName("pushNegative");
