@@ -80,8 +80,6 @@ public class ListTradesComponent implements Serializable {
 
     private final OrderServiceImpl orderService;
 
-    private final Map<Long, Registration> registrations = new ConcurrentHashMap<>();
-
     public final EventBus priceEventBus;
 
     private final EventBus depotEventBus;
@@ -183,6 +181,8 @@ public class ListTradesComponent implements Serializable {
                         LOG.info("Trade: " + t);
                         UI.getCurrent().removeWindow(tradeFormWindow);
                     });
+                } else if (action == EDIT_TRADE_ACTION) {
+                    Notification.show("Not implemented...", WARNING_MESSAGE);
                 }
             }
         });
@@ -193,10 +193,23 @@ public class ListTradesComponent implements Serializable {
         return tab;
     }
 
+    //Used to clean up the eventbus registrations we create
+    public void deregisterAll() {
+        pushers.values().forEach(Pusher::stop);
+        pushers.clear();
+    }
+
+    private final void deregister(Trade trade) {
+        final Pusher pusher = pushers.get(trade.brokerId);
+        if(pusher != null) pusher.stop();
+        pushers.remove(trade.brokerId);
+    }
+
     private Pusher getPusherForTrade(UITrade trade, UserView parentView) {
         Preconditions.checkArgument(trade.trade.getBrokerId() != null, "No brokerId set on the trade!");
         Pusher pusher = pushers.getOrDefault(trade.trade.getBrokerId(), new Pusher(trade.trade, parentView));
         pushers.put(trade.trade.getBrokerId(), pusher);
+        LOG.info("Number of pushers: {}", pushers.size());
         return pusher;
     }
 
@@ -205,9 +218,9 @@ public class ListTradesComponent implements Serializable {
             if (dialog.isConfirmed()) {
                 try {
                     CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
-                    deregister(trade.trade);
-                    populateTradeListFromDb(); //TODO do this async. Publish/subscribe on updated trades events
+                    populateTradeListFromDb();
                     String profitOrLoss = response.profit.compareTo(BigDecimal.ZERO) > 0 ? "profit" : "loss";
+                    deregister(trade.trade);
                     Notification.show("Your trade was closed to a price of " + response.price + ". The " + profitOrLoss + " was " + response.profit, WARNING_MESSAGE);
                 } catch (TradingHaltedException e) {
                     Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
@@ -259,33 +272,14 @@ public class ListTradesComponent implements Serializable {
         });
     }
 
-    //Used to clean up the eventbus registrations we create
-    public void deregisterAll() {
-        final Collection<Registration> r = registrations.values();
-        if (r != null) {
-            LOG.debug("About to deregisterAll {} registrations", this.registrations.size());
-            r.forEach(Registration::cancel);
-        } else {
-            LOG.debug("No registrations found");
-        }
-        registrations.clear();
-    }
-
-    private final void deregister(Trade trade) {
-        //does this work when closing a trade??
-        final Registration registration = registrations.remove(trade.brokerId);
-        if (registration != null) {
-            registration.cancel();
-        }
-    }
-
-
     //Class used to push updates for a row in the table.
     private class Pusher {
 
         static final String DEFAULT_LABEL = "waiting...";
 
         final BigDecimal ONE_HUNDRED = new BigDecimal("100.0");
+
+        final long MAX_TIME_BETWEEN_PUSH = 5000l;
 
         final Trade trade;
         final UserView parentView;
@@ -345,7 +339,7 @@ public class ListTradesComponent implements Serializable {
                     return;
                 }
                 Map<Label, Tuple2<Double, Double>> values = new HashMap<>();
-                if (System.currentTimeMillis() - lastPush > 5000) {
+                if (System.currentTimeMillis() - lastPush > MAX_TIME_BETWEEN_PUSH) {
                     lastPush = System.currentTimeMillis();
                     try {
                         Price tick = (Price) e.getData();
@@ -385,11 +379,11 @@ public class ListTradesComponent implements Serializable {
                     }
                 }
             });
-            LOG.info("Registration for trade {} created", trade.getId());
+            LOG.info("Registration for trade {} ({}) created", trade.getBrokerId(), trade.instrument);
         }
 
         void stop() {
-            LOG.info("Stopping and cancel registration for trade {} ", trade.getId());
+            LOG.info("Stopping and cancel registration for trade {} ({})", trade.getBrokerId(), trade.instrument);
             registration.cancel();
         }
 

@@ -89,7 +89,7 @@ public class ListPositionsComponent implements Serializable {
                             }
                             Double current = ((Price) e.getData()).ask.doubleValue();
                             Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                            LOG.info("Got a new price: {}", e.getData());
+                            LOG.debug("Got a new price: {}", e.getData());
                             GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
                         });
                         deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument

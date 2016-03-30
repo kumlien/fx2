@@ -81,8 +81,9 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addSelectedTabChangeListener(e -> {
             if (e.getTabSheet().getSelectedTab() == positionsTab) {
                 LOG.info("Positions tab is selected...");
+                listTradesComponent.deregisterAll();
             } else {
-                LOG.info("Deregister since selected tab is not positions tab");
+                LOG.info("{} is selected tab", e.getTabSheet().getSelectedTab());
                 listPositionsComponent.deregisterAll();
             }
         });
@@ -93,6 +94,7 @@ public class UserView extends MVerticalLayout implements View {
         getUI().addDetachListener(e -> {
             LOG.info("Deregister since the ui is detached");
             listPositionsComponent.deregisterAll();
+            listTradesComponent.deregisterAll();
         });
     }
 
