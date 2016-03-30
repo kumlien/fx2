@@ -72,18 +72,20 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
+        final Component tradesTab = listTradesComponent.setUp(user, this), "Trades");
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
-        tabSheet.addTab(listTradesComponent.setUp(user, this), "Trades");
+        tabSheet.addTab(
         tabSheet.addTab(createTransactionsTab(), "Transactions");
         tabSheet.addTab(createRobotsTab(), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
-            if (e.getTabSheet().getSelectedTab() == positionsTab) {
+            final Component selectedTab = e.getTabSheet().getSelectedTab();
+            if (selectedTab != positionsTab) {
                 LOG.info("Positions tab is selected...");
-                listTradesComponent.deregisterAll();
-            } else {
-                LOG.info("{} is selected tab", e.getTabSheet().getSelectedTab());
+                listPositionsComponent.deregisterAll();;
+            } else if(selectedTab != listTradesComponent) {
+                LOG.info("{} is selected tab", selectedTab);
                 listPositionsComponent.deregisterAll();
             }
         });

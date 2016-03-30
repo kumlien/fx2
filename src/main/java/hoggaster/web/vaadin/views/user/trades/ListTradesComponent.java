@@ -346,27 +346,27 @@ public class ListTradesComponent implements Serializable {
 
                         if (askLabel != null) {
                             Double currentAsk = tick.ask.doubleValue();
-                            LOG.info("Value of askLabel: {}", askLabel.getValue());
+                            LOG.debug("Value of askLabel: {}", askLabel.getValue());
                             Double lastAsk = askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk : GuiUtils.df.parse(askLabel.getValue()).doubleValue();
                             values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
                         }
                         if (bidLabel != null) {
                             Double currentBid = tick.bid.doubleValue();
-                            LOG.info("Value of bidLabel: {}", bidLabel.getValue());
+                            LOG.debug("Value of bidLabel: {}", bidLabel.getValue());
                             Double lastBid = bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid : GuiUtils.df.parse(bidLabel.getValue()).doubleValue();
                             values.put(bidLabel, Tuple2.of(currentBid, lastBid));
                         }
                         if (profitLossLabel != null) {
                             BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
                             String currentLabelValue = profitLossLabel.getValue();
-                            LOG.info("Value of PLLabel: {}", currentLabelValue);
+                            LOG.debug("Value of PLLabel: {}", currentLabelValue);
                             Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
                             Double lastPL = currentLabelValue.equals(DEFAULT_LABEL) ? currentPL : GuiUtils.df.parse(currentLabelValue).doubleValue();
                             values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
                         }
                         if (spreadLabel != null) {
                             Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
-                            LOG.info("Value of spreadLabel: {}", spreadLabel.getValue());
+                            LOG.debug("Value of spreadLabel: {}", spreadLabel.getValue());
                             Double lastSpread = spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread : GuiUtils.df.parse(spreadLabel.getValue()).doubleValue();
                             values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
                         }
