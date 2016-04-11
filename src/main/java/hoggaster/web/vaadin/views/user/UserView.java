@@ -72,10 +72,10 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
-        final Component tradesTab = listTradesComponent.setUp(user, this), "Trades");
+        final Component tradesTab = listTradesComponent.setUp(user, this);
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
-        tabSheet.addTab(
+        //tabSheet.addTab(
         tabSheet.addTab(createTransactionsTab(), "Transactions");
         tabSheet.addTab(createRobotsTab(), "Robots");
 

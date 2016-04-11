@@ -19,19 +19,20 @@
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <start-class>hoggaster.Application</start-class>
         <java.version>1.8</java.version>
-        <reactorVersion>2.0.7.RELEASE</reactorVersion>
-        <easyrules.version>2.1.0</easyrules.version>
-        <metrics.version>3.1.2</metrics.version>
-        <java.version>1.8</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <vaadin.version>7.6.2</vaadin.version>
-        <vaadin.viritin.version>1.46</vaadin.viritin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <start-class>hoggaster.Application</start-class>
+        <reactor.spring.version>2.0.7.RELEASE</reactor.spring.version>
+        <easyrules.version>2.1.0</easyrules.version>
+        <metrics.version>3.1.2</metrics.version>
+        <vaadin.version>7.6.4</vaadin.version>
+        <vaadin.viritin.version>1.49</vaadin.viritin.version>
         <guava.version>19.0</guava.version>
+        <commons.lang.version>3.4</commons.lang.version>
+        <spring.retry.version>1.1.2.RELEASE</spring.retry.version>
     </properties>
 
 
@@ -79,13 +80,13 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <version>${commons.lang.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.projectreactor.spring</groupId>
             <artifactId>reactor-spring-context</artifactId>
-            <version>${reactorVersion}</version>
+            <version>${reactor.spring.version}</version>
         </dependency>
 
         <dependency>
@@ -96,7 +97,7 @@
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
-            <version>1.1.2.RELEASE</version>
+            <version>${spring.retry.version}</version>
         </dependency>
 
 
@@ -192,6 +193,11 @@
         <repository>
             <id>vaadin-addons</id>
             <url>http://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+        <repository>
+            <id>spring.snapshots</id>
+            <url>http://repo.spring.io/libs-snapshot</url>
+            <snapshots/>
         </repository>
     </repositories>
 
