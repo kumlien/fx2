@@ -23,8 +23,10 @@ import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
+import reactor.rx.broadcast.Broadcaster;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
@@ -82,15 +85,25 @@ public class ListPositionsComponent implements Serializable {
                         Label label = new Label(defaultPriceLabel);
                         label.addStyleName("pushbox");
                         LOG.info("Creating new registration for position {}", position.getCurrencyPair());
+
+                        Broadcaster<Price> sink = Broadcaster.create(Environment.get());
+                        sink
+                                .onOverflowDrop()
+                                .log()
+                                .sample(5000, TimeUnit.MILLISECONDS)
+                                .consume(p -> {
+                                    Double current = p.ask.doubleValue();
+                                    Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
+                                    LOG.debug("Got a new price: {}", p);
+                                    GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                                });
+
                         final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
                             if (parentView.getUI() == null) { //Continue to push until gui is gone
                                 deregisterAll();
                                 return;
                             }
-                            Double current = ((Price) e.getData()).ask.doubleValue();
-                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                            LOG.debug("Got a new price: {}", e.getData());
-                            GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                            sink.onNext((Price) e.getData());
                         });
                         deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
                         registrations.put(position.getCurrencyPair(), registration);
@@ -149,8 +162,8 @@ public class ListPositionsComponent implements Serializable {
     //Used to clean up the eventbus registrations we create
     public void deregisterAll() {
         final Collection<Registration> r = registrations.values();
-        if (r != null) {
-            LOG.debug("About to deregisterAll {} registrations", this.registrations.size());
+        if (r != null && !r.isEmpty()) {
+            LOG.info("About to deregisterAll {} registrations", this.registrations.size());
             r.forEach(Registration::cancel);
         } else {
             LOG.debug("No registrations found");

@@ -75,18 +75,18 @@ public class UserView extends MVerticalLayout implements View {
         final Component tradesTab = listTradesComponent.setUp(user, this);
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
-        //tabSheet.addTab(
+        tabSheet.addTab(tradesTab,"Trades");
         tabSheet.addTab(createTransactionsTab(), "Transactions");
         tabSheet.addTab(createRobotsTab(), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
             final Component selectedTab = e.getTabSheet().getSelectedTab();
             if (selectedTab != positionsTab) {
-                LOG.info("Positions tab is selected...");
-                listPositionsComponent.deregisterAll();;
+                LOG.info("Positions tab is not selected...");
+                listPositionsComponent.deregisterAll();
             } else if(selectedTab != listTradesComponent) {
                 LOG.info("{} is selected tab", selectedTab);
-                listPositionsComponent.deregisterAll();
+                listTradesComponent.deregisterAll();
             }
         });
 
