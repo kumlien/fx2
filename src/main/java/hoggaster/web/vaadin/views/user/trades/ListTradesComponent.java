@@ -4,11 +4,7 @@ import com.google.common.base.Preconditions;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
 import com.vaadin.spring.annotation.ViewScope;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.UIDetachedException;
-import com.vaadin.ui.Window;
+import com.vaadin.ui.*;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
@@ -33,30 +29,29 @@ import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 import reactor.fn.tuple.Tuple2;
+import reactor.rx.broadcast.Broadcaster;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static hoggaster.domain.orders.OrderRequest.Builder.anOrderRequest;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static reactor.bus.selector.Selectors.$;
 
 /**
  * Used to display a list of all active trades for a user. Listens to the depot eventbus and refreshes the list
  * with trades when a depot change is received.
- *
+ * <p>
  * <p>
  * Created by svante.kumlien on 01.03.16.
  */
@@ -72,8 +67,6 @@ public class ListTradesComponent implements Serializable {
 
     private static final Action EDIT_TRADE_ACTION = new Action("Edit this trade");
 
-    final String defaultPriceLabel = "Waiting for prices...";
-
     private final DepotService depotService;
 
     private final TradeService tradeService;
@@ -88,9 +81,6 @@ public class ListTradesComponent implements Serializable {
 
     private FormUser user;
 
-    //move this into the pusher
-    private Map<Trade, Long> lastReceivedPricePerTrade = new ConcurrentHashMap<>();
-
     //Read this once
     private Collection<DbDepot> userDepots;
 
@@ -98,7 +88,7 @@ public class ListTradesComponent implements Serializable {
     Map<Long, Pusher> pushers = new ConcurrentHashMap<>();
 
     @Autowired
-    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus")EventBus depotEventBus) {
+    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus") EventBus depotEventBus) {
         this.depotService = depotService;
         this.tradeService = tradeService;
         this.orderService = orderService;
@@ -201,7 +191,7 @@ public class ListTradesComponent implements Serializable {
 
     private final void deregister(Trade trade) {
         final Pusher pusher = pushers.get(trade.brokerId);
-        if(pusher != null) pusher.stop();
+        if (pusher != null) pusher.stop();
         pushers.remove(trade.brokerId);
     }
 
@@ -263,7 +253,7 @@ public class ListTradesComponent implements Serializable {
             allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(toList()));
         }
         allTrades.forEach(t -> {
-            if(tradesTable.containsId(t)) {
+            if (tradesTable.containsId(t)) {
                 LOG.info("The table already contains trade with id {}", t.getBrokerId());
             } else {
                 LOG.info("No trade with id {} in the table", t.getBrokerId());
@@ -279,14 +269,13 @@ public class ListTradesComponent implements Serializable {
 
         final BigDecimal ONE_HUNDRED = new BigDecimal("100.0");
 
-        final long MAX_TIME_BETWEEN_PUSH = 5000l;
+        final long MIN_TIME_BETWEEN_PUSH = 5000l;
 
         final Trade trade;
         final UserView parentView;
         final CurrencyPair instrument;
         Registration registration;
         Boolean started = false;
-        Long lastPush = System.currentTimeMillis();
 
         private Label askLabel;
         private Label bidLabel;
@@ -300,31 +289,23 @@ public class ListTradesComponent implements Serializable {
         }
 
         Label createAskLabel() {
-            Label label = new Label(DEFAULT_LABEL);
-            label.addStyleName("pushbox");
-            askLabel = label;
-            return label;
+            askLabel= createDefaultLabel();
+            return askLabel;
         }
 
         Label createBidLabel() {
-            Label label = new Label(DEFAULT_LABEL);
-            label.addStyleName("pushbox");
-            bidLabel = label;
-            return label;
+            bidLabel = createDefaultLabel();
+            return bidLabel;
         }
 
         Label createProfitLossLabel() {
-            Label label = new Label(DEFAULT_LABEL);
-            label.addStyleName("pushbox");
-            profitLossLabel = label;
-            return label;
+            profitLossLabel = createDefaultLabel();
+            return profitLossLabel;
         }
 
         Label createSpreadLabel() {
-            Label label = new Label(DEFAULT_LABEL);
-            label.addStyleName("pushbox");
-            spreadLabel = label;
-            return label;
+            spreadLabel = createDefaultLabel();
+            return spreadLabel;
         }
 
         void start() {
@@ -332,52 +313,56 @@ public class ListTradesComponent implements Serializable {
                 if (started) return;
                 started = true;
             }
+
+            Map<Label, Tuple2<Double, Double>> values = new HashMap<>();
+            Broadcaster<Price> sink = Broadcaster.create(Environment.get());
+            sink
+                    .onOverflowDrop()
+                    .sample(MIN_TIME_BETWEEN_PUSH, MILLISECONDS)
+                    .consume(tick -> {
+                        try {
+                            if (askLabel != null) {
+                                Double currentAsk = tick.ask.doubleValue();
+                                LOG.debug("Value of askLabel: {}", askLabel.getValue());
+                                Double lastAsk = askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk : GuiUtils.df.parse(askLabel.getValue()).doubleValue();
+                                values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
+                            }
+                            if (bidLabel != null) {
+                                Double currentBid = tick.bid.doubleValue();
+                                LOG.debug("Value of bidLabel: {}", bidLabel.getValue());
+                                Double lastBid = bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid : GuiUtils.df.parse(bidLabel.getValue()).doubleValue();
+                                values.put(bidLabel, Tuple2.of(currentBid, lastBid));
+                            }
+                            if (profitLossLabel != null) {
+                                BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
+                                String currentLabelValue = profitLossLabel.getValue();
+                                LOG.debug("Value of PLLabel: {}", currentLabelValue);
+                                Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
+                                Double lastPL = currentLabelValue.equals(DEFAULT_LABEL) ? currentPL : GuiUtils.df.parse(currentLabelValue).doubleValue();
+                                values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
+                            }
+                            if (spreadLabel != null) {
+                                Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
+                                LOG.debug("Value of spreadLabel: {}", spreadLabel.getValue());
+                                Double lastSpread = spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread : GuiUtils.df.parse(spreadLabel.getValue()).doubleValue();
+                                values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
+                            }
+                            GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
+                        } catch (UIDetachedException ude) {
+                            LOG.info("Ui is detached...");
+                            stop();
+                        } catch (Exception p) {
+                            LOG.error("Dohh", p);
+                        }
+                    });
+
             registration = priceEventBus.on($("prices." + instrument), e -> {
                 LOG.debug("Got a new price: {}", e.getData());
                 if (parentView.getUI() == null) { //Continue to push until gui is gone
                     stop();
                     return;
                 }
-                Map<Label, Tuple2<Double, Double>> values = new HashMap<>();
-                if (System.currentTimeMillis() - lastPush > MAX_TIME_BETWEEN_PUSH) {
-                    lastPush = System.currentTimeMillis();
-                    try {
-                        Price tick = (Price) e.getData();
-
-                        if (askLabel != null) {
-                            Double currentAsk = tick.ask.doubleValue();
-                            LOG.debug("Value of askLabel: {}", askLabel.getValue());
-                            Double lastAsk = askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk : GuiUtils.df.parse(askLabel.getValue()).doubleValue();
-                            values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
-                        }
-                        if (bidLabel != null) {
-                            Double currentBid = tick.bid.doubleValue();
-                            LOG.debug("Value of bidLabel: {}", bidLabel.getValue());
-                            Double lastBid = bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid : GuiUtils.df.parse(bidLabel.getValue()).doubleValue();
-                            values.put(bidLabel, Tuple2.of(currentBid, lastBid));
-                        }
-                        if (profitLossLabel != null) {
-                            BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
-                            String currentLabelValue = profitLossLabel.getValue();
-                            LOG.debug("Value of PLLabel: {}", currentLabelValue);
-                            Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
-                            Double lastPL = currentLabelValue.equals(DEFAULT_LABEL) ? currentPL : GuiUtils.df.parse(currentLabelValue).doubleValue();
-                            values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
-                        }
-                        if (spreadLabel != null) {
-                            Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
-                            LOG.debug("Value of spreadLabel: {}", spreadLabel.getValue());
-                            Double lastSpread = spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread : GuiUtils.df.parse(spreadLabel.getValue()).doubleValue();
-                            values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
-                        }
-                        GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
-                    } catch (UIDetachedException ude) {
-                        LOG.info("Ui is detached...");
-                        stop();
-                    } catch (Exception p) {
-                        LOG.error("Dohh", p);
-                    }
-                }
+                sink.onNext((Price) e.getData());
             });
             LOG.info("Registration for trade {} ({}) created", trade.getBrokerId(), trade.instrument);
         }
@@ -385,6 +370,12 @@ public class ListTradesComponent implements Serializable {
         void stop() {
             LOG.info("Stopping and cancel registration for trade {} ({})", trade.getBrokerId(), trade.instrument);
             registration.cancel();
+        }
+
+        private final Label createDefaultLabel() {
+            Label label = new Label(DEFAULT_LABEL);
+            label.addStyleName("pushbox");
+            return label;
         }
 
 

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
+import reactor.core.dispatch.WorkQueueDispatcher;
 import reactor.core.processor.RingBufferWorkProcessor;
 import reactor.fn.Consumer;
 import reactor.fn.tuple.Tuple;
@@ -31,6 +32,9 @@ import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
+import static hoggaster.rules.indicators.CandleStickGranularity.MINUTE;
 
 
 /**
@@ -72,26 +76,14 @@ public class OandaScheduledTask {
     @PostConstruct
     void fetchAllHistoricData() {
         RingBufferWorkProcessor<Tuple2<CurrencyPair, CandleStickGranularity>> publisher = RingBufferWorkProcessor.create("Candle work processor", 256);
-        Stream<Tuple2<CurrencyPair, CandleStickGranularity>> instrumentStream = Streams.wrap(publisher);
-
-        // Consumer used to handle one currencyPair
-        Consumer<Tuple2<CurrencyPair, CandleStickGranularity>> ic = t -> {
-            try {
-                candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
-            } catch (Exception e) {
-                LOG.error("Error fetching {} candles", t, e);
-            }
-        };
+        Stream<Tuple2<CurrencyPair, CandleStickGranularity>> stream = Streams.wrap(publisher);
 
         // Attach  consumers
-        instrumentStream.consume(ic);
-        instrumentStream.consume(ic);
-        instrumentStream.consume(ic);
-        instrumentStream.consume(ic);
+        stream.consumeOn(new WorkQueueDispatcher("FetchCandlesDispatcher",4,16, e->LOG.warn("Exception fetching historic candles",e)), t -> candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2()));
 
         Environment.timer().submit(time -> {
-            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.MINUTE)));
-            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, CandleStickGranularity.END_OF_DAY)));
+            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, MINUTE)));
+            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, END_OF_DAY)));
             publisher.onComplete();
         }, 10, TimeUnit.SECONDS);
     }
@@ -157,7 +149,7 @@ public class OandaScheduledTask {
     public void fetchMinuteCandles() {
         LOG.info("About to fetch one minute candles");
         try {
-            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity.MINUTE);
+            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(MINUTE);
             LOG.info("Got {} one minute candles", candles.size());
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error publishing last minute candle", e);
@@ -175,7 +167,7 @@ public class OandaScheduledTask {
     public void fetchDayCandles() {
         LOG.info("About to fetch one day candles");
         try {
-            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity.END_OF_DAY);
+            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(END_OF_DAY);
             if(candles != null && !candles.isEmpty()) {
                 LOG.info("Done fetching one day candle, got {}", candles.get(0));
             }

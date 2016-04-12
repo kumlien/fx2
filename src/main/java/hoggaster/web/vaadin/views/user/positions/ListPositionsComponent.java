@@ -43,7 +43,7 @@ import static reactor.bus.selector.Selectors.$;
 
 /**
  * Used to display a list of all positions for a user.
- *
+ * <p>
  * Created by svante.kumlien on 01.03.16.
  */
 @Component
@@ -89,7 +89,6 @@ public class ListPositionsComponent implements Serializable {
                         Broadcaster<Price> sink = Broadcaster.create(Environment.get());
                         sink
                                 .onOverflowDrop()
-                                .log()
                                 .sample(5000, TimeUnit.MILLISECONDS)
                                 .consume(p -> {
                                     Double current = p.ask.doubleValue();
@@ -117,9 +116,9 @@ public class ListPositionsComponent implements Serializable {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[] { CLOSE_POSITION_ACTION };
+                    return new Action[]{CLOSE_POSITION_ACTION};
                 }
-                return new Action[] {};
+                return new Action[]{};
             }
 
             @Override
@@ -127,22 +126,22 @@ public class ListPositionsComponent implements Serializable {
                 final UIPosition position = (UIPosition) target;
                 ConfirmDialog.show(parentView.getUI(), "Really close position?",
                         "Are you really sure you want to close your " + position.getCurrencyPair() + " position?", "Yes", "No", dialog -> {
-                    if (dialog.isConfirmed()) {
-                        try {
-                            ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
-                            depotService.syncDepot(position.depot); //TODO do this using a service.
-                            deregister(position.getCurrencyPair());
-                            listEntities(); //TODO do this async. Publish/subscribe on updated depot events
-                            LOG.info("Position closed {}, {}", sender, target);
-                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
-                        } catch (TradingHaltedException e) {
-                            Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
-                        } catch (Exception e) {
-                            LOG.warn("Exception when closing position for position {}", position);
-                            Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
-                        }
-                    }
-                });
+                            if (dialog.isConfirmed()) {
+                                try {
+                                    ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
+                                    depotService.syncDepot(position.depot); //TODO do this using a service.
+                                    deregister(position.getCurrencyPair());
+                                    listEntities(); //TODO do this async. Publish/subscribe on updated depot events
+                                    LOG.info("Position closed {}, {}", sender, target);
+                                    Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
+                                } catch (TradingHaltedException e) {
+                                    Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
+                                } catch (Exception e) {
+                                    LOG.warn("Exception when closing position for position {}", position);
+                                    Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
+                                }
+                            }
+                        });
             }
         });
         listEntities();
@@ -173,7 +172,7 @@ public class ListPositionsComponent implements Serializable {
 
     private final void deregister(CurrencyPair currencyPair) {
         final Registration registration = registrations.get(currencyPair);
-        if(registration != null) {
+        if (registration != null) {
             registration.cancel();
             registrations.remove(currencyPair);
         }
