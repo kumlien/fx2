@@ -1,5 +1,6 @@
 package hoggaster.domain.brokers;
 
+import com.codahale.metrics.annotation.Timed;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderService;
 import hoggaster.domain.positions.ClosePositionResponse;
@@ -8,6 +9,7 @@ import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
+import rx.Observable;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
@@ -26,6 +28,9 @@ public interface BrokerConnection extends OrderService {
 
     // TODO remove Oanda x 2
     OandaPrices getPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
+
+    @Timed
+    Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments);
 
     Broker getBrokerID();
 

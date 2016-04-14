@@ -12,6 +12,7 @@ import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.springframework.stereotype.Service;
+import rx.Observable;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
@@ -57,6 +58,11 @@ public class BacktestingBrokerConnection implements BrokerConnection {
     @Override
     public OandaPrices getPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments) {
         return null;
     }
 

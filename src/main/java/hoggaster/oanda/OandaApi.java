@@ -29,6 +29,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -129,14 +131,14 @@ public class OandaApi implements BrokerConnection {
     public Optional<Trade> getTrade(String fx2DepotId, String brokerDepotId, String tradeId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
         String uri = builder.buildAndExpand(brokerDepotId, tradeId).toUriString();
-        LOG.info("Get trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", brokerDepotId, tradeId,  uri);
+        LOG.info("Get trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", brokerDepotId, tradeId, uri);
         ResponseEntity<OandaTradesResponse.Trade> openTrade = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getTrade");
                     return restTemplate.exchange(uri, HttpMethod.GET, defaultHttpEntity, OandaTradesResponse.Trade.class);
                 });
         OandaTradesResponse.Trade trade = openTrade.getBody();
-        if(trade != null) {
+        if (trade != null) {
             return Optional.of(fromOandaTrade(fx2DepotId, trade));
         }
         return Optional.empty();
@@ -147,7 +149,7 @@ public class OandaApi implements BrokerConnection {
     public CloseTradeResponse closeTrade(Trade trade, String brokerAccountId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getTrade());
         String uri = builder.buildAndExpand(brokerAccountId, trade.brokerId).toUriString();
-        LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", trade.depotId, trade.brokerId,  uri);
+        LOG.info("Close trade by id from oanda for depot with id {}, oandaTradeId: {} using uri {}", trade.depotId, trade.brokerId, uri);
         ResponseEntity<OandaClosedTradeReponse> closedTradeEntity = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "closeTrade");
@@ -155,7 +157,7 @@ public class OandaApi implements BrokerConnection {
                 });
         OandaClosedTradeReponse closedTrade = closedTradeEntity.getBody();
 
-        return new CloseTradeResponse(OANDA,String.valueOf(closedTrade.id), closedTrade.price, closedTrade.instrument,closedTrade.profit, closedTrade.side, closedTrade.time);
+        return new CloseTradeResponse(OANDA, String.valueOf(closedTrade.id), closedTrade.price, closedTrade.instrument, closedTrade.profit, closedTrade.side, closedTrade.time);
     }
 
     private static final Trade fromOandaTrade(String fx2DepotId, OandaTradesResponse.Trade t) {
@@ -280,7 +282,7 @@ public class OandaApi implements BrokerConnection {
 
     @Override
     @Timed
-    public OandaPrices getPrices(Set<OandaInstrument> instruments) throws UnsupportedEncodingException {
+    public OandaPrices getPrices(Set<OandaInstrument> instruments) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getPrices());
         StringBuilder sb = new StringBuilder();
         instruments.forEach(instrument -> sb.append(instrument.instrument).append("%2C"));
@@ -300,6 +302,14 @@ public class OandaApi implements BrokerConnection {
             LOG.warn("Server (Oanda) Error with the following body: {}", e.getResponseBodyAsString(), e);
         }
         return prices.getBody();
+    }
+
+
+
+    @Override
+    @Timed
+    public Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments) {
+        return Observable.defer(() -> Observable.just(getPrices(instruments))).subscribeOn(Schedulers.io());
     }
 
     @Override

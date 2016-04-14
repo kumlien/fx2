@@ -21,6 +21,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
@@ -31,6 +33,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
 import static org.springframework.http.HttpHeaders.*;
@@ -79,10 +82,11 @@ public class OandaPricesClient {
     //A lot of things to do on this one... Check heartbeats, re-connect on failure etc
     @PostConstruct
     public void init() {
-       startListenForPrices();
+        //startListenForPrices();
+        Environment.timer().submit(startTime->startListenForPricesAsync(),15, TimeUnit.SECONDS);
     }
 
-    public void startListenForPrices(){
+    public void startListenForPrices() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getStreamingPrices());
         StringBuilder sb = new StringBuilder();
         List<CurrencyPair> cps = Lists.newArrayList(Arrays.asList(CurrencyPair.MAJORS));
@@ -92,6 +96,7 @@ public class OandaPricesClient {
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
         Environment.workDispatcher().dispatch("hej", o -> {
             while (true) { //Or while something else
+                LOG.info("Enter loop listening for streaming prices");
                 try {
                     oandaClient.execute(uri, GET, request -> {
                         HttpHeaders headers = request.getHeaders();
@@ -113,9 +118,47 @@ public class OandaPricesClient {
         });
     }
 
+    public void startListenForPricesAsync() {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getStreamingPrices());
+        StringBuilder sb = new StringBuilder();
+        List<CurrencyPair> cps = Lists.newArrayList(Arrays.asList(CurrencyPair.MAJORS));
+        cps.addAll(Arrays.asList(CurrencyPair.MINORS));
+        cps.addAll(Arrays.asList(CurrencyPair.EXOTICS));
+        cps.forEach(cp -> sb.append(cp).append(","));
+        final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
+        try {
+            oandaClient.execute(uri, GET, request -> {
+                HttpHeaders headers = request.getHeaders();
+                headers.set(ACCEPT_ENCODING, "gzip, deflate");
+                headers.set(CONNECTION, "Keep-Alive");
+                headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+                headers.setContentType(APPLICATION_FORM_URLENCODED);
+            }, r -> fetchPricesAsync(r)
+                    .subscribe(
+                            p -> {
+                                LOG.info("Streaming price: {}", p);
+                                sendTick(p);
+                                LOG.info("Price put on the event bus");
+                            },
+                            err -> {
+                                LOG.warn("Error streaming prices:", err);
+                                startListenForPricesAsync();
+                            },
+                            ()->{
+                                LOG.info("Fetch prices stream completed, start listen again...");
+                                startListenForPricesAsync();
+                            }));
+            LOG.info("Using uri {}", uri.toString());
+
+        } catch (Exception e) {
+            LOG.debug("Exception while listening for streaming prices: {}", e);
+        }
+
+    }
 
 
     private Object fetchPrices(ClientHttpResponse r) throws IOException {
+        LOG.info("Start fetching prices from stream");
         ClientHttpResponse response = r;
         InputStream stream = response.getBody();
         BufferedReader br = new BufferedReader(new InputStreamReader(stream));
@@ -123,7 +166,7 @@ public class OandaPricesClient {
         try {
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("{\"tick\"")) {
-                    parseAndSendTick(line);
+                    sendTick(parse(line));
                 } else if (line.startsWith("{\"heartbeat\"")) {
                     LOG.debug("Got a heartbeat");
                 }
@@ -134,12 +177,41 @@ public class OandaPricesClient {
         return r;
     }
 
-    private void parseAndSendTick(String line) {
+    private Observable<Price> fetchPricesAsync(ClientHttpResponse r) {
+        LOG.info("In fetch prices async...");
+        Observable<Price> o = Observable.create((Observable.OnSubscribe<Price>)s -> {
+            try {
+                InputStream stream = r.getBody();
+                BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+                String line;
+                while ((line = br.readLine()) != null && !s.isUnsubscribed()) {
+                    if (line.startsWith("{\"tick\"")) {
+                        s.onNext(parse(line));
+                    } else if (line.startsWith("{\"heartbeat\"")) {
+                        LOG.debug("Got a heartbeat");
+                    }
+                }
+                s.onCompleted();
+            } catch (Exception e) {
+                s.onError(e);
+            }
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.computation())
+                .doAfterTerminate(r::close);
+
+        return o;
+    }
+
+    private static Price parse(String response) throws IOException {
+        final TickContainer container = objectMapper.readValue(response, TickContainer.class);
+        return new Price(container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA);
+    }
+
+    private void sendTick(Price p) {
         try {
-            final TickContainer container = objectMapper.readValue(line, TickContainer.class);
-            LOG.debug("Got a tick {}", container.tick);
-            pricesEventBus.notify("prices." + container.tick.instrument, Event.wrap(new Price(
-                    container.tick.instrument, container.tick.bid, container.tick.ask, Instant.ofEpochMilli(container.tick.time.getTime()), OANDA)));
+            LOG.info("Got a tick {}", p);
+            pricesEventBus.notify("prices." + p.currencyPair, Event.wrap(p));
         } catch (Exception e) {
             LOG.error("Failed...", e);
         }
