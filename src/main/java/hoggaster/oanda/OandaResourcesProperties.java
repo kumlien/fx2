@@ -39,6 +39,9 @@ public class OandaResourcesProperties {
     @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda trade endpoint")
     private String trade;
 
+    @NotEmpty(message = "Something is wrong with the configuration properties, can't read property for oanda streaming events endpoint")
+    private String streamingEvents;
+
     public String getTrade() {
         return trade;
     }
@@ -125,5 +128,13 @@ public class OandaResourcesProperties {
 
     public void setStreamingPrices(String streamingPrices) {
         this.streamingPrices = streamingPrices;
+    }
+
+    public String getStreamingEvents() {
+        return streamingEvents;
+    }
+
+    public void setStreamingEvents(String streamingEvents) {
+        this.streamingEvents = streamingEvents;
     }
 }
