@@ -7,6 +7,7 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.positions.Position;
+import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.trades.Trade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,8 @@ public class DbDepot {
      */
     private Set<Trade> openTrades = Sets.newHashSet();
 
+    private Set<RobotDefinition> robotDefinitions;
+
 
     /**
      * The amount of cash in your account.
@@ -127,12 +130,13 @@ public class DbDepot {
      */
     @PersistenceConstructor
     public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, Set<Trade> openTrades, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type, Set<RobotDefinition> robotDefinitions) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, numberOfOpenTrades, numberOfOpenOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.positions = positions;
         this.numberOfOpenTrades = numberOfOpenTrades;
         this.openTrades = openTrades;
+        this.robotDefinitions = robotDefinitions;
     }
 
 
@@ -440,6 +444,6 @@ public class DbDepot {
     }
 
     public enum Type {
-        LIVE, DEMO, SIMULATION;
+        LIVE, DEMO, SIMULATION
     }
 }

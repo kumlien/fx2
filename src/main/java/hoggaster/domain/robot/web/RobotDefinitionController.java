@@ -1,9 +1,9 @@
-package hoggaster.robot.web;
+package hoggaster.domain.robot.web;
 
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
-import hoggaster.robot.RobotDefinition;
-import hoggaster.robot.RobotDefinitionRepo;
+import hoggaster.domain.robot.RobotDefinition;
+import hoggaster.domain.robot.RobotDefinitionRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

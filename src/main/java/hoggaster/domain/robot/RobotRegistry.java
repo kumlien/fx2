@@ -1,4 +1,4 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import com.google.common.base.Preconditions;
 import org.springframework.stereotype.Service;

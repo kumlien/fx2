@@ -1,7 +1,7 @@
 package hoggaster.rules.indicators;
 
 import com.tictactec.ta.lib.RetCode;
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 import hoggaster.talib.TAResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;

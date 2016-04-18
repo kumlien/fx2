@@ -1,6 +1,6 @@
 package hoggaster.rules.indicators;
 
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 
 import java.math.BigDecimal;
 

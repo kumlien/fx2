@@ -1,6 +1,6 @@
 package hoggaster.rules.conditions;
 
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.Rule;
 

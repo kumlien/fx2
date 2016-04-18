@@ -1,4 +1,4 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;

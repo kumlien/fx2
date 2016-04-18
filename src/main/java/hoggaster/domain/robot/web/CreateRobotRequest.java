@@ -1,4 +1,4 @@
-package hoggaster.robot.web;
+package hoggaster.domain.robot.web;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,4 +1,4 @@
-package hoggaster.robot.web;
+package hoggaster.domain.robot.web;
 
 import hoggaster.candles.CandleService;
 import hoggaster.domain.brokers.BrokerConnection;
@@ -6,11 +6,11 @@ import hoggaster.domain.depots.Depot;
 import hoggaster.domain.depots.DepotImpl;
 import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.prices.PriceService;
+import hoggaster.domain.robot.Robot;
+import hoggaster.domain.robot.RobotDefinition;
+import hoggaster.domain.robot.RobotDefinitionRepo;
+import hoggaster.domain.robot.RobotRegistry;
 import hoggaster.domain.trades.TradeService;
-import hoggaster.robot.Robot;
-import hoggaster.robot.RobotDefinition;
-import hoggaster.robot.RobotDefinitionRepo;
-import hoggaster.robot.RobotRegistry;
 import hoggaster.talib.TALibService;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;

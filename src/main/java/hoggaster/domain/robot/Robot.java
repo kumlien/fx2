@@ -1,4 +1,4 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static hoggaster.robot.RobotStatus.RUNNING;
+import static hoggaster.domain.robot.RobotStatus.RUNNING;
 import static reactor.bus.selector.Selectors.R;
 
 /*

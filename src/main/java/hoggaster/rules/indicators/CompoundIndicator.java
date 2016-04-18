@@ -1,6 +1,6 @@
 package hoggaster.rules.indicators;
 
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 
 import java.math.BigDecimal;
 
@@ -40,7 +40,7 @@ public class CompoundIndicator implements Indicator {
     }
 
     public enum Operator {
-        ADD, SUBTRACT, DIVIDE, MULTIPLY;
+        ADD, SUBTRACT, DIVIDE, MULTIPLY
     }
 
 }
