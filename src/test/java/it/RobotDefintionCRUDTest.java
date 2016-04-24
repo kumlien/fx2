@@ -4,8 +4,8 @@ import hoggaster.MongoConfig;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotDefinition;
-import hoggaster.domain.robot.RobotDefinitionRepo;
 import hoggaster.domain.trades.TradeAction;
+import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.conditions.Condition;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
@@ -48,7 +48,7 @@ public class RobotDefintionCRUDTest {
     @Test
     @Ignore
     public void testCreatePellesRobot() throws InterruptedException {
-        RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", CurrencyPair.EUR_USD, "aTestDepot");
+        RobotDefinition robotDefinition = new RobotDefinition("PellesRobot", CurrencyPair.EUR_USD, "aTestDepot", "aUserId");
 
         RSIIndicator rsi1 = new RSIIndicator(2, 100, 0, END_OF_DAY, CLOSE_BID); //rsi with 2 periods, minimum 100 data points, look at first value, type of candle is DAY and field to use is close_bid
         RSIIndicator rsi2 = new RSIIndicator(2, 100, 1, END_OF_DAY, CLOSE_BID);
@@ -69,7 +69,7 @@ public class RobotDefintionCRUDTest {
 
     @Test
     public void testCRUDRobotDefinition() throws InterruptedException {
-        RobotDefinition rd = new RobotDefinition("myRobotDefinition", CurrencyPair.AUD_USD, "aDepotId");
+        RobotDefinition rd = new RobotDefinition("myRobotDefinition", CurrencyPair.AUD_USD, "aDepotId", "aUserId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, TradeAction.OPEN, OrderSide.buy, MarketUpdateType.ONE_MINUTE_CANDLE);
         rd.addEnterTradeCondition(buyCondition);
         rd = robotRepo.save(rd);
@@ -89,7 +89,7 @@ public class RobotDefintionCRUDTest {
     @Test
     @Ignore
     public void testCRUDRobotDefinition2() throws InterruptedException {
-        RobotDefinition rd = new RobotDefinition("Robot2", CurrencyPair.EUR_USD, "aDepotId");
+        RobotDefinition rd = new RobotDefinition("Robot2", CurrencyPair.EUR_USD, "aDepotId", "aUserId");
         TwoIndicatorCondition buyCondition = new TwoIndicatorCondition("Buy when ask is >= 150", new CurrentAskIndicator(), new SimpleValueIndicator(new BigDecimal(150.0)), GREATER_OR_EQUAL_THAN, 1, TradeAction.OPEN, OrderSide.buy);
         rd.addEnterTradeCondition(buyCondition);
         rd = robotRepo.save(rd);

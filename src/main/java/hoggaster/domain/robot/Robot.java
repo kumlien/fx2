@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static hoggaster.domain.robot.RobotStatus.RUNNING;
+import static hoggaster.domain.robot.RobotStatus.STOPPED;
 import static reactor.bus.selector.Selectors.R;
 
 /*
@@ -138,7 +139,7 @@ public class Robot implements Consumer<Event<?>> {
         LOG.info("This is Robot {} starting up", this);
         Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + currencyPair.name() + "*"), this);
         eventBusRegistrations.put("priceRegistration", reg);
-        this.status = RobotStatus.RUNNING;
+        this.status = RUNNING;
         LOG.info("Robot {} has started.", name);
     }
 
@@ -146,7 +147,7 @@ public class Robot implements Consumer<Event<?>> {
      * Unregister for events.
      */
     public void stop() {
-        this.status = RobotStatus.STOPPED;
+        this.status = STOPPED;
         eventBusRegistrations.values().stream().forEach(Registration::cancel);
         LOG.info("Robot {} has stopped.", name);
     }
