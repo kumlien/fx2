@@ -10,6 +10,7 @@ import hoggaster.domain.depots.DepotService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.depots.ListDepotsComponent;
 import hoggaster.web.vaadin.views.user.positions.ListPositionsComponent;
+import hoggaster.web.vaadin.views.user.robots.ListRobotsComponent;
 import hoggaster.web.vaadin.views.user.trades.ListTradesComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,14 +48,16 @@ public class UserView extends MVerticalLayout implements View {
     private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of positions
     private final ListDepotsComponent listDepotsComponent;
     private final ListTradesComponent listTradesComponent;
+    private final ListRobotsComponent listRobotsComponent;
 
 
     @Autowired
-    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent) {
+    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent, ListRobotsComponent listRobotsComponent) {
         this.brokerConnection = brokerConnection;
         this.listDepotsComponent = listDepotsComponent;
         this.listPositionsComponent = listPositionsComponent;
         this.listTradesComponent = listTradesComponent;
+        this.listRobotsComponent = listRobotsComponent;
     }
 
     @Override
@@ -71,13 +74,14 @@ public class UserView extends MVerticalLayout implements View {
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
         final Component tradesTab = listTradesComponent.setUp(user, this);
+
         listTradesComponent.deregisterAll();
         listPositionsComponent.deregisterAll();
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
         tabSheet.addTab(tradesTab,"Trades");
         tabSheet.addTab(createTransactionsTab(), "Transactions");
-        tabSheet.addTab(createRobotsTab(), "Robots");
+        tabSheet.addTab(listRobotsComponent.setUp(user,this), "Robots");
 
         tabSheet.addSelectedTabChangeListener(e -> {
             final Component selectedTab = e.getTabSheet().getSelectedTab();
@@ -98,13 +102,6 @@ public class UserView extends MVerticalLayout implements View {
             listPositionsComponent.deregisterAll();
             listTradesComponent.deregisterAll();
         });
-    }
-
-
-
-    private Component createRobotsTab() {
-        MVerticalLayout tab = new MVerticalLayout();
-        return tab;
     }
 
     private Component createTransactionsTab() {

@@ -28,12 +28,12 @@ public class RobotDefinition {
     private final String userId;
 
     @PersistenceConstructor
-    RobotDefinition(String id, String name, CurrencyPair currencyPair, Set<Condition> buyConditions, Set<Condition> sellConditions, String depotId, String userId) {
+    RobotDefinition(String id, String name, CurrencyPair currencyPair, Set<Condition> enterConditions, Set<Condition> exitConditions, String depotId, String userId) {
         this.id = id;
         this.name = name;
         this.currencyPair = currencyPair;
-        this.enterConditions = buyConditions;
-        this.exitConditions = sellConditions;
+        this.enterConditions = enterConditions;
+        this.exitConditions = exitConditions;
         this.depotId = depotId;
         this.userId = userId;
     }
