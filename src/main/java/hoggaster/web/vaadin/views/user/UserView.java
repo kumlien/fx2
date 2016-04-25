@@ -42,7 +42,6 @@ public class UserView extends MVerticalLayout implements View {
     public static final String SESSION_ATTRIBUTE_SELECTED_USER = "SelectedUser";
 
     private static final Logger LOG = LoggerFactory.getLogger(UserView.class);
-    private final DepotService depotService;
     public final BrokerConnection brokerConnection;
 
     private final ListPositionsComponent listPositionsComponent; //gui component used to display the list of positions
@@ -52,7 +51,6 @@ public class UserView extends MVerticalLayout implements View {
 
     @Autowired
     public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent) {
-        this.depotService = depotService;
         this.brokerConnection = brokerConnection;
         this.listDepotsComponent = listDepotsComponent;
         this.listPositionsComponent = listPositionsComponent;
@@ -73,6 +71,8 @@ public class UserView extends MVerticalLayout implements View {
 
         final Component positionsTab = listPositionsComponent.setUp(user, this);
         final Component tradesTab = listTradesComponent.setUp(user, this);
+        listTradesComponent.deregisterAll();
+        listPositionsComponent.deregisterAll();
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
         tabSheet.addTab(positionsTab, "Positions");
         tabSheet.addTab(tradesTab,"Trades");
