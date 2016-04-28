@@ -168,7 +168,6 @@ public class ListTradesComponent implements Serializable {
                     tradeFormWindow.setCaption("Open new market trade");
                     tradeForm.setSavedHandler(t -> sendOrderForNewTrade(t, tradeFormWindow));
                     tradeForm.setResetHandler(t -> {
-                        LOG.info("Trade: " + t);
                         UI.getCurrent().removeWindow(tradeFormWindow);
                     });
                 } else if (action == EDIT_TRADE_ACTION) {

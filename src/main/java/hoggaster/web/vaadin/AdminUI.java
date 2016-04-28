@@ -9,29 +9,44 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.navigator.SpringViewProvider;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import hoggaster.web.vaadin.views.LoginView;
+import hoggaster.domain.users.User;
+import hoggaster.web.vaadin.views.FirstView;
+import hoggaster.web.vaadin.views.login.LoginCredentials;
+import hoggaster.web.vaadin.views.login.LoginForm;
 import hoggaster.web.vaadin.views.user.ListUserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.label.Header;
+import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
+import static com.vaadin.ui.themes.ValoTheme.BUTTON_BORDERLESS;
+import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
+
 /**
+ *
+ * http://fortawesome.github.io/Font-Awesome/icons/
+ *
  * @author svante2
  */
 
-@Title("FX2 Admin interface")
+@Title("FX:2")
 @SpringUI(path = "fx2")
 @Theme("fx2")
 @Push(PushMode.MANUAL)
 public class AdminUI extends UI {
+
+    public static final String USER_SESSION_ATTR = "user";
 
     public static final Logger LOG = LoggerFactory.getLogger(AdminUI.class);
 
@@ -40,23 +55,39 @@ public class AdminUI extends UI {
 
     //The logout button, unset the user in the session and go back to login view
     private final Button logoutBtn = new MButton("Logout", e -> {
-        getUI().getSession().setAttribute(LoginView.USER_SESSION_ATTR, null);
-        getUI().getNavigator().navigateTo(LoginView.VIEW_NAME);
+        getUI().getSession().setAttribute(USER_SESSION_ATTR, null);
+        getUI().getNavigator().navigateTo(FirstView.VIEW_NAME);
     });
+
+    private final Button loginBtn = new MButton("login", e -> {
+        hoggaster.web.vaadin.views.login.LoginForm form = new LoginForm();
+        form.openInModalPopup();
+        form.setSavedHandler(u -> login(u,form));
+        form.setResetHandler(u -> form.closePopup());
+    }).withStyleName(BUTTON_FRIENDLY, BUTTON_BORDERLESS);
 
     //Button to navigate to the list with users
     private final Button listUsersBtn = createNavigationButton("List users", ListUserView.VIEW_NAME);
 
+    private final AuthenticationProvider authenticationProvider;
+
+    private final UserDetailsService userDetailsService;
+
     @Autowired
-    public AdminUI(SpringViewProvider viewProvider) {
+    public AdminUI(SpringViewProvider viewProvider, AuthenticationProvider authenticationProvider, UserDetailsService userDetailsService) {
         this.viewProvider = viewProvider;
+        this.authenticationProvider = authenticationProvider;
+        this.userDetailsService = userDetailsService;
         logoutBtn.addStyleName(ValoTheme.BUTTON_SMALL);
     }
 
     @Override
     protected void init(VaadinRequest request) {
 
-        Header header = new Header("Welcome to FX2");
+        Header header = new Header("FX:2 - Forex trading, second attempt...");
+        MHorizontalLayout top = new MHorizontalLayout(header, loginBtn)
+                .withAlign(loginBtn, Alignment.MIDDLE_RIGHT)
+                .withFullWidth();
 
         final Panel viewContainer = new Panel();
         viewContainer.setSizeFull();
@@ -66,7 +97,7 @@ public class AdminUI extends UI {
 
         //Build a root layout with a header, the view container and a nav bar at the bottom. The content of the view container
         //will be handled by the view navigator.
-        final MVerticalLayout root = new MVerticalLayout(header, viewContainer, navigationBar).expand(viewContainer);
+        final MVerticalLayout root = new MVerticalLayout(top, viewContainer, navigationBar).expand(viewContainer);
         root.setSizeFull();
         root.setMargin(true);
         root.setSpacing(true);
@@ -79,16 +110,14 @@ public class AdminUI extends UI {
 
             @Override
             public boolean beforeViewChange(ViewChangeEvent event) {
-
-                LOG.debug("View changed to {}", event.getNewView().getClass().getSimpleName());
                 // Check if a user has logged in
-                boolean isLoggedIn = getSession().getAttribute(LoginView.USER_SESSION_ATTR) != null;
-                boolean isLoginView = event.getNewView() instanceof LoginView;
+                boolean isLoggedIn = getSession().getAttribute(USER_SESSION_ATTR) != null;
+                boolean isLoginView = event.getNewView() instanceof FirstView;
                 if(!isLoggedIn) {
                     navigationBar.removeComponent(logoutBtn);
                     navigationBar.removeComponent(listUsersBtn);
                     if(!isLoginView) {
-                        getNavigator().navigateTo(LoginView.VIEW_NAME);
+                        getNavigator().navigateTo(FirstView.VIEW_NAME);
                         return false;
                     }
                 } else { //Logged in
@@ -105,6 +134,23 @@ public class AdminUI extends UI {
             @Override
             public void afterViewChange(ViewChangeEvent event) {}
         });
+    }
+
+    private void login(LoginCredentials credentials, LoginForm loginForm) {
+        try {
+            Authentication ud = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword()));
+            LOG.info("User logged in: " + ud);
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(credentials.getUsername());
+            getSession().setAttribute(USER_SESSION_ATTR, userDetails);
+            getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
+            Notification.show("Welcome " + ((User)userDetails).getFirstName());
+            loginForm.closePopup();
+        } catch(AuthenticationException ae) {
+            LOG.debug("Authentication failed...");
+            Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);
+        } finally {
+            loginBtn.setEnabled(true);
+        }
     }
 
     //Create a button which navigates to the specified view upon click.

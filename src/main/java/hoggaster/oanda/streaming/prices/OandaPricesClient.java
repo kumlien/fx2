@@ -106,7 +106,7 @@ public class OandaPricesClient {
                 .subscribe(
                         p -> {
                             sendTick(p);
-                            LOG.info("Price put on the event bus: {}", p);
+                            LOG.debug("Price put on the event bus: {}", p);
                         },
                         err -> {
                             LOG.warn("Error streaming prices:", err);

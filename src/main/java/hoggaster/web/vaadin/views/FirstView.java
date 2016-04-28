@@ -1,25 +1,14 @@
 package hoggaster.web.vaadin.views;
 
-import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.SpringView;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.PasswordField;
 import com.vaadin.ui.TextField;
-import com.vaadin.ui.themes.ValoTheme;
-import hoggaster.domain.users.User;
-import hoggaster.web.vaadin.views.user.ListUserView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MPasswordField;
@@ -35,13 +24,11 @@ import javax.annotation.PostConstruct;
  * Displays a login form for the user. Saves the user in the
  * session if login is successful.
  */
-@SpringView(name = LoginView.VIEW_NAME)
-public class LoginView extends MVerticalLayout implements View {
+@SpringView(name = FirstView.VIEW_NAME)
+public class FirstView extends MVerticalLayout implements View {
     public static final String VIEW_NAME = "";
 
-    public static final String USER_SESSION_ATTR = "user";
-
-    private static final Logger LOG = LoggerFactory.getLogger(LoginView.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FirstView.class);
 
     private final TextField username = new MTextField("Username");
 
@@ -54,13 +41,14 @@ public class LoginView extends MVerticalLayout implements View {
     private final UserDetailsService userDetailsService;
 
     @Autowired
-    public LoginView(AuthenticationProvider authenticationProvider, UserDetailsService userDetailsService) {
+    public FirstView(AuthenticationProvider authenticationProvider, UserDetailsService userDetailsService) {
         this.authenticationProvider = authenticationProvider;
         this.userDetailsService = userDetailsService;
     }
 
     @PostConstruct
     public void init() {
+        /*
         loginBtn.setDisableOnClick(true);
         loginBtn.setClickShortcut(KeyCode.ENTER);
         loginBtn.addStyleName(ValoTheme.BUTTON_FRIENDLY);
@@ -91,18 +79,12 @@ public class LoginView extends MVerticalLayout implements View {
                 loginBtn.setEnabled(true);
             }
         });
-
-        username.setRequired(true);
-        username.setIcon(FontAwesome.USER);
-
-        password.setRequired(true);
-        password.setIcon(FontAwesome.ASTERISK);
-
-        addComponents(new Label("Please login"), username,password,loginBtn);
+        */
     }
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        username.focus();
+
     }
+
 }
