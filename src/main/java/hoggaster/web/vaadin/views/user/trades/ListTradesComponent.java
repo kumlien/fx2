@@ -112,13 +112,10 @@ public class ListTradesComponent implements Serializable {
         tradesTable = new MTable<>(UITrade.class)
                 .withProperties("instrument", "side", "openPrice", "openTime", "units")
                 .withColumnHeaders("Currency pair", "Side", "Open price", "Open time", "Units")
-                .withGeneratedColumn("Current bid", new SimpleColumnGenerator<UITrade>() {
-                    @Override
-                    public Object generate(UITrade trade) {//Generate a column with the 'price'. Create and return a label which we can push new prices to later.
-                        Pusher p = getPusherForTrade(trade, parentView);
-                        p.start();
-                        return p.createBidLabel();
-                    }
+                .withGeneratedColumn("Current bid", trade -> {//Generate a column with the 'price'. Create and return a label which we can push new prices to later.
+                    Pusher p = getPusherForTrade(trade, parentView);
+                    p.start();
+                    return p.createBidLabel();
                 })
                 .withGeneratedColumn("Current ask", new SimpleColumnGenerator<UITrade>() {
                     @Override
@@ -357,7 +354,7 @@ public class ListTradesComponent implements Serializable {
 
             registration = priceEventBus.on($("prices." + instrument), e -> {
                 LOG.debug("Got a new price: {}", e.getData());
-                if (parentView.getUI() == null) { //Continue to push until gui is gone
+                if (parentView.getUI() == null || !parentView.getUI().isAttached()) { //Continue to push until gui is gone
                     stop();
                     return;
                 }

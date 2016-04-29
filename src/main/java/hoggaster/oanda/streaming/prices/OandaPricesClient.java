@@ -106,7 +106,6 @@ public class OandaPricesClient {
                 .subscribe(
                         p -> {
                             sendTick(p);
-                            LOG.debug("Price put on the event bus: {}", p);
                         },
                         err -> {
                             LOG.warn("Error streaming prices:", err);
@@ -154,6 +153,7 @@ public class OandaPricesClient {
     private void sendTick(Price p) {
         try {
             pricesEventBus.notify("prices." + p.currencyPair, Event.wrap(p));
+            LOG.debug("Price put on the event bus (key: {}): {}","prices."+p.currencyPair, p);
         } catch (Exception e) {
             LOG.error("Failed...", e);
         }
