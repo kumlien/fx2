@@ -18,7 +18,7 @@ public class LoginForm extends AbstractForm<LoginCredentials> {
     public LoginForm() {
         setEntity(new LoginCredentials());
         username.setIcon(FontAwesome.USER);
-        password.setIcon(FontAwesome.ASTERISK);
+        password.setIcon(FontAwesome.LOCK);
         setModalWindowTitle("Login");
 
     }
@@ -27,6 +27,7 @@ public class LoginForm extends AbstractForm<LoginCredentials> {
     protected Component createContent() {
         focusFirst();
         setSaveCaption("Login");
+        getSaveButton().addStyleName("loginButton");
         return new MVerticalLayout(
                 username,
                 password,

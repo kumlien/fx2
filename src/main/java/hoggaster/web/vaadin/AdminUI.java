@@ -40,7 +40,7 @@ import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
  * @author svante2
  */
 
-@Title("FX:2")
+@Title("FX::2")
 @SpringUI(path = "fx2")
 @Theme("fx2")
 @Push(PushMode.MANUAL)
@@ -84,7 +84,7 @@ public class AdminUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
 
-        Header header = new Header("FX:2 - Forex trading, second attempt...");
+        Header header = new Header("FX :: 2 - Forex trading, second attempt...");
         MHorizontalLayout top = new MHorizontalLayout(header, loginBtn)
                 .withAlign(loginBtn, Alignment.MIDDLE_RIGHT)
                 .withFullWidth();
