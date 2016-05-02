@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import reactor.bus.EventBus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -59,6 +60,11 @@ public class DbDepotServiceTest {
        return mock(BrokerConnection.class);
     }
 
+    @Bean
+    public EventBus depotEventBus() {
+        return EventBus.create();
+    }
+
 
     /**
      */
@@ -85,7 +91,7 @@ public class DbDepotServiceTest {
         User user = mock(User.class);
         Mockito.when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
-        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
+        BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake external depot", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
             DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", OANDA, externalDepotId, DbDepot.Type.DEMO);

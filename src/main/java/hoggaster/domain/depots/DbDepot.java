@@ -89,7 +89,7 @@ public class DbDepot {
      */
     private Set<Trade> openTrades = Sets.newHashSet();
 
-    private Set<RobotDefinition> robotDefinitions;
+    private Set<RobotDefinition> robotDefinitions = Sets.newHashSet();
 
 
     /**

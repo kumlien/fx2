@@ -119,28 +119,31 @@ public class OandaPricesClient {
 
     }
 
-    private Observable<Price> fetchPricesAsync(ClientHttpResponse r) {
+    /*
+     * Return an Observable of prices.
+     */
+    private Observable<Price> fetchPricesAsync(ClientHttpResponse response) {
         LOG.info("In fetch prices async...");
-        Observable<Price> o = Observable.create((Observable.OnSubscribe<Price>) s -> {
+        Observable<Price> o = Observable.create((Observable.OnSubscribe<Price>) subscriber -> {
             try {
-                InputStream stream = r.getBody();
+                InputStream stream = response.getBody();
                 BufferedReader br = new BufferedReader(new InputStreamReader(stream));
                 String line;
-                while ((line = br.readLine()) != null && !s.isUnsubscribed()) {
+                while ((line = br.readLine()) != null && !subscriber.isUnsubscribed()) {
                     if (line.startsWith("{\"tick\"")) {
-                        s.onNext(parse(line));
+                        subscriber.onNext(parse(line));
                     } else if (line.startsWith("{\"heartbeat\"")) {
                         LOG.info("Got a heartbeat");
                     }
                 }
-                s.onCompleted();
+                subscriber.onCompleted();
             } catch (Exception e) {
-                s.onError(e);
+                subscriber.onError(e);
             }
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.computation())
-                .doAfterTerminate(r::close);
+                .doAfterTerminate(response::close);
 
         return o;
     }
@@ -153,7 +156,7 @@ public class OandaPricesClient {
     private void sendTick(Price p) {
         try {
             pricesEventBus.notify("prices." + p.currencyPair, Event.wrap(p));
-            LOG.debug("Price put on the event bus (key: {}): {}","prices."+p.currencyPair, p);
+            LOG.info("Price put on the event bus (key: {}): {}","prices."+p.currencyPair, p);
         } catch (Exception e) {
             LOG.error("Failed...", e);
         }
