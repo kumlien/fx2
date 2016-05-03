@@ -88,12 +88,11 @@ public class ListPositionsComponent implements Serializable {
 
                         Broadcaster<Price> sink = Broadcaster.create(Environment.get());
                         sink
-                                .onOverflowDrop()
-                                .sample(5000, TimeUnit.MILLISECONDS)
+                                //.sample(5000, TimeUnit.MILLISECONDS)
                                 .consume(p -> {
+                                    LOG.info("***************************** Got a new price: {}", p);
                                     Double current = p.ask.doubleValue();
                                     Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                                    LOG.debug("Got a new price: {}", p);
                                     GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
                                 });
 
@@ -102,6 +101,7 @@ public class ListPositionsComponent implements Serializable {
                                 deregisterAll();
                                 return;
                             }
+                            LOG.info("Got a price, putting it in the sink");
                             sink.onNext((Price) e.getData());
                         });
                         deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument

@@ -109,11 +109,11 @@ public class OandaPricesClient {
                         },
                         err -> {
                             LOG.warn("Error streaming prices:", err);
-                            startListenForPricesAsync();
+                            init();
                         },
                         () -> {
                             LOG.info("Fetch prices stream completed, start listen again...");
-                            startListenForPricesAsync();
+                            init();
                         }));
 
 
