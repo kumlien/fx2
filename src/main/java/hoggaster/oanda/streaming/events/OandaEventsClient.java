@@ -65,14 +65,13 @@ public class OandaEventsClient {
     //A lot of things to do on this one... Check heartbeats, re-connect on failure etc
     @PostConstruct
     public void init() {
-        Environment.timer().submit(startTime -> startListenForEventsAsync(), 15, TimeUnit.SECONDS);
+        //Environment.timer().submit(startTime -> startListenForEventsAsync(), 15, TimeUnit.SECONDS);
         LOG.info("Leaving init...");
     }
 
 
     public void startListenForEventsAsync() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getStreamingEvents());
-        StringBuilder sb = new StringBuilder();
         final URI uri = builder.build().toUri();
         LOG.info("Using uri {}", uri.toString());
         oandaClient.execute(uri, GET, request -> {

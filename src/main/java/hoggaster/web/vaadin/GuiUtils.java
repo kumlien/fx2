@@ -60,8 +60,9 @@ public class GuiUtils {
     //Works for labels
     public static void setAndPushDoubleLabel(UI ui, Label label, Double newValue, Double oldValue) {
         Preconditions.checkArgument(ui != null, "UI can't be null!");
-        if (newValue == oldValue)
+        if (newValue == oldValue) {
             return;
+        }
         ui.access(() -> {
             label.setValue(newValue.toString());
             label.removeStyleName("pushPositive");

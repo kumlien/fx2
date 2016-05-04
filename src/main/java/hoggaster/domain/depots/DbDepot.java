@@ -250,13 +250,13 @@ public class DbDepot {
     public boolean updateWithValuesFrom(BrokerDepot brokerDepot, Set<Position> positions, Set<Trade> openTrades) {
         boolean changed = false;
         if (balance.compareTo(brokerDepot.balance) != 0) {
-            LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
+            LOG.debug("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
             balance = brokerDepot.balance;
             changed = true;
         }
 
         if (marginAvailable == null || marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
-            LOG.info("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
+            LOG.debug("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
             marginAvailable = brokerDepot.marginAvail;
             changed = true;
         }
@@ -274,7 +274,7 @@ public class DbDepot {
         }
 
         if (marginUsed == null || marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
-            LOG.info("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
+            LOG.debug("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
@@ -292,19 +292,19 @@ public class DbDepot {
         }
 
         if (realizedPl == null || realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
-            LOG.info("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
+            LOG.debug("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
         if (unrealizedPl == null || unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
-            LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
+            LOG.debug("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;
         }
 
         if (Strings.isNullOrEmpty(brokerDepotName) || !brokerDepotName.equals(brokerDepot.name)) {
-            LOG.info("Name updated with new value for dbDepot {}: {} -> {}", id, brokerDepotName, brokerDepot.name);
+            LOG.debug("Name updated with new value for dbDepot {}: {} -> {}", id, brokerDepotName, brokerDepot.name);
             brokerDepotName = brokerDepot.name;
             changed = true;
         }

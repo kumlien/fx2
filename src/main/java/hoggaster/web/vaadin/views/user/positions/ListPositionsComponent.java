@@ -26,6 +26,10 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
+import reactor.core.Dispatcher;
+import reactor.core.dispatch.RingBufferDispatcher;
+import reactor.core.dispatch.ThreadPoolExecutorDispatcher;
+import reactor.core.dispatch.WorkQueueDispatcher;
 import reactor.rx.broadcast.Broadcaster;
 
 import java.io.Serializable;
@@ -64,6 +68,9 @@ public class ListPositionsComponent implements Serializable {
 
     private FormUser user;
 
+    //private final Dispatcher dispatcher = new RingBufferDispatcher("gui-push-dispatcher", 64);
+    private final Dispatcher dispatcher = new WorkQueueDispatcher("gui-push-dispatcher", 2, 64, e->LOG.error("Error", e));
+
     @Autowired
     public ListPositionsComponent(DepotService depotService, @Qualifier("priceEventBus") EventBus priceEventBus) {
         this.depotService = depotService;
@@ -88,12 +95,14 @@ public class ListPositionsComponent implements Serializable {
 
                         Broadcaster<Price> sink = Broadcaster.create(Environment.get());
                         sink
-                                //.sample(5000, TimeUnit.MILLISECONDS)
+
+                                //.sample(10,1000,TimeUnit.MILLISECONDS)
                                 .consume(p -> {
                                     LOG.info("***************************** Got a new price: {}", p);
                                     Double current = p.ask.doubleValue();
                                     Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
                                     GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                                    LOG.info("***************************** Call to setAndPush done");
                                 });
 
                         final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
@@ -101,7 +110,7 @@ public class ListPositionsComponent implements Serializable {
                                 deregisterAll();
                                 return;
                             }
-                            LOG.info("Got a price, putting it in the sink");
+                            LOG.info("Got a price, putting it in the sink: {}", e.getData());
                             sink.onNext((Price) e.getData());
                         });
                         deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
