@@ -69,7 +69,7 @@ public class GuiUtils {
             label.removeStyleName("pushNegative");
             if (newValue > oldValue) {
                 label.addStyleName("pushPositive");
-            } else if (oldValue < newValue) {
+            } else {
                 label.addStyleName("pushNegative");
             }
             ui.push();

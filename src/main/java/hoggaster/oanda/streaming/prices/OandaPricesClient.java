@@ -174,7 +174,7 @@ public class OandaPricesClient {
     private void sendTick(Price p) {
         try {
             pricesEventBus.notify("prices." + p.currencyPair, Event.wrap(p));
-            LOG.info("Price put on the event bus (key: {}): {}", "prices." + p.currencyPair, p);
+            LOG.debug("Price put on the event bus (key: {}): {}", "prices." + p.currencyPair, p);
         } catch (Exception e) {
             LOG.error("Failed...", e);
         }
