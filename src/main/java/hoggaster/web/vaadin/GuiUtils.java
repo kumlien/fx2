@@ -63,22 +63,22 @@ public class GuiUtils {
         if (newValue == oldValue) {
             return;
         }
+        label.setValue(newValue.toString());
+        label.removeStyleName("pushPositive");
+        label.removeStyleName("pushNegative");
+        if (newValue > oldValue) {
+            label.addStyleName("pushPositive");
+        } else {
+            label.addStyleName("pushNegative");
+        }
         ui.access(() -> {
-            label.setValue(newValue.toString());
-            label.removeStyleName("pushPositive");
-            label.removeStyleName("pushNegative");
-            if (newValue > oldValue) {
-                label.addStyleName("pushPositive");
-            } else {
-                label.addStyleName("pushNegative");
-            }
             ui.push();
         });
 
         get().getTimer().submit(l -> {
+            label.removeStyleName("pushPositive");
+            label.removeStyleName("pushNegative");
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
-                label.removeStyleName("pushPositive");
-                label.removeStyleName("pushNegative");
                 ui.push();
             });
         } , 2, SECONDS);
