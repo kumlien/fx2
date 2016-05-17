@@ -2,8 +2,8 @@
 //$v-font-size: 20px;
 $v-app-loading-text: "Loading a fx-trading platform for you...";
 $v-unit-size: 30px; //Default is 37px
-$v-background-color: hsl(210deg, 0%, 50%);
-$v-gradient: v-linear 10%;
+//$v-background-color: hsl(210deg, 0%, 50%);
+//$v-gradient: v-linear 10%;
 
 
 
@@ -95,7 +95,7 @@ $v-gradient: v-linear 10%;
     @include valo;
 
     .v-button-loginButton {
-      @include valo-button-style($background-color: #000);
+      @include valo-button-style($background-color: 'green');
     }
     .pushPositive {
         animation: pushPositive 0.5s linear;

@@ -29,22 +29,22 @@ import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-import reactor.Environment;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
 import reactor.fn.tuple.Tuple2;
-import reactor.rx.broadcast.Broadcaster;
+import reactor.fn.tuple.Tuple3;
+import rx.schedulers.Schedulers;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static hoggaster.domain.orders.OrderRequest.Builder.anOrderRequest;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static reactor.bus.selector.Selectors.$;
 
@@ -310,24 +310,35 @@ public class ListTradesComponent implements Serializable {
                 started = true;
             }
 
-            Map<Label, Tuple2<Double, Double>> values = new HashMap<>();
-            Broadcaster<Price> sink = Broadcaster.create(Environment.get());
-            sink
-                    .onOverflowDrop()
-                    .sample(MIN_TIME_BETWEEN_PUSH, MILLISECONDS)
-                    .consume(tick -> {
+
+            rx.Observable.create(p -> {
+                LOG.info("Creating **new** registration for position {}", instrument);
+                registration = priceEventBus.on($("prices." + instrument), e -> {
+                    if (parentView.getUI() == null) { //Continue to push until gui is gone
+                        deregisterAll();
+                        return;
+                    }
+                    LOG.debug("Got a price, putting it in the stream: {}", e.getData());
+                    p.onNext(e.getData());
+                });
+            })
+                    .subscribeOn(Schedulers.io())
+                    .sample(5000, TimeUnit.MILLISECONDS)
+                    .subscribe(price -> {
+                        Price tick = (Price) price;
+                        Map<Label, Tuple3<Double, Double, Boolean>> values = new HashMap<>();
                         try {
                             if (askLabel != null) {
                                 Double currentAsk = tick.ask.doubleValue();
                                 LOG.debug("Value of askLabel: {}", askLabel.getValue());
                                 Double lastAsk = askLabel.getValue().equals(DEFAULT_LABEL) ? currentAsk : GuiUtils.df.parse(askLabel.getValue()).doubleValue();
-                                values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue()));
+                                values.put(askLabel, Tuple2.of(currentAsk, lastAsk.doubleValue(), false));
                             }
                             if (bidLabel != null) {
                                 Double currentBid = tick.bid.doubleValue();
                                 LOG.debug("Value of bidLabel: {}", bidLabel.getValue());
                                 Double lastBid = bidLabel.getValue().equals(DEFAULT_LABEL) ? currentBid : GuiUtils.df.parse(bidLabel.getValue()).doubleValue();
-                                values.put(bidLabel, Tuple2.of(currentBid, lastBid));
+                                values.put(bidLabel, Tuple2.of(currentBid, lastBid, false));
                             }
                             if (profitLossLabel != null) {
                                 BigDecimal currentPrice = trade.side == OrderSide.buy ? tick.bid : tick.ask;
@@ -335,13 +346,13 @@ public class ListTradesComponent implements Serializable {
                                 LOG.debug("Value of PLLabel: {}", currentLabelValue);
                                 Double currentPL = currentPrice.subtract(trade.openPrice).multiply(trade.getUnits()).divide(currentPrice, MathContext.DECIMAL32).doubleValue();
                                 Double lastPL = currentLabelValue.equals(DEFAULT_LABEL) ? currentPL : GuiUtils.df.parse(currentLabelValue).doubleValue();
-                                values.put(profitLossLabel, Tuple2.of(currentPL, lastPL));
+                                values.put(profitLossLabel, Tuple2.of(currentPL, lastPL, true));
                             }
                             if (spreadLabel != null) {
                                 Double currentSpread = tick.ask.subtract(tick.bid).divide(tick.ask, MathContext.DECIMAL32).multiply(ONE_HUNDRED).doubleValue();
                                 LOG.debug("Value of spreadLabel: {}", spreadLabel.getValue());
                                 Double lastSpread = spreadLabel.getValue().equals(DEFAULT_LABEL) ? currentSpread : GuiUtils.df.parse(spreadLabel.getValue()).doubleValue();
-                                values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread));
+                                values.put(spreadLabel, Tuple2.of(currentSpread, lastSpread, false));
                             }
                             GuiUtils.setAndPushDoubleLabels(parentView.getUI(), values);
                         } catch (UIDetachedException ude) {
@@ -351,21 +362,13 @@ public class ListTradesComponent implements Serializable {
                             LOG.error("Dohh", p);
                         }
                     });
-
-            registration = priceEventBus.on($("prices." + instrument), e -> {
-                LOG.debug("Got a new price: {}", e.getData());
-                if (parentView.getUI() == null || !parentView.getUI().isAttached()) { //Continue to push until gui is gone
-                    stop();
-                    return;
-                }
-                sink.onNext((Price) e.getData());
-            });
-            LOG.info("Registration for trade {} ({}) created", trade.getBrokerId(), trade.instrument);
         }
 
         void stop() {
-            LOG.info("Stopping and cancel registration for trade {} ({})", trade.getBrokerId(), trade.instrument);
-            registration.cancel();
+            if(!registration.isCancelled()) {
+                LOG.info("Stopping and cancel registration for trade {} ({})", trade.getBrokerId(), trade.instrument);
+                registration.cancel();
+            }
         }
 
         private final Label createDefaultLabel() {
@@ -373,7 +376,5 @@ public class ListTradesComponent implements Serializable {
             label.addStyleName("pushbox");
             return label;
         }
-
-
     }
 }

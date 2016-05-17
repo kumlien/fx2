@@ -6,7 +6,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.fn.tuple.Tuple2;
+import reactor.fn.tuple.Tuple3;
 
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -24,18 +24,17 @@ public class GuiUtils {
     public static final DecimalFormat df = new DecimalFormat("0.0000");
 
     /**
-     *
      * @param ui
-     * @param values
-     *            a {@link Map} with a {@link Label} as key and a {@link Tuple2} as value where the first tuple value is the new value for the label and the
-     *            second tuple value is the old value for the label.
+     * @param values a {@link Map} with a {@link Label} as key and a {@link Tuple3} as value where the first tuple value is the new value for the label and the
+     *               second tuple value is the old value for the label and the third value is a boolean indicating if new styles should be applied for positive/negative changes
      */
-    public static void setAndPushDoubleLabels(UI ui, Map<Label, Tuple2<Double, Double>> values) {
+    public static void setAndPushDoubleLabels(UI ui, Map<Label, Tuple3<Double, Double, Boolean>> values) {
         values.entrySet().forEach(entry -> {
             Double newValue = entry.getValue().getT1();
             Double oldValue = entry.getValue().getT2();
-                LOG.debug("Updating from  {} to {}", oldValue, newValue);
-                entry.getKey().setValue(df.format(newValue));
+            LOG.debug("Updating from  {} to {}", oldValue, newValue);
+            entry.getKey().setValue(df.format(newValue));
+            if (entry.getValue().getT3()) {
                 entry.getKey().removeStyleName("pushPositive");
                 entry.getKey().removeStyleName("pushNegative");
                 if (newValue >= oldValue) {
@@ -43,6 +42,7 @@ public class GuiUtils {
                 } else {
                     entry.getKey().addStyleName("pushNegative");
                 }
+            }
         });
 
         ui.access(ui::push);
@@ -53,7 +53,7 @@ public class GuiUtils {
                 label.removeStyleName("pushNegative");
             });
             ui.access(ui::push);
-        } , 2, SECONDS);
+        }, 2, SECONDS);
 
     }
 
@@ -81,7 +81,7 @@ public class GuiUtils {
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
                 ui.push();
             });
-        } , 2, SECONDS);
+        }, 2, SECONDS);
     }
 
     //Works for text fields
@@ -99,7 +99,7 @@ public class GuiUtils {
                 removeStyles(field);
                 ui.push();
             });
-        } , 2, SECONDS);
+        }, 2, SECONDS);
     }
 
     private static void removeStyles(AbstractTextField field) {

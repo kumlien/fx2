@@ -75,8 +75,6 @@ public class ListRobotsComponent implements Serializable {
 
     //Read all depots from db and their open trades.
     private void populateTableFromDb() {
-        robotDefinitionRepo.findByUserId(user.getId()).stream().map(UIRobot::new).peek(robotsTable::addBeans);
+        //robotDefinitionRepo.findByUserId(user.getId()).stream().map(UIRobot::new).peek(robotsTable::addBeans);
     }
-
-
 }
