@@ -12,22 +12,18 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Set;
 
-@Document
 public class RobotDefinition {
 
-    @Id
     private String id;
 
-    @Indexed(unique = true)
     public final String name;
     public final CurrencyPair currencyPair;
     private final Set<Condition> enterConditions;
     private final Set<Condition> exitConditions;
     private final String depotId;
-    @Indexed
+
     private final String userId;
 
-    @PersistenceConstructor
     RobotDefinition(String id, String name, CurrencyPair currencyPair, Set<Condition> enterConditions, Set<Condition> exitConditions, String depotId, String userId) {
         this.id = id;
         this.name = name;

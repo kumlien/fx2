@@ -103,7 +103,7 @@ public class ListPositionsComponent implements Serializable {
                             registrations.put(position.getCurrencyPair(), registration);
                         })
                                 .subscribeOn(Schedulers.io())
-                                .sample(5000, TimeUnit.MILLISECONDS)
+                                .throttleFirst(5000, TimeUnit.MILLISECONDS)
                                 .subscribe(price -> {
                             Double current = ((Price) price).ask.doubleValue();
                             Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
