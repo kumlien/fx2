@@ -6,10 +6,14 @@ import com.vaadin.annotations.Title;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.navigator.SpringViewProvider;
-import com.vaadin.ui.*;
+import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Notification;
+import com.vaadin.ui.Panel;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 import hoggaster.domain.users.User;
 import hoggaster.web.vaadin.views.FirstView;
@@ -30,6 +34,8 @@ import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
+import static com.vaadin.shared.communication.PushMode.MANUAL;
+import static com.vaadin.shared.ui.ui.Transport.WEBSOCKET_XHR;
 import static com.vaadin.ui.themes.ValoTheme.BUTTON_BORDERLESS;
 import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
 
@@ -43,7 +49,7 @@ import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
 @Title("FX::2")
 @SpringUI(path = "fx2")
 @Theme("fx2")
-@Push(PushMode.MANUAL)
+@Push(value = MANUAL, transport = WEBSOCKET_XHR)
 public class AdminUI extends UI {
 
     public static final String USER_SESSION_ATTR = "user";
@@ -52,12 +58,6 @@ public class AdminUI extends UI {
 
     //Get the views annotated as SpringView:s
     private final SpringViewProvider viewProvider;
-
-    //The logout button, unset the user in the session and go back to login view
-    private final Button logoutBtn = new MButton("Logout", e -> {
-        getUI().getSession().setAttribute(USER_SESSION_ATTR, null);
-        getUI().getNavigator().navigateTo(FirstView.VIEW_NAME);
-    });
 
     private final Button loginBtn = new MButton("login", e -> {
         hoggaster.web.vaadin.views.login.LoginForm form = new LoginForm();
@@ -71,6 +71,13 @@ public class AdminUI extends UI {
 
     private final AuthenticationProvider authenticationProvider;
 
+    //The logout button, unset the user in the session and go back to login view
+    private final Button logoutBtn = new MButton("Logout", e -> {
+        getUI().getSession().setAttribute(USER_SESSION_ATTR, null);
+        getUI().getNavigator().navigateTo(FirstView.VIEW_NAME);
+        loginBtn.setVisible(true);
+    });
+
     private final UserDetailsService userDetailsService;
 
     @Autowired
@@ -79,12 +86,13 @@ public class AdminUI extends UI {
         this.authenticationProvider = authenticationProvider;
         this.userDetailsService = userDetailsService;
         logoutBtn.addStyleName(ValoTheme.BUTTON_SMALL);
+        //viewProvider.setAccessDeniedViewClass(AccessDeniedView.class);
     }
 
     @Override
     protected void init(VaadinRequest request) {
 
-        Header header = new Header("FX :: 2 - Forex trading, second attempt...");
+        Header header = new Header("FX :: 2");
         MHorizontalLayout top = new MHorizontalLayout(header, loginBtn)
                 .withAlign(loginBtn, Alignment.MIDDLE_RIGHT)
                 .withFullWidth();
@@ -145,6 +153,7 @@ public class AdminUI extends UI {
             getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
             Notification.show("Welcome " + ((User)userDetails).getFirstName());
             loginForm.closePopup();
+            loginBtn.setVisible(false);
         } catch(AuthenticationException ae) {
             LOG.debug("Authentication failed...");
             Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);

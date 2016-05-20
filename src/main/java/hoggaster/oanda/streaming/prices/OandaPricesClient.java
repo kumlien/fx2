@@ -112,7 +112,7 @@ public class OandaPricesClient {
                                 sendTick(p);
                             },
                             err -> {
-                                LOG.warn("Error streaming prices :", err);
+                                LOG.warn("Error streaming prices, will start litsten again...", err);
                                 response.close();
                                 init();
                             },
@@ -122,7 +122,7 @@ public class OandaPricesClient {
                                 init();
                             }));
         } catch (Exception e) {
-            LOG.warn("Exception starting listening for prices", e);
+            LOG.warn("Exception start listening for prices, will try again...", e);
             init();
         }
         LOG.info("Leaving startListenForPricesAsync");
@@ -142,7 +142,7 @@ public class OandaPricesClient {
      */
     private Observable<Price> fetchPricesAsync(ClientHttpResponse response) {
         LOG.info("In fetch prices async...");
-        Observable<Price> o = Observable.create((Observable.OnSubscribe<Price>) subscriber -> {
+        Observable<Price> tickStream = Observable.create((Observable.OnSubscribe<Price>) subscriber -> {
             try {
                 InputStream stream = response.getBody();
                 BufferedReader br = new BufferedReader(new InputStreamReader(stream));
@@ -168,7 +168,7 @@ public class OandaPricesClient {
                 .observeOn(Schedulers.computation())
                 .doAfterTerminate(response::close);
 
-        return o;
+        return tickStream;
     }
 
     private void sendTick(Price p) {
