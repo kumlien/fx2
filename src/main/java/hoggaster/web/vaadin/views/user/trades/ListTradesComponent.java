@@ -359,7 +359,7 @@ public class ListTradesComponent implements Serializable {
                             LOG.info("Ui is detached...");
                             stop();
                         } catch (Exception p) {
-                            LOG.error("Dohh", p);
+                            LOG.error("Dohh for price {}", tick, p);
                         }
                     });
         }
