@@ -2,9 +2,9 @@ package hoggaster.web.vaadin.views.user.robots;
 
 import com.vaadin.event.Action;
 import com.vaadin.spring.annotation.ViewScope;
+import hoggaster.domain.depots.DepotRepo;
 import hoggaster.domain.robot.Robot;
 import hoggaster.domain.robot.RobotRegistry;
-import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
 import org.slf4j.Logger;
@@ -13,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.layouts.MVerticalLayout;
+import rx.Observable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Used to display a list of all robots for a user.
@@ -35,7 +38,7 @@ public class ListRobotsComponent implements Serializable {
 
     private static final Action EDIT_ROBOT_ACTION = new Action("Edit this robot");
 
-    private final RobotDefinitionRepo robotDefinitionRepo;
+    private final DepotRepo depotRepo;
 
     private final RobotRegistry robotRegistry;
 
@@ -46,12 +49,12 @@ public class ListRobotsComponent implements Serializable {
     private Collection<Robot> runningRobots;
 
     @Autowired
-    public ListRobotsComponent(RobotDefinitionRepo robotDefinitionRepo, RobotRegistry robotRegistry) {
-        this.robotDefinitionRepo = robotDefinitionRepo;
+    public ListRobotsComponent(DepotRepo depotRepo, RobotRegistry robotRegistry) {
+        this.depotRepo = depotRepo;
         this.robotRegistry = robotRegistry;
     }
 
-    //Create the tab with the robot defintions and the running robots
+    //Create the tab with the robot definitions and the running robots
     public MVerticalLayout setUp(FormUser user, UserView parentView) {
         this.user = user;
 
@@ -74,7 +77,13 @@ public class ListRobotsComponent implements Serializable {
 
 
     //Read all depots from db and their open trades.
-    private void populateTableFromDb() {
-        //robotDefinitionRepo.findByUserId(user.getId()).stream().map(UIRobot::new).peek(robotsTable::addBeans);
+    private Observable<UIRobot> populateTableFromDb() {
+        Collection<UIRobot> robots = depotRepo.findByUserId(user.getId())
+                .stream()
+                .flatMap(dbDepot -> dbDepot.getRobotDefinitions().stream())
+                .map(UIRobot::new)
+                .collect(Collectors.toCollection(ArrayList::new));
+        robotsTable.addBeans(robots);
+        return null;
     }
 }

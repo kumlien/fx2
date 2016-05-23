@@ -5,6 +5,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
+/**
+ * @deprecated The RobotDefinitions are inside the dbDepots...
+ */
 public interface RobotDefinitionRepo extends MongoRepository<RobotDefinition, String> {
 
     List<RobotDefinition> findByDepotId(String depotId);
