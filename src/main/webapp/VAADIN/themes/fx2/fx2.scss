@@ -95,23 +95,23 @@ $v-unit-size: 30px; //Default is 37px
     @include valo;
 
     .v-button-loginButton {
-      @include valo-button-style($background-color: 'green');
+      @include valo-button-style($background-color: #555);
     }
     .pushPositive {
-        animation: pushPositive 0.5s linear;
-        -webkit-animation: pushPositive 0.5s ease-out;
+        -webkit-animation: pushPositive .5s 2 ease-out;
+        animation: pushPositive .5s 2 linear;
     }
     .pushNegative {
-        animation: pushNegative 0.5s linear;
-        -webkit-animation: pushNegative 0.5s ease-out;
+        -webkit-animation: pushNegative .5s 2 ease-out;
+        animation: pushNegative .5s 2 linear;
     }
     .pushPositive:after {
-        animation: arrowPushPositive 0.5s linear;
-        -webkit-animation: arrowPushPositive 0.5s ease-out;
+        -webkit-animation: arrowPushPositive .5s ease-out;
+        animation: arrowPushPositive .5s linear;
     }
     .pushNegative:after {
-        animation: arrowPushNegative 0.5s linear;
-        -webkit-animation: arrowPushNegative 0.5s ease-out;
+        -webkit-animation: arrowPushNegative .5s ease-out;
+        animation: arrowPushNegative .5s linear;
     }
     .roundCorners3 {
         -moz-border-radius: 25 px;

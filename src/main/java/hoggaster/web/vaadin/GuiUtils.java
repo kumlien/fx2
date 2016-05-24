@@ -47,13 +47,13 @@ public class GuiUtils {
 
         ui.access(ui::push);
 
-        get().getTimer().submit(l -> {
+        /*get().getTimer().submit(l -> {
             values.keySet().forEach(label -> {
                 label.removeStyleName("pushPositive");
                 label.removeStyleName("pushNegative");
             });
             ui.access(ui::push);
-        }, 2, SECONDS);
+        }, 2, SECONDS);*/
 
     }
 
@@ -75,6 +75,7 @@ public class GuiUtils {
             ui.push();
         });
 
+        /* This doesn't really work since the push is global for a ui...
         get().getTimer().submit(l -> {
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
                 label.removeStyleName("pushPositive");
@@ -82,6 +83,7 @@ public class GuiUtils {
                 ui.push();
             });
         }, 2, SECONDS);
+        */
     }
 
     //Works for text fields
