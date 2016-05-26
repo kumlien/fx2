@@ -1,6 +1,7 @@
 package hoggaster.web.vaadin;
 
 import com.google.common.base.Preconditions;
+import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.AbstractTextField;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
@@ -29,31 +30,29 @@ public class GuiUtils {
      *               second tuple value is the old value for the label and the third value is a boolean indicating if new styles should be applied for positive/negative changes
      */
     public static void setAndPushDoubleLabels(UI ui, Map<Label, Tuple3<Double, Double, Boolean>> values) {
-        values.entrySet().forEach(entry -> {
-            Double newValue = entry.getValue().getT1();
-            Double oldValue = entry.getValue().getT2();
-            LOG.debug("Updating from  {} to {}", oldValue, newValue);
-            entry.getKey().setValue(df.format(newValue));
-            if (entry.getValue().getT3()) {
-                entry.getKey().removeStyleName("pushPositive");
-                entry.getKey().removeStyleName("pushNegative");
-                if (newValue >= oldValue) {
-                    entry.getKey().addStyleName("pushPositive");
-                } else {
-                    entry.getKey().addStyleName("pushNegative");
+
+
+        ui.access(() -> {
+            values.entrySet().forEach(entry -> {
+                Double newValue = entry.getValue().getT1();
+                Double oldValue = entry.getValue().getT2();
+                LOG.debug("Updating from  {} to {}", oldValue, newValue);
+                entry.getKey().setValue(df.format(newValue));
+                if (entry.getValue().getT3()) {
+                    setStyles(entry.getKey(), newValue, oldValue);
                 }
-            }
+            });
+            ui.push();
         });
 
-        ui.access(ui::push);
-
-        /*get().getTimer().submit(l -> {
-            values.keySet().forEach(label -> {
-                label.removeStyleName("pushPositive");
-                label.removeStyleName("pushNegative");
+        get().getTimer().submit(l -> {
+            ui.access(() -> {
+                values.keySet().forEach(label -> {
+                    removeStyles(label);
+                });
+                ui.push();
             });
-            ui.access(ui::push);
-        }, 2, SECONDS);*/
+        }, 1, SECONDS);
 
     }
 
@@ -65,25 +64,17 @@ public class GuiUtils {
         }
         ui.access(() -> {
             label.setValue(newValue.toString());
-            label.removeStyleName("pushPositive");
-            label.removeStyleName("pushNegative");
-            if (newValue > oldValue) {
-                label.addStyleName("pushPositive");
-            } else {
-                label.addStyleName("pushNegative");
-            }
+            setStyles(label, newValue, oldValue);
             ui.push();
         });
 
-        /* This doesn't really work since the push is global for a ui...
+        // This doesn't really work since the push is global for a ui...
         get().getTimer().submit(l -> {
             ui.access(() -> { //Needed to trigger a repaint if we get two movements in the same direction after each other (I think...)
-                label.removeStyleName("pushPositive");
-                label.removeStyleName("pushNegative");
+                removeStyles(label);
                 ui.push();
             });
-        }, 2, SECONDS);
-        */
+        }, 1, SECONDS);
     }
 
     //Works for text fields
@@ -101,15 +92,15 @@ public class GuiUtils {
                 removeStyles(field);
                 ui.push();
             });
-        }, 2, SECONDS);
+        }, 1, SECONDS);
     }
 
-    private static void removeStyles(AbstractTextField field) {
+    private static void removeStyles(AbstractComponent field) {
         field.removeStyleName("pushPositive");
         field.removeStyleName("pushNegative");
     }
 
-    private static void setStyles(AbstractTextField field, Double newValue, Double oldValue) {
+    private static void setStyles(AbstractComponent field, Double newValue, Double oldValue) {
         removeStyles(field);
         if (newValue > oldValue) {
             field.addStyleName("pushPositive");

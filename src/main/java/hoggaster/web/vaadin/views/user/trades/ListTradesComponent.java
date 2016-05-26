@@ -204,6 +204,7 @@ public class ListTradesComponent implements Serializable {
             if (dialog.isConfirmed()) {
                 try {
                     CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
+                    depotService.syncDepot(trade.depot);
                     populateTradeListFromDb();
                     String profitOrLoss = response.profit.compareTo(BigDecimal.ZERO) > 0 ? "profit" : "loss";
                     deregister(trade.trade);
