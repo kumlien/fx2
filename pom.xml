@@ -28,7 +28,7 @@
         <reactor.spring.version>2.0.7.RELEASE</reactor.spring.version>
         <easyrules.version>2.1.0</easyrules.version>
         <metrics.version>3.1.2</metrics.version>
-        <vaadin.version>7.6.6</vaadin.version>
+        <vaadin.version>7.7.0</vaadin.version>
         <vaadin.viritin.version>1.51</vaadin.viritin.version>
         <guava.version>19.0</guava.version>
         <commons.lang.version>3.4</commons.lang.version>

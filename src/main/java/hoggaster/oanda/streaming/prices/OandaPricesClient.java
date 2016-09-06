@@ -1,24 +1,13 @@
 package hoggaster.oanda.streaming.prices;
 
-import static hoggaster.domain.brokers.Broker.OANDA;
-import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONNECTION;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.brokers.BrokerConnection;
+import hoggaster.domain.prices.Price;
+import hoggaster.domain.prices.TickContainer;
+import hoggaster.oanda.OandaProperties;
+import hoggaster.oanda.OandaResourcesProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,22 +19,27 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
+import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.prices.Price;
-import hoggaster.domain.prices.TickContainer;
-import hoggaster.oanda.OandaProperties;
-import hoggaster.oanda.OandaResourcesProperties;
+import static hoggaster.domain.brokers.Broker.OANDA;
+import static org.springframework.http.HttpHeaders.*;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 /**
  * Created by svante2 on 2016-03-03.
@@ -104,29 +98,14 @@ public class OandaPricesClient {
         final URI uri = builder.buildAndExpand(oandaProps.getMainAccountId(), sb.toString()).toUri();
         LOG.info("Using uri {}", uri.toString());
         try {
-            oandaClient.execute(uri, GET, request -> {
-                setHeaders(request);
-            }, response -> fetchPricesAsync(response)
-                    .subscribe(
-                            p -> {
-                                sendTick(p);
-                            },
-                            err -> {
-                                LOG.warn("Error streaming prices, will start litsten again...", err);
-                                response.close();
-                                init();
-                            },
-                            () -> {
-                                LOG.info("Fetch prices stream completed, start listen again...");
-                                response.close();
-                                init();
-                            }));
+            oandaClient.execute(uri, GET, this::setHeaders, response -> fetchPricesAsync(response)
+                    .subscribe(this::sendTick));
         } catch (Exception e) {
             LOG.warn("Exception start listening for prices, will try again...", e);
-            init();
+        } finally {
+            init(); //start read again
         }
         LOG.info("Leaving startListenForPricesAsync");
-
     }
 
     private void setHeaders(ClientHttpRequest request) {
@@ -134,6 +113,7 @@ public class OandaPricesClient {
         headers.set(ACCEPT_ENCODING, "gzip, deflate");
         headers.set(CONNECTION, "Keep-Alive");
         headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
+        //headers.set(TRANSFER_ENCODING, "chunked");
         headers.setContentType(APPLICATION_FORM_URLENCODED);
     }
 
@@ -149,6 +129,7 @@ public class OandaPricesClient {
                 String line;
                 while ((line = br.readLine()) != null && !subscriber.isUnsubscribed()) {
                     if (line.startsWith("{\"tick\"")) {
+                        LOG.info("Got a tick: {}", line);
                         subscriber.onNext(parsePrice(line));
                     } else if (line.startsWith("{\"heartbeat\"")) {
                         LOG.info("Got a heartbeat");
@@ -160,13 +141,8 @@ public class OandaPricesClient {
                 subscriber.onCompleted();
             } catch (Exception e) {
                 subscriber.onError(e);
-            } finally {
-                response.close();
             }
-        })
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.computation())
-                .doAfterTerminate(response::close);
+        }) .observeOn(Schedulers.computation());
 
         return tickStream;
     }
