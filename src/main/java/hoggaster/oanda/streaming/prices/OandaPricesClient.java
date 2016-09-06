@@ -113,7 +113,6 @@ public class OandaPricesClient {
         headers.set(ACCEPT_ENCODING, "gzip, deflate");
         headers.set(CONNECTION, "Keep-Alive");
         headers.set(AUTHORIZATION, "Bearer " + oandaProps.getApiKey());
-        //headers.set(TRANSFER_ENCODING, "chunked");
         headers.setContentType(APPLICATION_FORM_URLENCODED);
     }
 
@@ -150,7 +149,7 @@ public class OandaPricesClient {
     private void sendTick(Price p) {
         try {
             pricesEventBus.notify("prices." + p.currencyPair, Event.wrap(p));
-            LOG.info("Price put on the event bus for {}", p.currencyPair);
+            LOG.debug("Price put on the event bus for {}", p.currencyPair);
         } catch (Exception e) {
             LOG.error("Failed...", e);
         }
