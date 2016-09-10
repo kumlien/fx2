@@ -1,13 +1,16 @@
 package hoggaster;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.util.VersionUtil;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,20 +20,6 @@ import java.util.Currency;
 
 @Configuration
 public class JSR310Config {
-
-
-
-    public void jacksonObjectMapper(ObjectMapper om) {
-        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
-
-    /**
-     * @return ObjectMapper module for java.time types
-     */
-    @Bean
-    public JSR310Module jsr310Module() {
-        return new JSR310Module();
-    }
 
     @Bean
     public SimpleModule customSerializers(ObjectMapper jacksonObjectMapper) {
@@ -52,7 +41,7 @@ public class JSR310Config {
         }
 
         @Override
-        public void serialize(Currency currency, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonGenerationException {
+        public void serialize(Currency currency, JsonGenerator jgen, SerializerProvider provider) throws IOException {
             jgen.writeString(currency.getCurrencyCode());
         }
     }
@@ -63,10 +52,8 @@ public class JSR310Config {
         }
 
         @Override
-        public Currency deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public Currency deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             return Currency.getInstance(jp.getText());
         }
     }
-
-
 }

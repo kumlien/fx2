@@ -7,13 +7,24 @@ import hoggaster.domain.robot.RobotDefinition;
  */
 public class UIRobot {
 
-    final RobotDefinition robotDefinition;
+    RobotDefinition robotDefinition;
+
+    private String name;
 
     public UIRobot(RobotDefinition robotDefinition) {
         this.robotDefinition = robotDefinition;
     }
 
-    public String getName() {
-        return robotDefinition.name;
+    public UIRobot() {
     }
+
+    public String getName() {
+        return robotDefinition != null ? robotDefinition.name : "";
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
 }

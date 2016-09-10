@@ -1,7 +1,11 @@
 package hoggaster.web.vaadin.views.user.robots;
 
 import com.vaadin.event.Action;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.ViewScope;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DepotRepo;
 import hoggaster.domain.robot.Robot;
 import hoggaster.domain.robot.RobotRegistry;
@@ -11,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 import rx.Observable;
@@ -38,6 +43,10 @@ public class ListRobotsComponent implements Serializable {
 
     private static final Action EDIT_ROBOT_ACTION = new Action("Edit this robot");
 
+    private static final Action ADD_ROBOT_ACTION = new Action("Add a new robot");
+
+    private Button addNew = new MButton(FontAwesome.PLUS, this::add).withDescription("Add a new robot");
+
     private final DepotRepo depotRepo;
 
     private final RobotRegistry robotRegistry;
@@ -62,19 +71,32 @@ public class ListRobotsComponent implements Serializable {
         robotsTable = new MTable<>(UIRobot.class).withFullWidth();
 
         populateTableFromDb();
-        tab.addComponents(robotsTable);
+        HorizontalLayout horizontalLayout = new HorizontalLayout(addNew);
+        tab.addComponents(horizontalLayout,robotsTable);
         tab.expand(robotsTable);
+
+        addNew.addClickListener(this::addRobot);
         return tab;
     }
 
-    //Used to clean up the eventbus registrations we create
+    private void addRobot(Button.ClickEvent clickEvent) {
+        RobotForm form = new RobotForm();
+        Window popup = form.openInModalPopup();
+        form.setSavedHandler(entity -> {
+
+        });
+        form.setResetHandler(entity -> {
+
+        });
+
+    }
+
+    //Used to clean up the event bus registrations we create
     public void deregisterAll() {
     }
 
     private final void deregister(UIRobot robot) {
     }
-
-
 
     //Read all depots from db and their open trades.
     private Observable<UIRobot> populateTableFromDb() {
@@ -85,5 +107,8 @@ public class ListRobotsComponent implements Serializable {
                 .collect(Collectors.toCollection(ArrayList::new));
         robotsTable.addBeans(robots);
         return null;
+    }
+
+    public void add(Button.ClickEvent clickEvent) {
     }
 }
