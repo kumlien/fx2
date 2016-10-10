@@ -12,17 +12,14 @@ import hoggaster.oanda.OandaProperties;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import reactor.bus.EventBus;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -38,9 +35,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @EnableConfigurationProperties(value = {OandaProperties.class})
-@SpringApplicationConfiguration(classes = {DbDepotServiceTest.class, MongoConfig.class})
+@SpringBootTest(classes = {DbDepotServiceTest.class, MongoConfig.class, ITConfiguration.class})
 @Configuration
 @ComponentScan(basePackageClasses = {DepotService.class})
 public class DbDepotServiceTest {
@@ -57,24 +54,13 @@ public class DbDepotServiceTest {
     OandaProperties properties;
 
 
-    @Bean(name = "OandaBrokerConnection")
-    public BrokerConnection brokerConnection() {
-       return mock(BrokerConnection.class);
-    }
-
-    @Bean
-    public EventBus depotEventBus() {
-        return EventBus.create();
-    }
-
-
     /**
      */
     @Test
     @Ignore
     public void testCreatePellesDepot() throws Exception {
         User user = mock(User.class);
-        Mockito.when(user.getId()).thenReturn("aUserId");
+        when(user.getId()).thenReturn("aUserId");
         String brokerId = "9678914";
         BrokerDepot brokerDepot = new BrokerDepot(brokerId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(brokerId))).thenReturn(brokerDepot);
@@ -91,7 +77,7 @@ public class DbDepotServiceTest {
     @Test
     public void testCreateDeleteDepot() throws Exception {
         User user = mock(User.class);
-        Mockito.when(user.getId()).thenReturn("aUserId");
+        when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
         BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake external depot", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
@@ -104,13 +90,12 @@ public class DbDepotServiceTest {
             LOG.info("error...", e);
             throw e;
         }
-
     }
 
     @Test
     public void testAddPositions() throws Exception {
         User user = mock(User.class);
-        Mockito.when(user.getId()).thenReturn("aUserId");
+        when(user.getId()).thenReturn("aUserId");
         String externalDepotId = "123123123";
         DbDepot dbDepot = null;
         CurrencyPair currencyPair = AUD_JPY;

@@ -6,7 +6,6 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.TabSheet;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.depots.DepotService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.depots.ListDepotsComponent;
 import hoggaster.web.vaadin.views.user.positions.ListPositionsComponent;
@@ -52,7 +51,7 @@ public class UserView extends MVerticalLayout implements View {
 
 
     @Autowired
-    public UserView(DepotService depotService, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent, ListRobotsComponent listRobotsComponent) {
+    public UserView(@Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, ListPositionsComponent listPositionsComponent, ListDepotsComponent listDepotsComponent, ListTradesComponent listTradesComponent, ListRobotsComponent listRobotsComponent) {
         this.brokerConnection = brokerConnection;
         this.listDepotsComponent = listDepotsComponent;
         this.listPositionsComponent = listPositionsComponent;

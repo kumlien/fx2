@@ -128,7 +128,7 @@ public class OandaPricesClient {
                 String line;
                 while ((line = br.readLine()) != null && !subscriber.isUnsubscribed()) {
                     if (line.startsWith("{\"tick\"")) {
-                        LOG.info("Got a tick: {}", line);
+                        LOG.debug("Got a tick: {}", line);
                         subscriber.onNext(parsePrice(line));
                     } else if (line.startsWith("{\"heartbeat\"")) {
                         LOG.info("Got a heartbeat");

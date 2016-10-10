@@ -66,4 +66,5 @@ public class PositionTest {
         assertTrue(new BigDecimal("0").compareTo(position.getQuantity()) == 0);
         assertTrue("Av. price should be 0 but is " + position.getAveragePricePerShare(), new BigDecimal("0").compareTo(position.getAveragePricePerShare()) == 0);
     }
+
 }

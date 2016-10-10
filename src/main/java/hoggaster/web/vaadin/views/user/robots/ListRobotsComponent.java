@@ -8,6 +8,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DepotRepo;
 import hoggaster.domain.robot.Robot;
+import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.robot.RobotRegistry;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
@@ -80,13 +81,15 @@ public class ListRobotsComponent implements Serializable {
     }
 
     private void addRobot(Button.ClickEvent clickEvent) {
-        RobotForm form = new RobotForm();
+        RobotForm form = new RobotForm(depotRepo.findByUserId(user.getId()));
         Window popup = form.openInModalPopup();
-        form.setSavedHandler(entity -> {
-
+        form.setSavedHandler(robot -> {
+            LOG.info("Saving a new robot: {}", robot);
+            robot.getDbDepot().addRobotDefinition(new RobotDefinition());
+            popup.close();
         });
         form.setResetHandler(entity -> {
-
+            popup.close();
         });
 
     }

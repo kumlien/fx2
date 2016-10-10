@@ -443,11 +443,11 @@ public class DbDepot {
         return Collections.unmodifiableCollection(openTrades);
     }
 
-    public Set<RobotDefinition> getRobotDefinitions() {
+    public Collection<RobotDefinition> getRobotDefinitions() {
         if(robotDefinitions == null) {
             robotDefinitions = new HashSet<>();
         }
-        return robotDefinitions;
+        return Collections.unmodifiableCollection(robotDefinitions);
     }
 
     public enum Type {
