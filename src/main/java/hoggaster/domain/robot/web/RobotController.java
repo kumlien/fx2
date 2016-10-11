@@ -10,7 +10,6 @@ import hoggaster.domain.robot.Robot;
 import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.robot.RobotRegistry;
 import hoggaster.domain.trades.TradeService;
-import hoggaster.robot.RobotDefinitionRepo;
 import hoggaster.talib.TALibService;
 import org.easyrules.api.RulesEngine;
 import org.easyrules.core.RulesEngineBuilder;
@@ -35,8 +34,6 @@ public class RobotController {
 
     private final RobotRegistry robotRegistry;
 
-    private final RobotDefinitionRepo robotRepo;
-
     private final TALibService taLibService;
 
     private final EventBus priceEventBus;
@@ -54,9 +51,8 @@ public class RobotController {
 
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, RobotDefinitionRepo robotRepo, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, TALibService taLibService, CandleService candleService, DepotService depotService, PriceService priceService, TradeService tradeService) {
+    public RobotController(RobotRegistry robotRegistry, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, TALibService taLibService, CandleService candleService, DepotService depotService, PriceService priceService, TradeService tradeService) {
         this.robotRegistry = robotRegistry;
-        this.robotRepo = robotRepo;
         this.priceEventBus = priceEventBus;
         this.brokerConnection = brokerConnection;
         this.taLibService = taLibService;
@@ -74,16 +70,18 @@ public class RobotController {
     //Well, this was an interesting mapping for starting something... TODO
     @RequestMapping(value = "{id}", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public Robot startRobot(@PathVariable(value = "id") String robotId) {
+    public Robot startRobot(@PathVariable(value = "depotId") String depotId, @PathVariable(value = "robotId") String robotId) {
         LOG.info("Starting robot with id {}", robotId);
         Robot robot = robotRegistry.getById(robotId);
+
+        //TODO This doesnt work, need to fetch the depot and then the robot from the depot.
         if (robot == null) {
-            RobotDefinition definition = robotRepo.findOne(robotId);
+            RobotDefinition definition = null;
             if (definition == null) {
                 throw new IllegalArgumentException("No robot definition with id: " + robotId);
             }
 
-            Depot depot = new DepotImpl(definition.getDepotId(), brokerConnection, depotService, priceService, tradeService);
+            Depot depot = new DepotImpl(depotId, brokerConnection, depotService, priceService, tradeService);
 
             RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
             robot = new Robot(depot, definition, priceEventBus, ruleEngine, taLibService, candleService);

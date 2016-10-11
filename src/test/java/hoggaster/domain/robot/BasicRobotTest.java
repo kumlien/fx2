@@ -60,7 +60,7 @@ public class BasicRobotTest {
 
     @Before
     public void before() {
-        definition = new RobotDefinition("Frekkin robot!", CurrencyPair.USD_SEK, "1", "aUserId");
+        definition = new RobotDefinition("Frekkin robot!", CurrencyPair.USD_SEK);
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
 

@@ -5,12 +5,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.rules.conditions.Condition;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Set;
+import java.util.UUID;
 
 public class RobotDefinition {
 
@@ -20,25 +17,12 @@ public class RobotDefinition {
     public final CurrencyPair currencyPair;
     private final Set<Condition> enterConditions;
     private final Set<Condition> exitConditions;
-    private final String depotId;
 
-    private final String userId;
 
-    RobotDefinition(String id, String name, CurrencyPair currencyPair, Set<Condition> enterConditions, Set<Condition> exitConditions, String depotId, String userId) {
-        this.id = id;
+    public RobotDefinition(String name, CurrencyPair currencyPair) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.currencyPair = currencyPair;
-        this.enterConditions = enterConditions;
-        this.exitConditions = exitConditions;
-        this.depotId = depotId;
-        this.userId = userId;
-    }
-
-    public RobotDefinition(String name, CurrencyPair currencyPair, String depotId, String userId) {
-        this.name = name;
-        this.currencyPair = currencyPair;
-        this.depotId = depotId;
-        this.userId = userId;
         this.enterConditions = Sets.newHashSet();
         this.exitConditions = Sets.newHashSet();
     }
@@ -65,9 +49,6 @@ public class RobotDefinition {
         return exitConditions;
     }
 
-    public String getDepotId() {
-        return depotId;
-    }
 
     @Override
     public String toString() {
@@ -77,11 +58,7 @@ public class RobotDefinition {
                 .add("currencyPair", currencyPair)
                 .add("enterConditions", enterConditions)
                 .add("exitConditions", exitConditions)
-                .add("depotId", depotId)
                 .toString();
     }
 
-    public String getUserId() {
-        return userId;
-    }
 }

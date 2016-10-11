@@ -450,6 +450,17 @@ public class DbDepot {
         return Collections.unmodifiableCollection(robotDefinitions);
     }
 
+    private Collection<RobotDefinition> getRobotDefinitionsInternal() {
+        if(robotDefinitions == null) {
+            robotDefinitions = new HashSet<>();
+        }
+        return robotDefinitions;
+    }
+
+    public void addRobotDefinition(RobotDefinition robotDefinition) {
+        getRobotDefinitionsInternal().add(robotDefinition);
+    }
+
     public enum Type {
         LIVE, DEMO, SIMULATION
     }

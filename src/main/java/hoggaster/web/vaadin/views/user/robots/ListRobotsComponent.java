@@ -19,10 +19,8 @@ import org.springframework.stereotype.Component;
 import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-import rx.Observable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -64,12 +62,16 @@ public class ListRobotsComponent implements Serializable {
         this.robotRegistry = robotRegistry;
     }
 
-    //Create the tab with the robot definitions and the running robots
+    //Create the tab with the robot definitions
     public MVerticalLayout setUp(FormUser user, UserView parentView) {
         this.user = user;
 
         MVerticalLayout tab = new MVerticalLayout();
-        robotsTable = new MTable<>(UIRobot.class).withFullWidth();
+        robotsTable = new MTable<>(UIRobot.class)
+                .withProperties("name", "depotName", "instrument")
+                .withColumnHeaders("Name", "Depot", "Instrument")
+                .withGeneratedColumn("Currently running", r -> robotRegistry.getById(r.getId()) != null ? "Yes" : "No")
+                .withFullWidth();
 
         populateTableFromDb();
         HorizontalLayout horizontalLayout = new HorizontalLayout(addNew);
@@ -85,8 +87,10 @@ public class ListRobotsComponent implements Serializable {
         Window popup = form.openInModalPopup();
         form.setSavedHandler(robot -> {
             LOG.info("Saving a new robot: {}", robot);
-            robot.getDbDepot().addRobotDefinition(new RobotDefinition());
+            robot.getDbDepot().addRobotDefinition(new RobotDefinition(robot.getName(), robot.getInstrument()));
+            depotRepo.save(robot.getDbDepot());
             popup.close();
+            populateTableFromDb();
         });
         form.setResetHandler(entity -> {
             popup.close();
@@ -101,15 +105,14 @@ public class ListRobotsComponent implements Serializable {
     private final void deregister(UIRobot robot) {
     }
 
-    //Read all depots from db and their open trades.
-    private Observable<UIRobot> populateTableFromDb() {
+    //Read all robots
+    private void populateTableFromDb() {
         Collection<UIRobot> robots = depotRepo.findByUserId(user.getId())
                 .stream()
-                .flatMap(dbDepot -> dbDepot.getRobotDefinitions().stream())
-                .map(UIRobot::new)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .map(dbDepot -> dbDepot.getRobotDefinitions().stream().map(robotDef -> new UIRobot(robotDef, dbDepot)).collect(Collectors.toList()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
         robotsTable.addBeans(robots);
-        return null;
     }
 
     public void add(Button.ClickEvent clickEvent) {

@@ -50,9 +50,6 @@ public class DbDepotServiceTest {
     @Autowired
     private BrokerConnection brokerConnection;
 
-    @Autowired
-    OandaProperties properties;
-
 
     /**
      */

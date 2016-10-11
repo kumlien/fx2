@@ -9,23 +9,25 @@ import hoggaster.domain.robot.RobotDefinition;
  */
 public class UIRobot {
 
+    private String id;
+
     private String name;
 
     private CurrencyPair instrument;
 
     private DbDepot dbDepot;
 
-    private String depotId;
-
-    public UIRobot(RobotDefinition robotDefinition) {
+    public UIRobot(RobotDefinition robotDefinition, DbDepot dbDepot) {
         this.name = robotDefinition.name;
         this.instrument = robotDefinition.currencyPair;
-        this.depotId = robotDefinition.getDepotId();
+        this.id = robotDefinition.getId();
+        this.dbDepot = dbDepot;
     }
 
     public UIRobot() {
 
     }
+
 
     public String getName() {
         return name;
@@ -52,11 +54,12 @@ public class UIRobot {
         this.dbDepot = dbDepot;
     }
 
-    public String getDepotId() {
-        return depotId;
+    public String getDepotName() {
+        return dbDepot.name;
     }
 
-    public void setDepotId(String depotId) {
-        this.depotId = depotId;
+    public String getId() {
+        return id;
     }
+
 }
