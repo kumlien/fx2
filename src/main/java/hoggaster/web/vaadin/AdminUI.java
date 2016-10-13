@@ -8,12 +8,7 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.navigator.SpringViewProvider;
-import com.vaadin.ui.Alignment;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Notification;
-import com.vaadin.ui.Panel;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import hoggaster.domain.users.User;
 import hoggaster.web.vaadin.views.FirstView;
@@ -40,7 +35,6 @@ import static com.vaadin.ui.themes.ValoTheme.BUTTON_BORDERLESS;
 import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
 
 /**
- *
  * http://fortawesome.github.io/Font-Awesome/icons/
  *
  * @author svante2
@@ -62,7 +56,7 @@ public class AdminUI extends UI {
     private final Button loginBtn = new MButton("login", e -> {
         hoggaster.web.vaadin.views.login.LoginForm form = new LoginForm();
         form.openInModalPopup();
-        form.setSavedHandler(u -> login(u,form));
+        form.setSavedHandler(u -> login(u, form));
         form.setResetHandler(u -> form.closePopup());
     }).withStyleName(BUTTON_FRIENDLY, BUTTON_BORDERLESS);
 
@@ -121,17 +115,17 @@ public class AdminUI extends UI {
                 // Check if a user has logged in
                 boolean isLoggedIn = getSession().getAttribute(USER_SESSION_ATTR) != null;
                 boolean isLoginView = event.getNewView() instanceof FirstView;
-                if(!isLoggedIn) {
+                if (!isLoggedIn) {
                     navigationBar.removeComponent(logoutBtn);
                     navigationBar.removeComponent(listUsersBtn);
-                    if(!isLoginView) {
+                    if (!isLoginView) {
                         getNavigator().navigateTo(FirstView.VIEW_NAME);
                         return false;
                     }
                 } else { //Logged in
                     navigationBar.addComponent(logoutBtn);
                     navigationBar.addComponent(listUsersBtn);
-                    if(isLoginView) {
+                    if (isLoginView) {
                         //Logged in user should not be able to access login view
                         return false;
                     }
@@ -140,8 +134,11 @@ public class AdminUI extends UI {
             }
 
             @Override
-            public void afterViewChange(ViewChangeEvent event) {}
+            public void afterViewChange(ViewChangeEvent event) {
+            }
         });
+
+        getSession().setConverterFactory(new Fx2ConverterFactory());
     }
 
     private void login(LoginCredentials credentials, LoginForm loginForm) {
@@ -151,10 +148,10 @@ public class AdminUI extends UI {
             final UserDetails userDetails = userDetailsService.loadUserByUsername(credentials.getUsername());
             getSession().setAttribute(USER_SESSION_ATTR, userDetails);
             getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
-            Notification.show("Welcome " + ((User)userDetails).getFirstName());
+            Notification.show("Welcome " + ((User) userDetails).getFirstName());
             loginForm.closePopup();
             loginBtn.setVisible(false);
-        } catch(AuthenticationException ae) {
+        } catch (AuthenticationException ae) {
             LOG.debug("Authentication failed...");
             Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);
         } finally {
@@ -169,9 +166,6 @@ public class AdminUI extends UI {
         button.addClickListener(event -> getUI().getNavigator().navigateTo(viewName));
         return button;
     }
-
-
-
 
 
 }

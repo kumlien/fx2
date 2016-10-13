@@ -7,7 +7,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Window;
 import hoggaster.domain.depots.DepotRepo;
-import hoggaster.domain.robot.Robot;
 import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.robot.RobotRegistry;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
@@ -44,7 +43,9 @@ public class ListRobotsComponent implements Serializable {
 
     private static final Action ADD_ROBOT_ACTION = new Action("Add a new robot");
 
-    private Button addNew = new MButton(FontAwesome.PLUS, this::add).withDescription("Add a new robot");
+    private Button addNew = new MButton(FontAwesome.PLUS, this::addRobot).withDescription("Add a new robot");
+
+    private Button delete = new MButton(FontAwesome.TRASH, this::deleteRobot).withDescription("Delete");
 
     private final DepotRepo depotRepo;
 
@@ -53,8 +54,6 @@ public class ListRobotsComponent implements Serializable {
     private MTable<UIRobot> robotsTable;
 
     private FormUser user;
-
-    private Collection<Robot> runningRobots;
 
     @Autowired
     public ListRobotsComponent(DepotRepo depotRepo, RobotRegistry robotRegistry) {
@@ -74,11 +73,9 @@ public class ListRobotsComponent implements Serializable {
                 .withFullWidth();
 
         populateTableFromDb();
-        HorizontalLayout horizontalLayout = new HorizontalLayout(addNew);
+        HorizontalLayout horizontalLayout = new HorizontalLayout(addNew, delete);
         tab.addComponents(horizontalLayout,robotsTable);
         tab.expand(robotsTable);
-
-        addNew.addClickListener(this::addRobot);
         return tab;
     }
 
@@ -95,7 +92,10 @@ public class ListRobotsComponent implements Serializable {
         form.setResetHandler(entity -> {
             popup.close();
         });
+    }
 
+    private void deleteRobot(Button.ClickEvent clickEvent) {
+        LOG.info("Delete robot...");
     }
 
     //Used to clean up the event bus registrations we create
@@ -105,7 +105,7 @@ public class ListRobotsComponent implements Serializable {
     private final void deregister(UIRobot robot) {
     }
 
-    //Read all robots
+    //Read all robots from db for the user.
     private void populateTableFromDb() {
         Collection<UIRobot> robots = depotRepo.findByUserId(user.getId())
                 .stream()
@@ -115,6 +115,4 @@ public class ListRobotsComponent implements Serializable {
         robotsTable.addBeans(robots);
     }
 
-    public void add(Button.ClickEvent clickEvent) {
-    }
 }
