@@ -31,7 +31,7 @@ public class RobotDefinitionController {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(CREATED)
     public RobotDefinition create(@RequestParam("name") String name, @RequestParam("instrument") CurrencyPair currencyPair, @RequestParam("depotId") String depotId, @RequestParam("userId") String userId) {
-        //TODO fix this. lookup the user and add the the new robot def to the depot
+        //TODO fix this. lookup the user and start the the new robot def to the depot
         throw new NotImplementedException("fix me...");
     }
 

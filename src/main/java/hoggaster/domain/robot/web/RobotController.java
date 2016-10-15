@@ -8,11 +8,9 @@ import hoggaster.domain.depots.DepotService;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.robot.Robot;
 import hoggaster.domain.robot.RobotDefinition;
-import hoggaster.domain.robot.RobotRegistry;
+import hoggaster.domain.robot.RobotService;
 import hoggaster.domain.trades.TradeService;
 import hoggaster.talib.TALibService;
-import org.easyrules.api.RulesEngine;
-import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +30,7 @@ public class RobotController {
 
     private static final Logger LOG = LoggerFactory.getLogger(RobotController.class);
 
-    private final RobotRegistry robotRegistry;
+    private final RobotService robotService;
 
     private final TALibService taLibService;
 
@@ -51,8 +49,8 @@ public class RobotController {
 
 
     @Autowired
-    public RobotController(RobotRegistry robotRegistry, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, TALibService taLibService, CandleService candleService, DepotService depotService, PriceService priceService, TradeService tradeService) {
-        this.robotRegistry = robotRegistry;
+    public RobotController(RobotService robotService, EventBus priceEventBus, @Qualifier("OandaBrokerConnection") BrokerConnection brokerConnection, TALibService taLibService, CandleService candleService, DepotService depotService, PriceService priceService, TradeService tradeService) {
+        this.robotService = robotService;
         this.priceEventBus = priceEventBus;
         this.brokerConnection = brokerConnection;
         this.taLibService = taLibService;
@@ -64,7 +62,7 @@ public class RobotController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Robot> getRobots() {
-        return robotRegistry.getAllKnownRobots();
+        return robotService.getAllKnownRobots();
     }
 
     //Well, this was an interesting mapping for starting something... TODO
@@ -72,7 +70,7 @@ public class RobotController {
     @ResponseStatus(value = HttpStatus.OK)
     public Robot startRobot(@PathVariable(value = "depotId") String depotId, @PathVariable(value = "robotId") String robotId) {
         LOG.info("Starting robot with id {}", robotId);
-        Robot robot = robotRegistry.getById(robotId);
+        Robot robot = robotService.getById(robotId);
 
         //TODO This doesnt work, need to fetch the depot and then the robot from the depot.
         if (robot == null) {
@@ -83,15 +81,13 @@ public class RobotController {
 
             Depot depot = new DepotImpl(depotId, brokerConnection, depotService, priceService, tradeService);
 
-            RulesEngine ruleEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
-            robot = new Robot(depot, definition, priceEventBus, ruleEngine, taLibService, candleService);
-            robotRegistry.add(robot);
+            robot = new Robot(depot, definition, priceEventBus, taLibService, candleService);
         }
 
-        if (robot.isRunning()) {
+        if (robotService.isRunning(robot.id)) {
             LOG.info("Robot with id {} is already started.", robotId);
         } else {
-            robot.start();
+            robotService.start(robot);
             LOG.info("Robot with id {} is now started!", robotId);
         }
         return robot;

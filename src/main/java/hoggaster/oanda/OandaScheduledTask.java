@@ -6,10 +6,8 @@ import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DepotMonitorImpl;
-import hoggaster.domain.prices.Price;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaPrices;
 import hoggaster.rules.indicators.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,26 +116,6 @@ public class OandaScheduledTask {
         oanda.getAccounts().getAccounts().forEach(a -> {
             LOG.info("Account: {}", a);
         });
-    }
-
-
-    //@Scheduled(cron = "*/5 * * * * *")
-    void fetchPrices() throws UnsupportedEncodingException {
-        try {
-            if (instrumentsForMainAccount == null) {
-                fetchInstruments();
-            }
-            if (instrumentsForMainAccount == null || instrumentsForMainAccount.size() < 1) {
-                LOG.warn("No instruments known yet, skip call to fetch prices...");
-                return;
-            }
-
-            OandaPrices allPrices = oanda.getPrices(instrumentsForMainAccount);
-            LOG.info("Got {} prices, send them to priceEventBus", allPrices.prices.size());
-            allPrices.prices.forEach(p -> priceEventBus.notify("prices." + p.instrument, Event.wrap(new Price(p))));
-        } catch (Exception e) {
-            LOG.error("Unhandled error in scheduled fetchPrices method", e);
-        }
     }
 
 

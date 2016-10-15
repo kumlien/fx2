@@ -99,7 +99,7 @@ public class OandaPricesClient {
         LOG.info("Using uri {}", uri.toString());
         try {
             oandaClient.execute(uri, GET, this::setHeaders, response -> fetchPricesAsync(response)
-                    .subscribe(this::sendTick));
+                    .subscribe(this::sendTick, t -> LOG.warn("Error occured when listening for streaming prices", t)));
         } catch (Exception e) {
             LOG.warn("Exception start listening for prices, will try again...", e);
         } finally {
@@ -128,7 +128,7 @@ public class OandaPricesClient {
                 String line;
                 while ((line = br.readLine()) != null && !subscriber.isUnsubscribed()) {
                     if (line.startsWith("{\"tick\"")) {
-                        LOG.debug("Got a tick: {}", line);
+                        LOG.info("Got a tick: {}", line);
                         subscriber.onNext(parsePrice(line));
                     } else if (line.startsWith("{\"heartbeat\"")) {
                         LOG.info("Got a heartbeat");

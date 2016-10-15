@@ -461,6 +461,17 @@ public class DbDepot {
         getRobotDefinitionsInternal().add(robotDefinition);
     }
 
+    public boolean removeRobotDefinition(String id) {
+        for(Iterator<RobotDefinition> iter = getRobotDefinitionsInternal().iterator(); iter.hasNext();) {
+            RobotDefinition rd = iter.next();
+            if(rd.getId().equals(id)) {
+                iter.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public enum Type {
         LIVE, DEMO, SIMULATION
     }

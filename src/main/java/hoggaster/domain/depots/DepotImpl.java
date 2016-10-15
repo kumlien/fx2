@@ -91,7 +91,7 @@ public class DepotImpl implements Depot {
 
     @Override
     /**
-     * Buy something...
+     * Enter a trade
      * First -  for now, check if we already own the currencyPair, in that case we bail out.
      * Second - Calculate the value of the order in the positions currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance

@@ -28,7 +28,7 @@ import static com.vaadin.ui.Notification.Type.ASSISTIVE_NOTIFICATION;
 
 /**
  * Displays a list of all users. Should probably only be available for admins...
- * Also gives the possibility to add/delete/edit users.
+ * Also gives the possibility to start/delete/edit users.
  *
  * Created by svante2 on 2016-02-18.
  */
@@ -71,7 +71,7 @@ public class ListUserView extends VerticalLayout implements View {
                 ).expand(usersTable)
         );
         listEntities();
-        usersTable.addMValueChangeListener(e -> adjustActionButtonState());
+        usersTable.addMValueChangeListener(e -> adjustButtonState());
         usersTable.addActionHandler(new Action.Handler() {
 
             @Override
@@ -96,11 +96,11 @@ public class ListUserView extends VerticalLayout implements View {
 
     private void listEntities() {
         usersTable.setBeans(userService.findAll().stream().map(FormUser::new).collect(Collectors.toList()));
-        adjustActionButtonState();
+        adjustButtonState();
     }
 
 
-    protected void adjustActionButtonState() {
+    protected void adjustButtonState() {
         boolean hasSelection = usersTable.getValue() != null;
         edit.setEnabled(hasSelection);
         delete.setEnabled(hasSelection);

@@ -17,15 +17,17 @@ public class UIRobot {
 
     private DbDepot dbDepot;
 
+    private RobotDefinition robotDefinition;
+
     public UIRobot(RobotDefinition robotDefinition, DbDepot dbDepot) {
         this.name = robotDefinition.name;
         this.instrument = robotDefinition.currencyPair;
         this.id = robotDefinition.getId();
         this.dbDepot = dbDepot;
+        this.robotDefinition = robotDefinition;
     }
 
     public UIRobot() {
-
     }
 
 
@@ -62,4 +64,7 @@ public class UIRobot {
         return id;
     }
 
+    public RobotDefinition getRobotDefinition() {
+        return robotDefinition;
+    }
 }
