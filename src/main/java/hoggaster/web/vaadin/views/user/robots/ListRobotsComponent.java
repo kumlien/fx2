@@ -7,6 +7,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import hoggaster.domain.depots.DepotRepo;
+import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.robot.RobotService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
@@ -89,9 +90,10 @@ public class ListRobotsComponent implements Serializable {
 
     private void setupTable() {
         robotsTable = new MTable<>(robotTableModel)
-                .withProperties("name", "depotName", "instrument")
-                .withColumnHeaders("Name", "Depot", "Instrument")
+                .withProperties("name", "depotName", "instrument", "orderSide")
+                .withColumnHeaders("Name", "Depot", "Instrument", "Side")
                 .withGeneratedColumn("Currently running", r -> robotService.getById(r.getId()) != null ? "Yes" : "No")
+                .withGeneratedColumn("orderSide", r -> r.getOrderSide() == OrderSide.buy ? "Long" : "Short")
                 .setSortableProperties("name", "depotName", "instrument")
                 .withFullWidth();
         robotsTable.addMValueChangeListener(e -> adjustButtonState());
@@ -147,7 +149,7 @@ public class ListRobotsComponent implements Serializable {
         form.openInModalPopup();
         form.setSavedHandler(robot -> {
             LOG.info("Saving a new robot: {}", robot);
-            robot.getDbDepot().addRobotDefinition(new RobotDefinition(robot.getName(), robot.getInstrument()));
+            robot.getDbDepot().addRobotDefinition(new RobotDefinition(robot.getName(), robot.getInstrument(), robot.getOrderSide()));
             depotRepo.save(robot.getDbDepot());
             rePopulateTable();
             form.closePopup();
@@ -181,7 +183,12 @@ public class ListRobotsComponent implements Serializable {
         RobotForm form = new RobotForm(robot);
         form.openInModalPopup();
         form.setResetHandler(r -> form.closePopup());
-        form.setSavedHandler(r -> form.closePopup());
+        form.setSavedHandler(r -> {
+            r.getDbDepot().updateRobotDefinition(new RobotDefinition(r.getId(), r.getName(), r.getInstrument(), r.getOrderSide(), r.getEnterConditions(), r.getExitConditions()));
+            depotRepo.save(r.getDbDepot());
+            rePopulateTable();
+            form.closePopup();
+        });
     }
 
 

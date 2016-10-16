@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -458,7 +459,18 @@ public class DbDepot {
     }
 
     public void addRobotDefinition(RobotDefinition robotDefinition) {
+        Preconditions.checkArgument(!getRobotDefinitionsInternal().contains(robotDefinition), "There is already a robotDefinition with id " + robotDefinition.getId());
         getRobotDefinitionsInternal().add(robotDefinition);
+    }
+
+    public void updateRobotDefinition(RobotDefinition robotDefinition) {
+        Preconditions.checkArgument(robotDefinition != null);
+        Preconditions.checkArgument(StringUtils.hasText(robotDefinition.getId()));
+        Preconditions.checkArgument(getRobotDefinitionsInternal().contains(robotDefinition), "No robot found with id " + robotDefinition.getId());
+        synchronized (getRobotDefinitionsInternal()) {
+            removeRobotDefinition(robotDefinition.getId());
+            addRobotDefinition(robotDefinition);
+        }
     }
 
     public boolean removeRobotDefinition(String id) {

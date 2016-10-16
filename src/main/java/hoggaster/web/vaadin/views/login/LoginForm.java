@@ -27,7 +27,6 @@ public class LoginForm extends AbstractForm<LoginCredentials> {
     protected Component createContent() {
         focusFirst();
         setSaveCaption("Login");
-        //getSaveButton().addStyleName("loginButton");
         getSaveButton().setIcon(FontAwesome.CHECK_CIRCLE);
         getResetButton().setIcon(FontAwesome.CLOSE);
         return new MVerticalLayout(

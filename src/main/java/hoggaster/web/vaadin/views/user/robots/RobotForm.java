@@ -8,6 +8,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.TextField;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.orders.OrderSide;
 import org.vaadin.viritin.fields.EnumSelect;
 import org.vaadin.viritin.fields.MTextField;
 import org.vaadin.viritin.form.AbstractForm;
@@ -23,6 +24,7 @@ public class RobotForm extends AbstractForm<UIRobot> {
 
     private final TextField name = new MTextField("name").withCaption("The name of the robot").withRequired(true).withRequiredError("You must provide a name for the robot");
     private final EnumSelect<CurrencyPair> instrument = (EnumSelect<CurrencyPair>) new EnumSelect<CurrencyPair>("Instrument").withNullSelection(false).setOptions(CurrencyPair.values());
+    private final EnumSelect<OrderSide> orderSide = (EnumSelect<OrderSide>) new EnumSelect<OrderSide>("Side").withNullSelection(false).setOptions(OrderSide.values());
     private final BeanItemContainer<DbDepot> depotContainer = new BeanItemContainer<>(DbDepot.class);
     private final ComboBox dbDepot = new ComboBox("Depot", depotContainer);
 
@@ -30,6 +32,7 @@ public class RobotForm extends AbstractForm<UIRobot> {
         setModalWindowTitle("Add new robot");
         setEntity(new UIRobot());
         instrument.selectFirst();
+        orderSide.selectFirst();
         setupDepotCombo(dbDepots);
         setSizeUndefined();
     }
@@ -45,7 +48,7 @@ public class RobotForm extends AbstractForm<UIRobot> {
         getSaveButton().setIcon(FontAwesome.SAVE);
         getResetButton().setIcon(FontAwesome.CLOSE);
         return new MVerticalLayout(
-                new MFormLayout(name, instrument, dbDepot).withWidth("").withSizeUndefined(),
+                new MFormLayout(name, instrument, orderSide, dbDepot).withWidth("").withSizeUndefined(),
                 getToolbar()
         ).withWidth("").withSizeUndefined();
     }

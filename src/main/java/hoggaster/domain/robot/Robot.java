@@ -103,6 +103,8 @@ public class Robot implements Consumer<Event<?>> {
 
     private final RulesEngine rulesEngine;
 
+    private final OrderSide orderSide;
+
     // Map with key = type of registration (prices, candles...) and registration
     // key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
@@ -118,6 +120,7 @@ public class Robot implements Consumer<Event<?>> {
         this.id = definition.getId(); // This is kind of wacky
         this.name = definition.name;
         this.currencyPair = definition.currencyPair;
+        this.orderSide = definition.orderSide;
         this.enterTradeConditions = definition.getEnterConditions();
         this.exitTradeConditions = definition.getExitConditions();
         this.depot = depot;
@@ -162,7 +165,6 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        //TODO Check this one!!! not correct. We need the order side too
         if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) {
             LOG.info("Maybe we should enter a buy trade something based on new price!");
             askDepotToOpenTrade(price, OrderSide.buy);

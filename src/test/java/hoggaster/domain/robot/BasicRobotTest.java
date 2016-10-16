@@ -59,7 +59,7 @@ public class BasicRobotTest {
 
     @Before
     public void before() {
-        definition = new RobotDefinition("Frekkin robot!", USD_SEK);
+        definition = new RobotDefinition("Frekkin robot!", USD_SEK, OrderSide.buy);
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
 
@@ -68,7 +68,7 @@ public class BasicRobotTest {
         SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
         //Let's compare them in a condition, putting an operator between them
-        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, OrderSide.buy, MarketUpdateType.PRICE);
+        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, MarketUpdateType.PRICE);
         definition.addEnterTradeCondition(condition);
         Robot robot = new Robot(depot, definition, priceEventBus, taLibService, candleService);
         robot.start();

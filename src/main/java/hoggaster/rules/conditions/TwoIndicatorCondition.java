@@ -23,7 +23,7 @@ import static hoggaster.domain.trades.TradeAction.OPEN;
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
- * method will get called and we tradeOpened ourselves to the sendOrder- or sell action depending
+ * method will get called and we add ourselves to the openTrade or closeTrade list depending
  * on our {@link OrderSide}
  *
  * @author svante
@@ -40,7 +40,6 @@ public class TwoIndicatorCondition implements Condition {
     public final Integer priority;
     public final TradeAction tradeAction;
 
-    public final OrderSide orderSide;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
@@ -57,14 +56,13 @@ public class TwoIndicatorCondition implements Condition {
      * @param eventTypes
      */
     //TODO This is too much info for a condition! Order side and action doesn't belong here!
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, OrderSide orderSide, MarketUpdateType... eventTypes) {
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;
         this.secondIndicator = secondIndicator;
         this.operator = operator;
         this.priority = priority;
         this.tradeAction = tradeAction;
-        this.orderSide = orderSide;
         this.eventTypes = Sets.newHashSet(eventTypes);
     }
 

@@ -2,9 +2,15 @@ package hoggaster.web.vaadin.views.user.robots;
 
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotDefinition;
+import hoggaster.rules.conditions.Condition;
+
+import java.util.Set;
 
 /**
+ * Represents a robot, used in the vaadin ui
+ *
  * Created by svante2 on 2016-04-24.
  */
 public class UIRobot {
@@ -15,9 +21,13 @@ public class UIRobot {
 
     private CurrencyPair instrument;
 
+    private OrderSide orderSide;
+
     private DbDepot dbDepot;
 
     private RobotDefinition robotDefinition;
+    private Set<Condition> exitConditions;
+    private Set<Condition> enterConditions;
 
     public UIRobot(RobotDefinition robotDefinition, DbDepot dbDepot) {
         this.name = robotDefinition.name;
@@ -25,6 +35,7 @@ public class UIRobot {
         this.id = robotDefinition.getId();
         this.dbDepot = dbDepot;
         this.robotDefinition = robotDefinition;
+        this.orderSide = robotDefinition.orderSide;
     }
 
     public UIRobot() {
@@ -60,11 +71,35 @@ public class UIRobot {
         return dbDepot.name;
     }
 
+    public OrderSide getOrderSide() {
+        return orderSide;
+    }
+
+    public void setOrderSide(OrderSide orderSide) {
+        this.orderSide = orderSide;
+    }
+
     public String getId() {
         return id;
     }
 
     public RobotDefinition getRobotDefinition() {
         return robotDefinition;
+    }
+
+    public Set<Condition> getExitConditions() {
+        return exitConditions;
+    }
+
+    public void setExitConditions(Set<Condition> exitConditions) {
+        this.exitConditions = exitConditions;
+    }
+
+    public Set<Condition> getEnterConditions() {
+        return enterConditions;
+    }
+
+    public void setEnterConditions(Set<Condition> enterConditions) {
+        this.enterConditions = enterConditions;
     }
 }

@@ -4,7 +4,6 @@ import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
-import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotExecutionContext;
 import hoggaster.domain.trades.TradeAction;
 import hoggaster.rules.Comparator;
@@ -41,7 +40,7 @@ public class TwoIndicatorConditionTest {
 
         Indicator firstIndicator = new CandleIndicator(CandleStickGranularity.MINUTE, CandleStickField.CLOSE_BID);
         Indicator secondIndicator = new SimpleValueIndicator(new BigDecimal("2.0"));
-        TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, TradeAction.OPEN, OrderSide.buy, MarketUpdateType.ONE_MINUTE_CANDLE);
+        TwoIndicatorCondition tic = new TwoIndicatorCondition("Test current ask greater than 2.0", firstIndicator, secondIndicator, Comparator.GREATER_THAN, 1, TradeAction.OPEN, MarketUpdateType.ONE_MINUTE_CANDLE);
         RobotExecutionContext ctx = new RobotExecutionContext(candle, currencyPair, taLibService, candleService);
         tic.setContext(ctx);
 
