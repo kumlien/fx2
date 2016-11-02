@@ -1,6 +1,6 @@
 package hoggaster.rules.conditions;
 
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 
 /**
  * Created by svante2 on 2016-01-31.

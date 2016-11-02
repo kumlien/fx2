@@ -1,16 +1,12 @@
 package it;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hoggaster.Application;
-import hoggaster.MongoConfig;
 import hoggaster.OandaConnectionConfig;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.OandaProperties;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.oanda.responses.OandaClosedTradeReponse;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +22,6 @@ import reactor.fn.Consumer;
 import reactor.rx.Stream;
 import reactor.rx.Streams;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,4 +1,4 @@
-package hoggaster.rules.indicators;
+package hoggaster.rules.indicators.candles;
 
 import hoggaster.rules.MarketUpdateType;
 
@@ -13,7 +13,7 @@ public enum CandleStickGranularity {
 
     public final MarketUpdateType type;
 
-    private CandleStickGranularity(String oandaStyle, MarketUpdateType type) {
+    CandleStickGranularity(String oandaStyle, MarketUpdateType type) {
         this.oandaStyle = oandaStyle;
         this.type = type;
     }

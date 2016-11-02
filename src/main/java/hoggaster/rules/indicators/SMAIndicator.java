@@ -2,7 +2,9 @@ package hoggaster.rules.indicators;
 
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
+import hoggaster.rules.indicators.candles.CandleStickField;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 
 import java.math.BigDecimal;
 

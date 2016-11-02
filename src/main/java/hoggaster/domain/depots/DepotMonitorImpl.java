@@ -1,10 +1,8 @@
 package hoggaster.domain.depots;
 
-import hoggaster.domain.brokers.BrokerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +22,11 @@ public class DepotMonitorImpl {
 
     private final DepotRepo depotRepo;
 
-    private final BrokerConnection broker;
-
     private final DepotService depotService;
 
     @Autowired
-    public DepotMonitorImpl(DepotRepo depotRepo, @Qualifier("OandaBrokerConnection") BrokerConnection broker, DepotService depotService) {
+    public DepotMonitorImpl(DepotRepo depotRepo, DepotService depotService) {
         this.depotRepo = depotRepo;
-        this.broker = broker;
         this.depotService = depotService;
     }
 

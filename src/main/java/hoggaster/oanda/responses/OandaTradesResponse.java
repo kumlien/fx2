@@ -1,6 +1,7 @@
 package hoggaster.oanda.responses;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
@@ -33,6 +34,7 @@ public class OandaTradesResponse {
 
         public final CurrencyPair instrument;
 
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSz")
         public final Instant time;
 
         public final BigDecimal price;

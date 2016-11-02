@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * Component used to add/edit a user
+ * Component used to start/edit a user
  *
  * Created by svante2 on 2016-02-14.
  */
@@ -38,7 +38,7 @@ public class UserForm extends AbstractForm<UserForm.FormUser> {
     public UserForm(FormUser user) {
         firstName.setRequired(true);
         lastName.setRequired(true);
-        username.setRequired(true); //TODO add validator for unique username?
+        username.setRequired(true); //TODO start validator for unique username?
         email.addValidator(new EmailValidator("Please provide a valid email address"));
         email.setRequired(true);
 

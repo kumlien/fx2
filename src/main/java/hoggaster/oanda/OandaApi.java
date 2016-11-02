@@ -16,7 +16,7 @@ import hoggaster.oanda.requests.OandaOrderRequest;
 import hoggaster.oanda.responses.*;
 import hoggaster.oanda.responses.positions.OandaClosedPositionReponse;
 import hoggaster.oanda.responses.positions.OandaPositions;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;

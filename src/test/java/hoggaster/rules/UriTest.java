@@ -1,7 +1,7 @@
 package hoggaster.rules;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.web.util.UriComponentsBuilder;

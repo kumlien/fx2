@@ -1,9 +1,13 @@
-/* Import a base theme. */
+
+//$v-font-size: 20px;
+$v-app-loading-text: "Loading a fx-trading platform for you...";
+$v-unit-size: 30px; //Default is 37px
+//$v-background-color: hsl(210deg, 0%, 50%);
+//$v-gradient: v-linear 10%;
 
 
-/* This only allows us to use the mixins defined in it and does not add any styles by itself. */
 
-@import "../valo/valo.scss";
+@import "../valo/valo";
 
 @keyframes arrowPushPositive {
     80% {
@@ -87,23 +91,27 @@
 
 
 
-@mixin fx2 {
+.fx2 {
     @include valo;
+
+    .v-button-loginButton {
+      @include valo-button-style($background-color: #555);
+    }
     .pushPositive {
-        animation: pushPositive 0.5s linear;
-        -webkit-animation: pushPositive 0.5s ease-out;
+        -webkit-animation: pushPositive .5s 2 ease-out;
+        animation: pushPositive .5s 2 linear;
     }
     .pushNegative {
-        animation: pushNegative 0.5s linear;
-        -webkit-animation: pushNegative 0.5s ease-out;
+        -webkit-animation: pushNegative .5s 2 ease-out;
+        animation: pushNegative .5s 2 linear;
     }
     .pushPositive:after {
-        animation: arrowPushPositive 0.5s linear;
-        -webkit-animation: arrowPushPositive 0.5s ease-out;
+        -webkit-animation: arrowPushPositive .5s ease-out;
+        animation: arrowPushPositive .5s linear;
     }
     .pushNegative:after {
-        animation: arrowPushNegative 0.5s linear;
-        -webkit-animation: arrowPushNegative 0.5s ease-out;
+        -webkit-animation: arrowPushNegative .5s ease-out;
+        animation: arrowPushNegative .5s linear;
     }
     .roundCorners3 {
         -moz-border-radius: 25 px;

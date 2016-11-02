@@ -1,4 +1,4 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
@@ -6,16 +6,17 @@ import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.rules.conditions.Condition;
-import hoggaster.rules.indicators.CandleStickField;
-import hoggaster.rules.indicators.CandleStickGranularity;
 import hoggaster.rules.indicators.RSIIndicator;
+import hoggaster.rules.indicators.candles.CandleStickField;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import hoggaster.talib.TALibService;
 import hoggaster.talib.TAResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * God knows what this is... Some kind of context for each new price/candle.
@@ -62,11 +63,11 @@ public class RobotExecutionContext {
         positiveCloseTradeConditions.add(condition);
     }
 
-    public void addNegativeBuyAction(Condition condition) {
+    public void addNegativeOpenTradeCondition(Condition condition) {
         negativeOpenTradeConditions.add(condition);
     }
 
-    public void addNegativeSellAction(Condition condition) {
+    public void addNegativeCloseTradeCondition(Condition condition) {
         negativeCloseTradeConditions.add(condition);
     }
 
@@ -83,7 +84,7 @@ public class RobotExecutionContext {
      */
     public TAResult getSMA(CandleStickGranularity granularity, int dataPoints, CandleStickField field, int periods) {
         List<Candle> candles = bidAskCandleService.getLatestCandles(currencyPair, granularity, dataPoints);
-        List<Double> values = candles.stream().map(bac -> bac.getValue(field)).map(BigDecimal::doubleValue).collect(Collectors.toList());
+        List<Double> values = candles.stream().map(bac -> bac.getValue(field)).map(BigDecimal::doubleValue).collect(toList());
         return taLibService.sma(values, periods);
     }
 
@@ -120,7 +121,7 @@ public class RobotExecutionContext {
         List<Double> values = candles.stream()
                 .map(candle -> candle.getValue(field))
                 .map(BigDecimal::doubleValue)
-                .collect(Collectors.toList());
+                .collect(toList());
         return taLibService.rsi(values, periods);
     }
 

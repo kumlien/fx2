@@ -6,11 +6,9 @@ import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DepotMonitorImpl;
-import hoggaster.domain.prices.Price;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.oanda.responses.OandaPrices;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +31,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
-import static hoggaster.rules.indicators.CandleStickGranularity.MINUTE;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.END_OF_DAY;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.MINUTE;
 
 
 /**
@@ -121,30 +119,10 @@ public class OandaScheduledTask {
     }
 
 
-    //@Scheduled(cron = "*/5 * * * * *")
-    void fetchPrices() throws UnsupportedEncodingException {
-        try {
-            if (instrumentsForMainAccount == null) {
-                fetchInstruments();
-            }
-            if (instrumentsForMainAccount == null || instrumentsForMainAccount.size() < 1) {
-                LOG.warn("No instruments known yet, skip call to fetch prices...");
-                return;
-            }
-
-            OandaPrices allPrices = oanda.getPrices(instrumentsForMainAccount);
-            LOG.info("Got {} prices, send them to priceEventBus", allPrices.prices.size());
-            allPrices.prices.forEach(p -> priceEventBus.notify("prices." + p.instrument, Event.wrap(new Price(p))));
-        } catch (Exception e) {
-            LOG.error("Unhandled error in scheduled fetchPrices method", e);
-        }
-    }
-
-
     /*
      * Get the one minute candles wtf is this method doing in this class??
      */
-    //@Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
+    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
         LOG.info("About to fetch one minute candles");

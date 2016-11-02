@@ -47,10 +47,10 @@
 package com.tictactec.ta.lib.test;
 
 import com.tictactec.ta.lib.MInteger;
-import junit.framework.Assert;
-import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.junit.Assert;
+
 
 /**
  * @author Buzzo
@@ -67,7 +67,7 @@ public class MIntegerTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    public static Test suite() {
+    public static TestSuite suite() {
         TestSuite suite = new TestSuite(MIntegerTest.class);
 
         return suite;

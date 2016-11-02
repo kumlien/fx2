@@ -2,7 +2,7 @@ package hoggaster.rules.indicators;
 
 import com.google.common.base.Preconditions;
 import hoggaster.domain.prices.Price;
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 
 import java.math.BigDecimal;
 

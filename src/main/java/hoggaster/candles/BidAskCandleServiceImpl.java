@@ -5,7 +5,7 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.oanda.responses.OandaBidAskCandlesResponse;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

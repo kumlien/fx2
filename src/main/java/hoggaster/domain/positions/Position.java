@@ -40,7 +40,7 @@ public class Position {
      */
     @PersistenceConstructor
     public Position(CurrencyPair currencyPair, OrderSide side, BigDecimal quantity, BigDecimal averagePricePerShare) {
-        LOG.info("New position read from database for {} with order side {}, qty {} and price {}", currencyPair, side, quantity, averagePricePerShare);
+        LOG.debug("New position read from database for {} with order side {}, qty {} and price {}", currencyPair, side, quantity, averagePricePerShare);
         this.currencyPair = currencyPair;
         this.side = side;
         this.quantity = quantity;

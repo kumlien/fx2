@@ -13,7 +13,7 @@ import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.responses.OandaCreateTradeResponse;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Currency;
 import java.util.Optional;
 
+import static hoggaster.domain.depots.DbDepot.Type.DEMO;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -75,7 +76,7 @@ public class DepotImplTest extends TestCase {
         dbDepot = new DbDepot(
                 DEPOT_ID, "USER_ID", "The positions name", Broker.OANDA, Sets.newHashSet(),Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, MARGIN_RATE, Currency.getInstance("USD"),"Primary",
-                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, MARGIN_AVAILABLE, 0, 0, Instant.now(), true, DEMO, Sets.newHashSet());
         Mockito.when(depotService.findDepotById(eq(DEPOT_ID))).thenReturn(dbDepot);
 
         depot = new DepotImpl(dbDepot.getId(), brokerConnection, depotService, priceService, tradeService);
@@ -155,7 +156,7 @@ public class DepotImplTest extends TestCase {
         DbDepot dbDepot = new DbDepot(
                 DEPOT_ID, "USER_ID", "The positions name", Broker.OANDA, Sets.newHashSet(),Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
-                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DEMO, Sets.newHashSet());
 
         BigDecimal currentRate = DepotImpl.getCurrentRate(dbDepot.currency, baseCurrency, priceService);
         BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, currentRate);
@@ -196,7 +197,7 @@ public class DepotImplTest extends TestCase {
         DbDepot dbDepot = new DbDepot(
                 DEPOT_ID, "USER_ID", "The positions name", Broker.OANDA, Sets.newHashSet(),Sets.newHashSet(),
                 EXTERNAL_DEPOT_ID, BALANCE, marginRatio, homeCurrency,"Primary",
-                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DbDepot.Type.DEMO);
+                UNREALIZED_PL, REALIZED_PL, MARGIN_USED, marginAvailable, 0, 0, Instant.now(), true, DEMO, Sets.newHashSet());
         BigDecimal currentRate = DepotImpl.getCurrentRate(dbDepot.currency, baseCurrency, priceService);
         BigDecimal units = DepotImpl.calculateMaxUnitsWeCanBuy(dbDepot, baseCurrency, currentRate);
         assertEquals(expectedUnits,units.longValue());

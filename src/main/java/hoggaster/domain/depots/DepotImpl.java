@@ -6,8 +6,8 @@ import hoggaster.candles.Candle;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.MarketUpdate;
 import hoggaster.domain.brokers.BrokerConnection;
-import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderRequest;
+import hoggaster.domain.orders.OrderResponse;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.orders.OrderType;
 import hoggaster.domain.prices.Price;
@@ -29,8 +29,9 @@ import java.util.Currency;
 import java.util.Objects;
 
 /**
- * Used to handle logic for a positions.
- * Not so found of this approach, splitting persistent stuff and business logic
+ * Only used by a running {@link hoggaster.domain.robot.Robot} to carry out actions.
+ *
+ * Not so found of this approach, splitting persistent stuff and business logic.
  * <p>
  * Created by svante2 on 2015-10-11.
  */
@@ -90,7 +91,7 @@ public class DepotImpl implements Depot {
 
     @Override
     /**
-     * Buy something...
+     * Enter a trade
      * First -  for now, check if we already own the currencyPair, in that case we bail out.
      * Second - Calculate the value of the order in the positions currency (dollar for us). For now we aim to sendOrder for 2% of the available margin.
      * Third - Check if the order value would push the available margin below 50% of the balance

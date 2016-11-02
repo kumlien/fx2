@@ -7,12 +7,14 @@ import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerDepot;
 import hoggaster.domain.positions.Position;
+import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.trades.Trade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -88,6 +90,8 @@ public class DbDepot {
      */
     private Set<Trade> openTrades = Sets.newHashSet();
 
+    private Set<RobotDefinition> robotDefinitions = Sets.newHashSet();
+
 
     /**
      * The amount of cash in your account.
@@ -127,12 +131,13 @@ public class DbDepot {
      */
     @PersistenceConstructor
     public DbDepot(String id, String userId, String name, Broker broker, Set<Position> positions, Set<Trade> openTrades, String brokerId, BigDecimal balance, BigDecimal marginRate, Currency currency, String brokerDepotName, BigDecimal unrealizedPl, BigDecimal realizedPl,
-                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type) {
+                   BigDecimal marginUsed, BigDecimal marginAvailable, Integer numberOfOpenTrades, Integer numberOfOpenOrders, Instant lastSynchronizedWithBroker, Boolean lastSyncOk, Type type, Set<RobotDefinition> robotDefinitions) {
         this(userId, name, broker, brokerDepotName, brokerId, marginRate, currency, balance, unrealizedPl, realizedPl, marginUsed, marginAvailable, numberOfOpenTrades, numberOfOpenOrders, lastSynchronizedWithBroker, lastSyncOk, type);
         this.id = id;
         this.positions = positions;
         this.numberOfOpenTrades = numberOfOpenTrades;
         this.openTrades = openTrades;
+        this.robotDefinitions = robotDefinitions;
     }
 
 
@@ -246,13 +251,13 @@ public class DbDepot {
     public boolean updateWithValuesFrom(BrokerDepot brokerDepot, Set<Position> positions, Set<Trade> openTrades) {
         boolean changed = false;
         if (balance.compareTo(brokerDepot.balance) != 0) {
-            LOG.info("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
+            LOG.debug("Balance updated with new value for dbDepot {}: {} -> {}", id, balance, brokerDepot.balance);
             balance = brokerDepot.balance;
             changed = true;
         }
 
         if (marginAvailable == null || marginAvailable.compareTo(brokerDepot.marginAvail) != 0) {
-            LOG.info("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
+            LOG.debug("Available margin updated with new value for dbDepot {}: {} -> {}", id, marginAvailable, brokerDepot.marginAvail);
             marginAvailable = brokerDepot.marginAvail;
             changed = true;
         }
@@ -270,7 +275,7 @@ public class DbDepot {
         }
 
         if (marginUsed == null || marginUsed.compareTo(brokerDepot.marginUsed) != 0) {
-            LOG.info("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
+            LOG.debug("Margin used updated with new value for dbDepot {}: {} -> {}", id, marginUsed, brokerDepot.marginUsed);
             marginUsed = brokerDepot.marginUsed;
             changed = true;
         }
@@ -288,19 +293,19 @@ public class DbDepot {
         }
 
         if (realizedPl == null || realizedPl.compareTo(brokerDepot.realizedPl) != 0) {
-            LOG.info("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
+            LOG.debug("Realized profit/loss updated with new value for dbDepot {}: {} -> {}", id, realizedPl, brokerDepot.realizedPl);
             realizedPl = brokerDepot.realizedPl;
             changed = true;
         }
 
         if (unrealizedPl == null || unrealizedPl.compareTo(brokerDepot.unrealizedPl) != 0) {
-            LOG.info("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
+            LOG.debug("Unrealized profit/loss updated with new value for dbDepot {}: {} -> {}", id, unrealizedPl, brokerDepot.unrealizedPl);
             unrealizedPl = brokerDepot.unrealizedPl;
             changed = true;
         }
 
         if (Strings.isNullOrEmpty(brokerDepotName) || !brokerDepotName.equals(brokerDepot.name)) {
-            LOG.info("Name updated with new value for dbDepot {}: {} -> {}", id, brokerDepotName, brokerDepot.name);
+            LOG.debug("Name updated with new value for dbDepot {}: {} -> {}", id, brokerDepotName, brokerDepot.name);
             brokerDepotName = brokerDepot.name;
             changed = true;
         }
@@ -439,7 +444,47 @@ public class DbDepot {
         return Collections.unmodifiableCollection(openTrades);
     }
 
+    public Collection<RobotDefinition> getRobotDefinitions() {
+        if(robotDefinitions == null) {
+            robotDefinitions = new HashSet<>();
+        }
+        return Collections.unmodifiableCollection(robotDefinitions);
+    }
+
+    private Collection<RobotDefinition> getRobotDefinitionsInternal() {
+        if(robotDefinitions == null) {
+            robotDefinitions = new HashSet<>();
+        }
+        return robotDefinitions;
+    }
+
+    public void addRobotDefinition(RobotDefinition robotDefinition) {
+        Preconditions.checkArgument(!getRobotDefinitionsInternal().contains(robotDefinition), "There is already a robotDefinition with id " + robotDefinition.getId());
+        getRobotDefinitionsInternal().add(robotDefinition);
+    }
+
+    public void updateRobotDefinition(RobotDefinition robotDefinition) {
+        Preconditions.checkArgument(robotDefinition != null);
+        Preconditions.checkArgument(StringUtils.hasText(robotDefinition.getId()));
+        Preconditions.checkArgument(getRobotDefinitionsInternal().contains(robotDefinition), "No robot found with id " + robotDefinition.getId());
+        synchronized (getRobotDefinitionsInternal()) {
+            removeRobotDefinition(robotDefinition.getId());
+            addRobotDefinition(robotDefinition);
+        }
+    }
+
+    public boolean removeRobotDefinition(String id) {
+        for(Iterator<RobotDefinition> iter = getRobotDefinitionsInternal().iterator(); iter.hasNext();) {
+            RobotDefinition rd = iter.next();
+            if(rd.getId().equals(id)) {
+                iter.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public enum Type {
-        LIVE, DEMO, SIMULATION;
+        LIVE, DEMO, SIMULATION
     }
 }

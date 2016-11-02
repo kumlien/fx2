@@ -1,32 +1,8 @@
 package hoggaster.web.vaadin.views.user.positions;
 
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.spring.annotation.ViewScope;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depots.DbDepot;
-import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.positions.ClosePositionResponse;
-import hoggaster.domain.prices.Price;
-import hoggaster.oanda.exceptions.TradingHaltedException;
-import hoggaster.web.vaadin.GuiUtils;
-import hoggaster.web.vaadin.views.user.UserForm.FormUser;
-import hoggaster.web.vaadin.views.user.UserView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.vaadin.dialogs.ConfirmDialog;
-import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
-import org.vaadin.viritin.layouts.MVerticalLayout;
-import reactor.Environment;
-import reactor.bus.EventBus;
-import reactor.bus.registry.Registration;
-import reactor.rx.broadcast.Broadcaster;
+import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
+import static reactor.bus.selector.Selectors.$;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,9 +13,40 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
-import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
-import static reactor.bus.selector.Selectors.$;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.vaadin.dialogs.ConfirmDialog;
+import org.vaadin.viritin.fields.MTable;
+import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
+import org.vaadin.viritin.layouts.MVerticalLayout;
+
+import reactor.Environment;
+import reactor.bus.EventBus;
+import reactor.bus.registry.Registration;
+import reactor.core.Dispatcher;
+import reactor.core.dispatch.WorkQueueDispatcher;
+import reactor.rx.broadcast.Broadcaster;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
+import com.vaadin.event.Action;
+import com.vaadin.event.Action.Handler;
+import com.vaadin.spring.annotation.ViewScope;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+
+import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.positions.ClosePositionResponse;
+import hoggaster.domain.prices.Price;
+import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.web.vaadin.GuiUtils;
+import hoggaster.web.vaadin.views.user.UserForm.FormUser;
+import hoggaster.web.vaadin.views.user.UserView;
 
 /**
  * Used to display a list of all positions for a user.
@@ -53,15 +60,12 @@ public class ListPositionsComponent implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(ListPositionsComponent.class);
 
     private static final Action CLOSE_POSITION_ACTION = new Action("Close this position");
-
-    private final DepotService depotService;
-
-    private final Map<CurrencyPair, Registration> registrations = new ConcurrentHashMap<>();
-
     public final EventBus priceEventBus;
-
+    private final DepotService depotService;
+    private final Map<CurrencyPair, Registration> registrations = new ConcurrentHashMap<>();
+    //private final Dispatcher dispatcher = new RingBufferDispatcher("gui-push-dispatcher", 64);
+    private final Dispatcher dispatcher = new WorkQueueDispatcher("gui-push-dispatcher", 2, 64, e -> LOG.error("Error", e));
     private MTable<UIPosition> positionsTable;
-
     private FormUser user;
 
     @Autowired
@@ -84,28 +88,28 @@ public class ListPositionsComponent implements Serializable {
                     public Object generate(UIPosition position) {
                         Label label = new Label(defaultPriceLabel);
                         label.addStyleName("pushbox");
-                        LOG.info("Creating new registration for position {}", position.getCurrencyPair());
 
-                        Broadcaster<Price> sink = Broadcaster.create(Environment.get());
-                        sink
-                                .onOverflowDrop()
-                                .sample(5000, TimeUnit.MILLISECONDS)
-                                .consume(p -> {
-                                    Double current = p.ask.doubleValue();
-                                    Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                                    LOG.debug("Got a new price: {}", p);
-                                    GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
-                                });
-
-                        final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
-                            if (parentView.getUI() == null) { //Continue to push until gui is gone
-                                deregisterAll();
-                                return;
-                            }
-                            sink.onNext((Price) e.getData());
+                        Observable.create(p -> {
+                            LOG.info("Creating new registration for position {}", position.getCurrencyPair());
+                            final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
+                                if (parentView.getUI() == null) { //Continue to push until gui is gone
+                                    deregisterAll();
+                                    return;
+                                }
+                                LOG.debug("Got a price, putting it in the stream: {}", e.getData());
+                                p.onNext((Price) e.getData());
+                            });
+                            deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
+                            registrations.put(position.getCurrencyPair(), registration);
+                        })
+                                .subscribeOn(Schedulers.io())
+                                .throttleFirst(5000, TimeUnit.MILLISECONDS)
+                                .subscribe(price -> {
+                            Double current = ((Price) price).ask.doubleValue();
+                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
+                            GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                            LOG.info("Pushed price update: {}", price);
                         });
-                        deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
-                        registrations.put(position.getCurrencyPair(), registration);
                         return label;
                     }
                 })
@@ -116,9 +120,9 @@ public class ListPositionsComponent implements Serializable {
             @Override
             public Action[] getActions(Object target, Object sender) {
                 if (target != null) {
-                    return new Action[]{CLOSE_POSITION_ACTION};
+                    return new Action[] { CLOSE_POSITION_ACTION };
                 }
-                return new Action[]{};
+                return new Action[] {};
             }
 
             @Override
@@ -126,22 +130,23 @@ public class ListPositionsComponent implements Serializable {
                 final UIPosition position = (UIPosition) target;
                 ConfirmDialog.show(parentView.getUI(), "Really close position?",
                         "Are you really sure you want to close your " + position.getCurrencyPair() + " position?", "Yes", "No", dialog -> {
-                            if (dialog.isConfirmed()) {
-                                try {
-                                    ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()), position.getCurrencyPair());
-                                    depotService.syncDepot(position.depot); //TODO do this using a service.
-                                    deregister(position.getCurrencyPair());
-                                    listEntities(); //TODO do this async. Publish/subscribe on updated depot events
-                                    LOG.info("Position closed {}, {}", sender, target);
-                                    Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
-                                } catch (TradingHaltedException e) {
-                                    Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
-                                } catch (Exception e) {
-                                    LOG.warn("Exception when closing position for position {}", position);
-                                    Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
-                                }
-                            }
-                        });
+                    if (dialog.isConfirmed()) {
+                        try {
+                            ClosePositionResponse response = parentView.brokerConnection.closePosition(Integer.valueOf(position.getBrokerDepotId()),
+                                    position.getCurrencyPair());
+                            depotService.syncDepot(position.depot); //TODO do this using a service.
+                            deregister(position.getCurrencyPair());
+                            listEntities(); //TODO do this async. Publish/subscribe on updated depot events
+                            LOG.info("Position closed {}, {}", sender, target);
+                            Notification.show("Your position in " + response.currencyPair + " was closed to a price of " + response.price, WARNING_MESSAGE);
+                        } catch (TradingHaltedException e) {
+                            Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
+                        } catch (Exception e) {
+                            LOG.warn("Exception when closing position for position {}", position);
+                            Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
+                        }
+                    }
+                });
             }
         });
         listEntities();

@@ -1,4 +1,4 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
@@ -12,6 +12,7 @@ import hoggaster.domain.prices.Price;
 import hoggaster.rules.conditions.Condition;
 import hoggaster.talib.TALibService;
 import org.easyrules.api.RulesEngine;
+import org.easyrules.core.RulesEngineBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.bus.Event;
@@ -24,7 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static hoggaster.robot.RobotStatus.RUNNING;
+import static hoggaster.domain.robot.RobotStatus.RUNNING;
+import static hoggaster.domain.robot.RobotStatus.STOPPED;
 import static reactor.bus.selector.Selectors.R;
 
 /*
@@ -83,11 +85,11 @@ public class Robot implements Consumer<Event<?>> {
 
     private final CurrencyPair currencyPair;
 
-    // The buy conditions. Must be annotated with @Rule
-    private final Set<Condition> openTradeConditions;
+    // The enter conditions. Must be annotated with @Rule
+    private final Set<Condition> enterTradeConditions;
 
-    // The sell conditions. Must be annotated with @Rule
-    private final Set<Condition> closeTradeConditions;
+    // The exit conditions. Must be annotated with @Rule
+    private final Set<Condition> exitTradeConditions;
 
     private final TALibService taLibService;
 
@@ -101,32 +103,34 @@ public class Robot implements Consumer<Event<?>> {
 
     private final RulesEngine rulesEngine;
 
+    private final OrderSide orderSide;
+
     // Map with key = type of registration (prices, candles...) and registration
     // key as value.
     public final Map<String, Registration<?, ?>> eventBusRegistrations = new ConcurrentHashMap<String, Registration<?, ?>>();
 
-    public Robot(Depot depot, RobotDefinition definition, EventBus priceEventBus, RulesEngine rulesEngine, TALibService taLibService, CandleService candleService) {
+    public Robot(Depot depot, RobotDefinition definition, EventBus priceEventBus, TALibService taLibService, CandleService candleService) {
         Preconditions.checkArgument(priceEventBus != null, "The priceEventBus is null");
         Preconditions.checkArgument(depot != null, "The dbDepot is null");
         Preconditions.checkArgument(definition != null, "The robot definition is null");
         Preconditions.checkArgument(definition.currencyPair != null, "The definition currencyPair is null");
-        Preconditions.checkArgument(rulesEngine != null, "The rule engine is null");
         Preconditions.checkArgument(taLibService != null, "The ta-lib service is null");
         Preconditions.checkArgument(candleService != null, "The bidAskCandleService is null");
 
         this.id = definition.getId(); // This is kind of wacky
         this.name = definition.name;
         this.currencyPair = definition.currencyPair;
-        this.openTradeConditions = definition.getEnterConditions();
-        this.closeTradeConditions = definition.getExitConditions();
+        this.orderSide = definition.orderSide;
+        this.enterTradeConditions = definition.getEnterConditions();
+        this.exitTradeConditions = definition.getExitConditions();
         this.depot = depot;
         this.priceEventBus = priceEventBus;
-        this.rulesEngine = rulesEngine;
+        this.rulesEngine = RulesEngineBuilder.aNewRulesEngine().named("RuleEngine for robot " + definition.name).build();
         this.taLibService = taLibService;
         this.candleService = candleService;
 
-        openTradeConditions.forEach(rulesEngine::registerRule);
-        closeTradeConditions.forEach(rulesEngine::registerRule);
+        enterTradeConditions.forEach(rulesEngine::registerRule);
+        exitTradeConditions.forEach(rulesEngine::registerRule);
     }
 
     /**
@@ -134,19 +138,19 @@ public class Robot implements Consumer<Event<?>> {
      * <p>
      * Register for events.
      */
-    public void start() {
-        LOG.info("This is Robot {} starting up", this);
+    void start() {
+        LOG.info("{} starting up", this);
         Registration<Object, Consumer<? extends Event<?>>> reg = priceEventBus.on(R("prices." + currencyPair.name() + "*"), this);
         eventBusRegistrations.put("priceRegistration", reg);
-        this.status = RobotStatus.RUNNING;
-        LOG.info("Robot {} has started.", name);
+        this.status = RUNNING;
+        LOG.info("Robot {} has started and now has status {}", name, status);
     }
 
     /**
      * Unregister for events.
      */
-    public void stop() {
-        this.status = RobotStatus.STOPPED;
+    void stop() {
+        this.status = STOPPED;
         eventBusRegistrations.values().stream().forEach(Registration::cancel);
         LOG.info("Robot {} has stopped.", name);
     }
@@ -160,9 +164,9 @@ public class Robot implements Consumer<Event<?>> {
         RobotExecutionContext ctx = new RobotExecutionContext(price, currencyPair, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
+        //TODO probably only need to evalute either enter or exit conditions depending on whether we have an open trade or not.
 
-        //TODO Check this one!!! not correct. We need the order side too
-        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) {
+        if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) {
             LOG.info("Maybe we should enter a buy trade something based on new price!");
             askDepotToOpenTrade(price, OrderSide.buy);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) {
@@ -184,7 +188,7 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveOpenTradeConditions().size() == openTradeConditions.size()) { //All openTrade conditions say open trade! TODO refactor with compound conditions
+        if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) { //All openTrade conditions say open trade! TODO refactor with compound conditions
             askDepotToOpenTrade(candle, OrderSide.buy);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //At least one sell condition say sell!
             doCloseTrade();
@@ -195,10 +199,10 @@ public class Robot implements Consumer<Event<?>> {
     }
 
     private void setCtxOnConditions(RobotExecutionContext ctx) {
-        openTradeConditions.forEach(c -> {
+        enterTradeConditions.forEach(c -> {
             c.setContext(ctx);
         });
-        closeTradeConditions.forEach(c -> {
+        exitTradeConditions.forEach(c -> {
             c.setContext(ctx);
         });
     }
@@ -254,7 +258,7 @@ public class Robot implements Consumer<Event<?>> {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", currencyPair=").append(currencyPair).append(", openTradeConditions=").append(openTradeConditions).append(", closeTradeConditions=").append(closeTradeConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
+        builder.append("Robot [id=").append(id).append(", name=").append(name).append(", currencyPair=").append(currencyPair).append(", enterTradeConditions=").append(enterTradeConditions).append(", exitTradeConditions=").append(exitTradeConditions).append(", dbDepot=").append(depot).append(", status=").append(status).append("]");
         return builder.toString();
     }
 

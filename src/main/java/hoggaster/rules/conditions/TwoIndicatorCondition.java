@@ -4,8 +4,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import hoggaster.domain.orders.OrderSide;
+import hoggaster.domain.robot.RobotExecutionContext;
 import hoggaster.domain.trades.TradeAction;
-import hoggaster.robot.RobotExecutionContext;
 import hoggaster.rules.Comparator;
 import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.indicators.Indicator;
@@ -23,7 +23,7 @@ import static hoggaster.domain.trades.TradeAction.OPEN;
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
- * method will get called and we tradeOpened ourselves to the sendOrder- or sell action depending
+ * method will get called and we add ourselves to the openTrade or closeTrade list depending
  * on our {@link OrderSide}
  *
  * @author svante
@@ -36,11 +36,10 @@ public class TwoIndicatorCondition implements Condition {
     public final String name;
     public final Indicator firstIndicator;
     public final Indicator secondIndicator;
-    public final Comparator operator;
+    public final Comparator comparator;
     public final Integer priority;
     public final TradeAction tradeAction;
 
-    public final OrderSide orderSide;
     private transient RobotExecutionContext ctx;
 
     //The kind of events we should react on.
@@ -50,21 +49,19 @@ public class TwoIndicatorCondition implements Condition {
      * @param name A describing name for this condition
      * @param firstIndicator
      * @param secondIndicator
-     * @param operator The operator to use when comparing firstIndicator and secondIndicator
+     * @param comparator The comparator to use when comparing firstIndicator and secondIndicator
      * @param priority
-     * @param tradeAction Is this condition for opening or closing of a position?
-     * @param orderSide Should we go short or long?
+     * @param tradeAction
      * @param eventTypes
      */
-    //TODO This is too much info for a condition! Order side and action doesn't belong here!
-    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator operator, Integer priority, TradeAction tradeAction, OrderSide orderSide, MarketUpdateType... eventTypes) {
+    //TODO This is too much info for a condition! action doesn't belong here!
+    public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator comparator, Integer priority, TradeAction tradeAction, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;
         this.secondIndicator = secondIndicator;
-        this.operator = operator;
+        this.comparator = comparator;
         this.priority = priority;
         this.tradeAction = tradeAction;
-        this.orderSide = orderSide;
         this.eventTypes = Sets.newHashSet(eventTypes);
     }
 
@@ -75,8 +72,8 @@ public class TwoIndicatorCondition implements Condition {
             LOG.info("Return false since we only react on {} but this update was of type {}", eventTypes, ctx.marketUpdate.getType());
             return false;
         }
-        Boolean result = operator.apply(firstIndicator.value(ctx), secondIndicator.value(ctx));
-        LOG.info("Result of rule with indicators '{}', '{}' compared with operator '{}' was '{}' given context {}", firstIndicator, secondIndicator, operator, result, ctx);
+        Boolean result = comparator.apply(firstIndicator.value(ctx), secondIndicator.value(ctx));
+        LOG.info("Result of rule with indicators '{}', '{}' compared with operator '{}' was '{}' given context {}", firstIndicator, secondIndicator, comparator, result, ctx);
         return result;
     }
 
@@ -105,7 +102,7 @@ public class TwoIndicatorCondition implements Condition {
                 .add("name", name)
                 .add("firstIndicator", firstIndicator)
                 .add("secondIndicator", secondIndicator)
-                .add("operator", operator)
+                .add("operator", comparator)
                 .add("priority", priority)
                 .add("tradeAction", tradeAction)
                 .add("ctx", ctx)

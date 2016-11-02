@@ -1,7 +1,7 @@
 package hoggaster.rules.indicators;
 
 import com.google.common.base.Preconditions;
-import hoggaster.robot.RobotExecutionContext;
+import hoggaster.domain.robot.RobotExecutionContext;
 
 import java.math.BigDecimal;
 

@@ -27,7 +27,7 @@ import reactor.bus.selector.Selectors;
 import java.util.Collection;
 
 /**
- * Form for add/edit a trade. Use the stuff from viritn https://github.com/viritin/viritin
+ * Form for start/edit a trade. Use the stuff from viritn https://github.com/viritin/viritin
  * Created by svante2 on 2016-03-22.
  */
 public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
@@ -56,10 +56,6 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
     private Registration registration = null;
 
     private Long lastPriceUpdate = System.currentTimeMillis();
-
-    public TradeForm(EventBus pricesEventBus, Collection<DbDepot> depots, FormTrade trade) {
-        this(pricesEventBus, depots, trade, true);
-    }
 
     public TradeForm(EventBus pricesEventBus, Collection<DbDepot> depots) {
         this(pricesEventBus, depots, new FormTrade(), false);
@@ -93,6 +89,8 @@ public class TradeForm extends AbstractForm<TradeForm.FormTrade> {
         depot.setTextInputAllowed(false);
         depot.setItemCaptionPropertyId("name");
         depot.setInputPrompt("Please select a depot for this order");
+        depot.select(depots.iterator().next());
+
 
         instrument.setSizeFull();
         instrument.addMValueChangeListener(v -> {

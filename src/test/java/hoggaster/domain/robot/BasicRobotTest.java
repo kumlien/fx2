@@ -1,7 +1,6 @@
-package hoggaster.robot;
+package hoggaster.domain.robot;
 
 import hoggaster.candles.CandleService;
-import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.Depot;
@@ -15,8 +14,6 @@ import hoggaster.rules.conditions.TwoIndicatorCondition;
 import hoggaster.rules.indicators.CurrentAskIndicator;
 import hoggaster.rules.indicators.SimpleValueIndicator;
 import hoggaster.talib.TALibService;
-import org.easyrules.api.RulesEngine;
-import org.easyrules.core.RulesEngineBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +26,8 @@ import reactor.bus.registry.Registration;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+
+import static hoggaster.domain.CurrencyPair.USD_SEK;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicRobotTest {
@@ -60,7 +59,7 @@ public class BasicRobotTest {
 
     @Before
     public void before() {
-        definition = new RobotDefinition("Frekkin robot!", CurrencyPair.USD_SEK, "1");
+        definition = new RobotDefinition("Frekkin robot!", USD_SEK, OrderSide.buy);
         Mockito.when(priceEventBus.on(Mockito.any(), Mockito.any())).thenReturn(registration);
     }
 
@@ -68,14 +67,13 @@ public class BasicRobotTest {
     public void testSimpleBuyOnPrice() {
         SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
-        //Let's compare them in a condition, putting an operator between them
-        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, OrderSide.buy, MarketUpdateType.PRICE);
+        //Let's compare them in a condition, putting an comparator between them
+        TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, MarketUpdateType.PRICE);
         definition.addEnterTradeCondition(condition);
-        RulesEngine rulesEngine = RulesEngineBuilder.aNewRulesEngine().build();
-        Robot robot = new Robot(depot, definition, priceEventBus, rulesEngine, taLibService, candleService);
+        Robot robot = new Robot(depot, definition, priceEventBus, taLibService, candleService);
         robot.start();
-        Price price = new Price(CurrencyPair.USD_SEK, new BigDecimal("1.99"), new BigDecimal("2.01"), Instant.now(), Broker.OANDA);
+        Price price = new Price(USD_SEK, new BigDecimal("1.99"), new BigDecimal("2.01"), Instant.now(), Broker.OANDA);
         robot.accept(Event.wrap(price));
-        Mockito.verify(depot).openTrade(CurrencyPair.USD_SEK, OrderSide.buy, new BigDecimal("0.02"), price, robot.id);
+        Mockito.verify(depot).openTrade(USD_SEK, OrderSide.buy, new BigDecimal("0.02"), price, robot.id);
     }
 }
