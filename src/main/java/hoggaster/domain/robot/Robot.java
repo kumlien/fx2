@@ -2,6 +2,7 @@ package hoggaster.domain.robot;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
 import hoggaster.domain.CurrencyPair;
@@ -22,7 +23,6 @@ import reactor.fn.Consumer;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static hoggaster.domain.robot.RobotStatus.RUNNING;
@@ -31,7 +31,7 @@ import static reactor.bus.selector.Selectors.R;
 
 /*
  * / Definition of code parameters
- DEFPARAM CumulateOrders = False // Cumulating positions deactivated
+ DEFPARAM CumulateOrders = False // Accumulative positions deactivated
 
 // Conditions to enter long positions
 indicator1 = close
@@ -86,10 +86,10 @@ public class Robot implements Consumer<Event<?>> {
     private final CurrencyPair currencyPair;
 
     // The enter conditions. Must be annotated with @Rule
-    private final Set<Condition> enterTradeConditions;
+    private final ImmutableSet<Condition> enterTradeConditions;
 
     // The exit conditions. Must be annotated with @Rule
-    private final Set<Condition> exitTradeConditions;
+    private final ImmutableSet<Condition> exitTradeConditions;
 
     private final TALibService taLibService;
 
@@ -164,14 +164,14 @@ public class Robot implements Consumer<Event<?>> {
         RobotExecutionContext ctx = new RobotExecutionContext(price, currencyPair, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
-        //TODO probably only need to evalute either enter or exit conditions depending on whether we have an open trade or not.
+        //TODO probably only need to evaluate either enter or exit conditions depending on whether we have an open trade or not.
 
-        if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) {
+        if (enterTradeConditions.size() > 0 && ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) {
             LOG.info("Maybe we should enter a buy trade something based on new price!");
-            askDepotToOpenTrade(price, OrderSide.buy);
+            askDepotToOpenTrade(price, orderSide);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) {
             LOG.info("Maybe we should enter a sell trade based on new price!");
-            askDepotToOpenTrade(price, OrderSide.sell);
+            doCloseTrade();
         } else {
             LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
         }
@@ -188,26 +188,23 @@ public class Robot implements Consumer<Event<?>> {
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
 
-        if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) { //All openTrade conditions say open trade! TODO refactor with compound conditions
-            askDepotToOpenTrade(candle, OrderSide.buy);
+        if (enterTradeConditions.size() > 0 && ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) { //All openTrade conditions say open trade! TODO refactor with compound conditions
+            askDepotToOpenTrade(candle, orderSide);
         } else if (ctx.getPositiveCloseTradeConditions().size() > 0) { //At least one sell condition say sell!
             doCloseTrade();
         } else {
-            LOG.info("No sendOrder or sell actions triggered, seem like we should keep calm an carry on...");
+            LOG.info("No open/close trade actions triggered, seem like we should keep calm an carry on...");
         }
 
     }
 
     private void setCtxOnConditions(RobotExecutionContext ctx) {
-        enterTradeConditions.forEach(c -> {
-            c.setContext(ctx);
-        });
-        exitTradeConditions.forEach(c -> {
-            c.setContext(ctx);
-        });
+        enterTradeConditions.forEach(c -> c.setContext(ctx) );
+        exitTradeConditions.forEach(c -> c.setContext(ctx) );
     }
 
     private void doCloseTrade() {
+        //TODO We should be able to close trade by id instead...
         depot.closeTrade(currencyPair, this.id);
     }
 

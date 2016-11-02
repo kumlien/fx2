@@ -80,12 +80,12 @@ public class DepotImpl implements Depot {
         LOG.info("We are told by robot '{}' to close trade for currency pair {}", robotId, currencyPair);
         Collection<Trade> trades = tradeService.findByInstrumentAndRobotId(currencyPair, robotId);
         if(trades == null || trades.size() != 1) {
-            LOG.warn("Asked by robot {} to close trade for instrument {} but no matching open trade found!");
+            LOG.warn("Asked by robot {} to close trade for instrument {} but no matching open trade found! (trades: {})",robotId, currencyPair, trades);
             return;
         }
         Trade tradeToClose = trades.iterator().next();
         CloseTradeResponse response = brokerConnection.closeTrade(tradeToClose, dbDepot.brokerId);
-
+        LOG.info("Trade closed: {}", response);
 
     }
 

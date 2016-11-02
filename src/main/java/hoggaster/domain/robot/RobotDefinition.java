@@ -3,12 +3,14 @@ package hoggaster.domain.robot;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.rules.conditions.Condition;
 import org.springframework.data.annotation.PersistenceConstructor;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,12 +40,15 @@ public class RobotDefinition {
         this.name = name;
         this.currencyPair = currencyPair;
         this.orderSide = orderSide;
-        this.enterConditions = enterConditions;
-        this.exitConditions = exitConditions;
+        this.enterConditions = enterConditions != null ? enterConditions : new HashSet<>(2);
+        this.exitConditions = exitConditions != null ? exitConditions : new HashSet<>(2);
     }
 
-    public Set<Condition> getEnterConditions() {
-        return enterConditions;
+    /**
+     * @return the enter {@link Condition}s as a a immutable set
+     */
+    public ImmutableSet<Condition> getEnterConditions() {
+        return ImmutableSet.copyOf(enterConditions);
     }
 
     public void addEnterTradeCondition(Condition c) {
@@ -61,8 +66,11 @@ public class RobotDefinition {
         exitConditions.add(c);
     }
 
-    public Set<Condition> getExitConditions() {
-        return exitConditions;
+    /**
+     * @return the exit {@link Condition}s as a a immutable set
+     */
+    public ImmutableSet<Condition> getExitConditions() {
+        return ImmutableSet.copyOf(exitConditions);
     }
 
 
