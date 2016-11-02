@@ -1,8 +1,9 @@
-package hoggaster.rules.indicators;
+package hoggaster.rules.indicators.candles;
 
 import com.google.common.base.Preconditions;
 import hoggaster.candles.Candle;
 import hoggaster.domain.robot.RobotExecutionContext;
+import hoggaster.rules.indicators.Indicator;
 
 import java.math.BigDecimal;
 

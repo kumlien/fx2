@@ -9,6 +9,8 @@ import hoggaster.rules.MarketUpdateType;
 import hoggaster.rules.conditions.Condition;
 import hoggaster.rules.conditions.TwoIndicatorCondition;
 import hoggaster.rules.indicators.*;
+import hoggaster.rules.indicators.candles.CandleIndicator;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,8 +25,8 @@ import java.math.BigDecimal;
 import static hoggaster.rules.Comparator.GREATER_OR_EQUAL_THAN;
 import static hoggaster.rules.Comparator.LESS_OR_EQUAL_THAN;
 import static hoggaster.rules.MarketUpdateType.ONE_DAY_CANDLE;
-import static hoggaster.rules.indicators.CandleStickField.CLOSE_BID;
-import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
+import static hoggaster.rules.indicators.candles.CandleStickField.CLOSE_BID;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.END_OF_DAY;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = MongoConfig.class)

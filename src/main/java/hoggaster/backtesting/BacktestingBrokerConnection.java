@@ -10,7 +10,7 @@ import hoggaster.domain.positions.Position;
 import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.oanda.responses.*;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 

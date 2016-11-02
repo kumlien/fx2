@@ -8,7 +8,7 @@ import hoggaster.domain.brokers.BrokerConnection;
 import hoggaster.domain.depots.DepotMonitorImpl;
 import hoggaster.oanda.responses.Instruments;
 import hoggaster.oanda.responses.OandaInstrument;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +31,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static hoggaster.rules.indicators.CandleStickGranularity.END_OF_DAY;
-import static hoggaster.rules.indicators.CandleStickGranularity.MINUTE;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.END_OF_DAY;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.MINUTE;
 
 
 /**

@@ -12,7 +12,7 @@ public enum Comparator implements BiFunction<BigDecimal, BigDecimal, Boolean> {
     private final String symbol;
     private final BiFunction<BigDecimal, BigDecimal, Boolean> biFunction;
 
-    private Comparator(final String symbol, final BiFunction<BigDecimal, BigDecimal, Boolean> biFunction) {
+    Comparator(final String symbol, final BiFunction<BigDecimal, BigDecimal, Boolean> biFunction) {
         this.symbol = symbol;
         this.biFunction = biFunction;
     }

@@ -164,6 +164,7 @@ public class Robot implements Consumer<Event<?>> {
         RobotExecutionContext ctx = new RobotExecutionContext(price, currencyPair, taLibService, candleService);
         setCtxOnConditions(ctx);
         rulesEngine.fireRules();
+        //TODO probably only need to evalute either enter or exit conditions depending on whether we have an open trade or not.
 
         if (ctx.getPositiveOpenTradeConditions().size() == enterTradeConditions.size()) {
             LOG.info("Maybe we should enter a buy trade something based on new price!");

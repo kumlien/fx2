@@ -1,7 +1,7 @@
 package hoggaster.candles;
 
 import hoggaster.domain.CurrencyPair;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

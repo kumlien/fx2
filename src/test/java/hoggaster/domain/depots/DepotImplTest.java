@@ -13,7 +13,7 @@ import hoggaster.domain.prices.Price;
 import hoggaster.domain.prices.PriceService;
 import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.responses.OandaCreateTradeResponse;
-import hoggaster.rules.indicators.CandleStickGranularity;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;

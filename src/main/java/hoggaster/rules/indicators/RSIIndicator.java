@@ -1,6 +1,8 @@
 package hoggaster.rules.indicators;
 
 import hoggaster.domain.robot.RobotExecutionContext;
+import hoggaster.rules.indicators.candles.CandleStickField;
+import hoggaster.rules.indicators.candles.CandleStickGranularity;
 import hoggaster.talib.TAResult;
 
 import java.math.BigDecimal;

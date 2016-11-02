@@ -67,7 +67,7 @@ public class BasicRobotTest {
     public void testSimpleBuyOnPrice() {
         SimpleValueIndicator svi = new SimpleValueIndicator(new BigDecimal("2")); //First indicator
         CurrentAskIndicator cai = new CurrentAskIndicator(); //Second indicator
-        //Let's compare them in a condition, putting an operator between them
+        //Let's compare them in a condition, putting an comparator between them
         TwoIndicatorCondition condition = new TwoIndicatorCondition("Buy when ask is > 2", cai, svi, Comparator.GREATER_THAN, 0, TradeAction.OPEN, MarketUpdateType.PRICE);
         definition.addEnterTradeCondition(condition);
         Robot robot = new Robot(depot, definition, priceEventBus, taLibService, candleService);

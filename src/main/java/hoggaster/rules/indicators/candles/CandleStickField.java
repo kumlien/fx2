@@ -1,4 +1,4 @@
-package hoggaster.rules.indicators;
+package hoggaster.rules.indicators.candles;
 
 import hoggaster.candles.Candle;
 
@@ -8,5 +8,5 @@ import hoggaster.candles.Candle;
  * @author svante2
  */
 public enum CandleStickField {
-    OPEN_BID, OPEN_ASK, HIGH_BID, HIGH_ASK, LOW_BID, LOW_ASK, CLOSE_BID, CLOSE_ASK;
+    OPEN_BID, OPEN_ASK, HIGH_BID, HIGH_ASK, LOW_BID, LOW_ASK, CLOSE_BID, CLOSE_ASK
 }

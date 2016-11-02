@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static hoggaster.rules.indicators.CandleStickField.CLOSE_BID;
-import static hoggaster.rules.indicators.CandleStickGranularity.MINUTE;
+import static hoggaster.rules.indicators.candles.CandleStickField.CLOSE_BID;
+import static hoggaster.rules.indicators.candles.CandleStickGranularity.MINUTE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RSIIndicatorTest {
