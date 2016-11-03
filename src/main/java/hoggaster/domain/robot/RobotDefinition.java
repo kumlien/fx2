@@ -14,14 +14,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * The data for a robot. More data might go in here like settings for money management etc.
+ */
 public class RobotDefinition {
 
     private final String id;
 
     public final String name;
-    public final CurrencyPair currencyPair;
-    public final OrderSide orderSide;
-    private final Set<Condition> enterConditions;
+    public final CurrencyPair currencyPair; //Only allow one pair for now. Might change in the future.
+    public final OrderSide orderSide; //Only allows one side for now. Might change in the future.
+    private final Set<Condition> enterConditions; //For now these conditions are connected to an 'enter a trade' action. We might have to make this more generic and introduce the concept of an Action.
     private final Set<Condition> exitConditions;
 
 

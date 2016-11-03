@@ -3,7 +3,6 @@ package hoggaster.rules.conditions;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
-import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotExecutionContext;
 import hoggaster.domain.trades.TradeAction;
 import hoggaster.rules.Comparator;
@@ -23,8 +22,8 @@ import static hoggaster.domain.trades.TradeAction.OPEN;
 /**
  * Generic rule comparing two {@link Indicator}s with a given {@link Comparator}
  * Evaluated in the {@link #when()} method. If positive then the {@link #then()}
- * method will get called and we add ourselves to the openTrade or closeTrade list depending
- * on our {@link OrderSide}
+ * method will get called and we add ourselves to the enterTrade or exitTrade list depending
+ * on our {@link TradeAction}
  *
  * @author svante
  */
@@ -54,7 +53,6 @@ public class TwoIndicatorCondition implements Condition {
      * @param tradeAction
      * @param eventTypes
      */
-    //TODO This is too much info for a condition! action doesn't belong here!
     public TwoIndicatorCondition(String name, Indicator firstIndicator, Indicator secondIndicator, Comparator comparator, Integer priority, TradeAction tradeAction, MarketUpdateType... eventTypes) {
         this.name = name;
         this.firstIndicator = firstIndicator;

@@ -6,12 +6,14 @@ import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.UI;
 import hoggaster.domain.depots.DepotRepo;
 import hoggaster.domain.orders.OrderSide;
 import hoggaster.domain.robot.RobotDefinition;
 import hoggaster.domain.robot.RobotService;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
+import hoggaster.web.vaadin.views.user.robots.rules.RuleDetailsWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class ListRobotsComponent implements Serializable {
     private static final Action START_ROBOT_ACTION = new Action("Start", FontAwesome.ROCKET);
 
     private static final Action EDIT_ROBOT_ACTION = new Action("Edit", FontAwesome.PENCIL);
+
+    private static final Action ADD_ENTER_TRADE_RULE_ACTION = new Action("Add rule for enter trade", FontAwesome.PENCIL);
 
     private static final Action ADD_ROBOT_ACTION = new Action("Add a new robot");
 
@@ -106,7 +110,7 @@ public class ListRobotsComponent implements Serializable {
                     if(robotService.isRunning(robot.getId())) {
                         validActions = new Action[]{EDIT_ROBOT_ACTION, STOP_ROBOT_ACTION};
                     } else {
-                        validActions = new Action[]{EDIT_ROBOT_ACTION, START_ROBOT_ACTION};
+                        validActions = new Action[]{EDIT_ROBOT_ACTION, START_ROBOT_ACTION, ADD_ENTER_TRADE_RULE_ACTION};
                     }
                 } else {
                     validActions = new Action[]{ADD_ROBOT_ACTION};
@@ -121,6 +125,10 @@ public class ListRobotsComponent implements Serializable {
                 }
                 if(action == EDIT_ROBOT_ACTION) {
                     editRobot((UIRobot) target);
+                }
+                if(action == ADD_ENTER_TRADE_RULE_ACTION) {
+                    RuleDetailsWindow window = new RuleDetailsWindow();
+                    UI.getCurrent().addWindow(window);
                 }
                 if(action == START_ROBOT_ACTION) {
                     UIRobot r = (UIRobot) target;
