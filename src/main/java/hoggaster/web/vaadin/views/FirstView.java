@@ -46,41 +46,6 @@ public class FirstView extends MVerticalLayout implements View {
         this.userDetailsService = userDetailsService;
     }
 
-    @PostConstruct
-    public void init() {
-        /*
-        loginBtn.setDisableOnClick(true);
-        loginBtn.setClickShortcut(KeyCode.ENTER);
-        loginBtn.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        loginBtn.addClickListener(e -> {
-            if(!username.isValid() || !password.isValid()) {
-                loginBtn.setEnabled(true);
-                return;
-            }
-            String user = username.getValue().trim();
-            String pass = password.getValue().trim();
-            if(user.equals("admin") && pass.equals("admin")) {
-                getSession().setAttribute(USER_SESSION_ATTR,"SUPER_USER");
-                getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
-            }
-            try {
-                Authentication ud = authenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(user, pass));
-                LOG.info("User logged in: " + ud);
-                final UserDetails userDetails = userDetailsService.loadUserByUsername(user);
-                getSession().setAttribute(USER_SESSION_ATTR, userDetails);
-                getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
-                Notification.show("Welcome " + ((User)userDetails).getFirstName());
-            } catch(AuthenticationException ae) {
-                LOG.debug("Authentication failed...");
-                password.setValue(null);
-                password.focus();
-                Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);
-            } finally {
-                loginBtn.setEnabled(true);
-            }
-        });
-        */
-    }
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {

@@ -31,6 +31,7 @@ import org.vaadin.viritin.layouts.MVerticalLayout;
 
 import static com.vaadin.shared.communication.PushMode.MANUAL;
 import static com.vaadin.shared.ui.ui.Transport.WEBSOCKET_XHR;
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static com.vaadin.ui.themes.ValoTheme.BUTTON_BORDERLESS;
 import static com.vaadin.ui.themes.ValoTheme.BUTTON_FRIENDLY;
 
@@ -153,7 +154,7 @@ public class AdminUI extends UI {
             loginBtn.setVisible(false);
         } catch (AuthenticationException ae) {
             LOG.debug("Authentication failed...");
-            Notification.show("Sorry, no such username/password combo found", Notification.Type.ERROR_MESSAGE);
+            Notification.show("Sorry, no such username/password combo found", WARNING_MESSAGE);
         } finally {
             loginBtn.setEnabled(true);
         }
