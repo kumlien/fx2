@@ -15,6 +15,7 @@ import hoggaster.talib.TAResult;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -31,7 +32,7 @@ public class RobotExecutionContext {
 
     public final MarketUpdate marketUpdate;
 
-    public final CurrencyPair currencyPair;
+    final CurrencyPair currencyPair;
 
     private final List<Condition> positiveOpenTradeConditions = new ArrayList<>();
 
@@ -124,5 +125,18 @@ public class RobotExecutionContext {
                 .collect(toList());
         return taLibService.rsi(values, periods);
     }
+
+    public List<Candle> getCandles(CandleStickGranularity candleStickGranularity, int numberOfCandles) {
+        return bidAskCandleService.getLatestCandles(currencyPair, candleStickGranularity, numberOfCandles);
+    }
+
+    public Optional<Candle> getLatestCandle(CandleStickGranularity candleStickGranularity) {
+        return Optional.ofNullable(bidAskCandleService.getLatestCandles(currencyPair, candleStickGranularity, 1).get(0));
+    }
+
+    public CurrencyPair getCurrencyPair() {
+        return currencyPair;
+    }
+
 
 }

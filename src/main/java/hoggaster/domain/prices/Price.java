@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.function.Function;
 
 import static hoggaster.domain.brokers.Broker.OANDA;
 
@@ -65,11 +64,6 @@ public class Price extends MarketUpdate {
         return MarketUpdateType.PRICE;
     }
 
-    @Override
-    public Function<BigDecimal, BigDecimal> calcUpperBound() {
-        //return (BigDecimal bd) -> bd.multiply(
-        return null;
-    }
 
 
     public static class Builder {

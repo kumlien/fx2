@@ -46,12 +46,12 @@ public class BidAskCandleServiceImpl implements CandleService {
         Pageable pageable = new PageRequest(0, numberOfCandles);
 
         List<Candle> candles = repo.findByCurrencyPairAndGranularityOrderByTimeDesc(currencyPair, granularity, pageable);
-        LOG.info("Got a list: {}", candles.size());
+        LOG.info("Got a list of {} {} candles with {} elements",currencyPair, granularity, candles.size());
         if (candles.size() < numberOfCandles) {
             LOG.info("Not all candles found in db ({} out of {}), will try to fetch the rest from oanda.", candles.size(), numberOfCandles);
             List<Candle> fetchedCandles = new ArrayList<>();
             fetchedCandles.addAll(getFromBroker(currencyPair, granularity, null, Instant.now(), numberOfCandles));
-            LOG.info("Fetched {} candles from broker", fetchedCandles.size());
+            LOG.info("Fetched {} additional candles from broker", fetchedCandles.size());
             candles.addAll(fetchedCandles);
         }
         return candles;

@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.function.Function;
 
 /*
  * The bid price represents the maximum price that a buyer or buyers are willing to pay for a security.
@@ -67,6 +66,7 @@ public class Candle extends MarketUpdate {
         this.id = generateId();
     }
 
+
     // Ugly thing to use our own generated id
     private String generateId() {
         return new StringBuilder().append(currencyPair.name()).append("|").append(granularity.name()).append("|").append(time.toString()).toString();
@@ -75,6 +75,8 @@ public class Candle extends MarketUpdate {
     public String getId() {
         return id;
     }
+
+
 
     @Override
     public int hashCode() {
@@ -120,11 +122,6 @@ public class Candle extends MarketUpdate {
         return granularity.type;
     }
 
-    @Override
-    public Function<BigDecimal, BigDecimal> calcUpperBound() {
-        return null;
-    }
-
     public BigDecimal getValue(CandleStickField field) {
         switch (field) {
             case CLOSE_ASK:
@@ -145,6 +142,95 @@ public class Candle extends MarketUpdate {
                 return openBid;
             default:
                 throw new IllegalArgumentException("Unknown candlestick field " + field);
+        }
+    }
+
+    public static final class Builder {
+        final public CurrencyPair currencyPair;
+        public Broker brokerId;
+        final public CandleStickGranularity granularity;
+        final public Instant time;
+        public BigDecimal openBid;
+        public BigDecimal openAsk;
+        public BigDecimal highBid;
+        public BigDecimal highAsk;
+        public BigDecimal lowBid;
+        public BigDecimal lowAsk;
+        public BigDecimal closeBid;
+        public BigDecimal closeAsk;
+        public Integer volume;
+        public Boolean complete;
+
+
+        public Builder(CurrencyPair currencyPair, CandleStickGranularity granularity, Instant time) {
+            this.currencyPair = currencyPair;
+            this.granularity = granularity;
+            this.time = time;
+
+        }
+
+        public static Builder aCandle(CurrencyPair currencyPair, CandleStickGranularity granularity, Instant time) {
+            return new Builder(currencyPair, granularity, time);
+        }
+
+        public Builder withBrokerId(Broker brokerId) {
+            this.brokerId = brokerId;
+            return this;
+        }
+
+        public Builder withOpenBid(BigDecimal openBid) {
+            this.openBid = openBid;
+            return this;
+        }
+
+        public Builder withOpenAsk(BigDecimal openAsk) {
+            this.openAsk = openAsk;
+            return this;
+        }
+
+        public Builder withHighBid(BigDecimal highBid) {
+            this.highBid = highBid;
+            return this;
+        }
+
+        public Builder withHighAsk(BigDecimal highAsk) {
+            this.highAsk = highAsk;
+            return this;
+        }
+
+        public Builder withLowBid(BigDecimal lowBid) {
+            this.lowBid = lowBid;
+            return this;
+        }
+
+        public Builder withLowAsk(BigDecimal lowAsk) {
+            this.lowAsk = lowAsk;
+            return this;
+        }
+
+        public Builder withCloseBid(BigDecimal closeBid) {
+            this.closeBid = closeBid;
+            return this;
+        }
+
+        public Builder withCloseAsk(BigDecimal closeAsk) {
+            this.closeAsk = closeAsk;
+            return this;
+        }
+
+        public Builder withVolume(Integer volume) {
+            this.volume = volume;
+            return this;
+        }
+
+        public Builder withComplete(Boolean complete) {
+            this.complete = complete;
+            return this;
+        }
+
+        public Candle build() {
+            Candle candle = new Candle(currencyPair, brokerId, granularity, time, openBid, openAsk, highBid, highAsk, lowBid, lowAsk, closeBid, closeAsk, volume, complete);
+            return candle;
         }
     }
 }
