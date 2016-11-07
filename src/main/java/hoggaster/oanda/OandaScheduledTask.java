@@ -28,15 +28,20 @@ import reactor.rx.Streams;
 
 import javax.annotation.PostConstruct;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.LongAdder;
 
 import static hoggaster.rules.indicators.candles.CandleStickGranularity.END_OF_DAY;
 import static hoggaster.rules.indicators.candles.CandleStickGranularity.MINUTE;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 /**
- * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link DepotMonitorImpl} TODO Fetches prices via pull, implement push/streaming from oanda instead.
+ * Right now some kind of collection of scheduled methods. Some scheduled methods also resides in the {@link DepotMonitorImpl}
  */
 @Component
 public class OandaScheduledTask {
@@ -55,7 +60,12 @@ public class OandaScheduledTask {
 
     private final CandleService candleService;
 
+    private boolean initComplete = false;
+
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
+
+    private int cpsFetchedRequired;
+    private LongAdder cpsFetched = new LongAdder();
 
     @Autowired
     public OandaScheduledTask(@Qualifier("OandaBrokerConnection") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("candleEventBus") EventBus candleEventBus, OandaProperties oandaProps, CandleService candleService) {
@@ -77,13 +87,20 @@ public class OandaScheduledTask {
         Stream<Tuple2<CurrencyPair, CandleStickGranularity>> stream = Streams.wrap(publisher);
 
         // Attach  consumers
-        stream.consumeOn(new WorkQueueDispatcher("FetchCandlesDispatcher",4,16, e->LOG.warn("Exception fetching historic candles",e)), t -> candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2()));
+        stream.consumeOn(new WorkQueueDispatcher("FetchCandlesDispatcher",4,16, e->LOG.warn("Exception fetching historic candles",e)), t -> {
+            candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
+            cpsFetched.increment();
+            LOG.info("Cps fetched is now {}, required is {}", cpsFetched.intValue(), cpsFetchedRequired);
+        });
+
+        cpsFetchedRequired = CurrencyPair.MAJORS.length * 2;
+        LOG.info("Need to fetch {} cp/candle types combos", cpsFetchedRequired);
 
         Environment.timer().submit(time -> {
-            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, MINUTE)));
-            Arrays.asList(CurrencyPair.MAJORS).forEach(i -> publisher.onNext(Tuple.of(i, END_OF_DAY)));
+            asList(CurrencyPair.MAJORS).forEach(currencyPair -> publisher.onNext(Tuple.of(currencyPair, MINUTE)));
+            asList(CurrencyPair.MAJORS).forEach(currencyPair -> publisher.onNext(Tuple.of(currencyPair, END_OF_DAY)));
             publisher.onComplete();
-        }, 10, TimeUnit.SECONDS);
+        }, 10, SECONDS);
     }
 
 
@@ -125,6 +142,10 @@ public class OandaScheduledTask {
     @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
+        if(cpsFetched.intValue() < cpsFetchedRequired){
+            LOG.info("Skip fetching minute candles since warmup is not ready...");
+            return;
+        }
         LOG.info("About to fetch one minute candles");
         try {
             List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(MINUTE);
@@ -143,6 +164,10 @@ public class OandaScheduledTask {
     @Scheduled(cron = "0 1 17 * * MON-FRI", zone = "America/New_York")
     @Timed
     public void fetchDayCandles() {
+        if(cpsFetched.intValue() < cpsFetchedRequired){
+            LOG.info("Skip fetching end_of_day candles since warmup is not ready...");
+            return;
+        }
         LOG.info("About to fetch one day candles");
         try {
             List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(END_OF_DAY);
@@ -181,7 +206,7 @@ public class OandaScheduledTask {
         instrumentStream.consume(ic);
         instrumentStream.consume(ic);
 
-        Arrays.asList(CurrencyPair.values()).forEach(i -> publisher.onNext(i));
+        asList(CurrencyPair.values()).forEach(i -> publisher.onNext(i));
         publisher.onComplete();
         return allCandles;
     }

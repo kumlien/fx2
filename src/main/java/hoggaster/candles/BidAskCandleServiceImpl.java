@@ -16,10 +16,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 @Service
 public class BidAskCandleServiceImpl implements CandleService {
@@ -27,7 +28,7 @@ public class BidAskCandleServiceImpl implements CandleService {
     private static final Logger LOG = LoggerFactory.getLogger(BidAskCandleServiceImpl.class);
 
     //The earliest date we try to fetch candles from
-    private static final Instant FIRST_CANDLE_DATE = Instant.now().truncatedTo(ChronoUnit.SECONDS).minus(Duration.ofDays(365 * 20));
+    private static final Instant FIRST_CANDLE_DATE = Instant.now().truncatedTo(SECONDS).minus(Duration.ofDays(365));
 
     private final CandleRepo repo;
 
@@ -72,6 +73,8 @@ public class BidAskCandleServiceImpl implements CandleService {
 
     /*
      * Used to make sure an currencyPair/granularity combo is up to date in the db.
+     *
+     * TODO we should also delete the first candle from our db if it's not complete!
      */
     @Override
     public int fetchAndSaveHistoricCandles(CurrencyPair currencyPair, CandleStickGranularity granularity) {
