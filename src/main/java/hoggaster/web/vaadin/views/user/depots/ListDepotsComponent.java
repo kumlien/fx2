@@ -1,14 +1,10 @@
 package hoggaster.web.vaadin.views.user.depots;
 
-import com.vaadin.data.util.filter.Not;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.UI;
-
-import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.InvalidResourceIdentifier;
 import hoggaster.domain.depots.DbDepot;
 import hoggaster.domain.depots.DepotService;
@@ -25,24 +21,13 @@ import org.vaadin.viritin.button.MButton;
 import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
-
-import reactor.bus.Event;
 import reactor.bus.EventBus;
 import reactor.bus.registry.Registration;
-import reactor.bus.selector.Selectors;
-import reactor.fn.Consumer;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.Serializable;
-import java.text.Normalizer;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import static com.sun.prism.impl.Disposer.cleanUp;
-import static com.sun.tools.doclets.internal.toolkit.util.DocPath.parent;
-import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
 import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static reactor.bus.selector.Selectors.matchAll;
 
@@ -88,10 +73,12 @@ public class ListDepotsComponent implements Serializable {
             LOG.info("Got an event on the depot bus: {}", event.getData());
             if(dbDepot.userId.equals(user.getId())) {
                 LOG.info("And it's for us!: {}", event.getData());
-                depotsTable.removeItem(dbDepot); //TODO fix this.
-                depotsTable.addItem(dbDepot);
-                depotsTable.markAsDirtyRecursive();
-                adminUI.access(() ->adminUI.push());
+                adminUI.access(() -> {
+                    depotsTable.removeItem(dbDepot); //TODO fix this.
+                    depotsTable.addItem(dbDepot);
+                    depotsTable.markAsDirtyRecursive();
+                    adminUI.push();
+                });
             }
         });
     }

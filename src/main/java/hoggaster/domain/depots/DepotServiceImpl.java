@@ -106,7 +106,7 @@ public class DepotServiceImpl implements DepotService {
             dbDepot.setLastSyncOk(false);
         } else {
             final Set<Position> positions = brokerConnection.getPositions(dbDepot.brokerId);
-            final Set<Trade> openTrades = brokerConnection.getOpenTrades(dbDepot.getId(), dbDepot.brokerId);
+            final Set<Trade> openTrades =  brokerConnection.getOpenTrades(dbDepot.getId(), dbDepot.brokerId);
             dbDepot.setLastSyncOk(true);
             dbDepot.updateWithValuesFrom(depotFromBroker, positions, openTrades);
         }

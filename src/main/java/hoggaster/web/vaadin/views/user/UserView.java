@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
@@ -83,25 +82,12 @@ public class UserView extends MVerticalLayout implements View {
         TabSheet tabSheet = new TabSheet();
         tabSheet.addStyleName(TABSHEET_PADDED_TABBAR);
 
-        final Component positionsTab = listPositionsComponent.setUp(user, this);
-        final Component tradesTab = listTradesComponent.setUp(user, this);
-
-        listTradesComponent.deregisterAll();
-        listPositionsComponent.deregisterAll();
         tabSheet.addTab(listDepotsComponent.setUp(user, this), "Depots");
-        tabSheet.addTab(positionsTab, "Positions");
-        tabSheet.addTab(tradesTab,"Trades");
+        tabSheet.addTab(listPositionsComponent.setUp(user, this), "Positions");
+        tabSheet.addTab(listTradesComponent.setUp(user, this),"Trades");
         tabSheet.addTab(createTransactionsTab(), "Transactions");
         tabSheet.addTab(listRobotsComponent.setUp(user,this), "Robots");
 
-        tabSheet.addSelectedTabChangeListener(e -> {
-            final Component selectedTab = e.getTabSheet().getSelectedTab();
-            if (selectedTab != positionsTab) {
-                listPositionsComponent.deregisterAll();
-            } else if(selectedTab != listTradesComponent) {
-                listTradesComponent.deregisterAll();
-            }
-        });
 
         addComponents(header, tabSheet);
         expand(tabSheet);

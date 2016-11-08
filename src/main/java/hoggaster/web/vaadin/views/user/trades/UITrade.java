@@ -76,6 +76,6 @@ public class UITrade {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(trade);
+        return Objects.hashCode(trade.brokerId);
     }
 }

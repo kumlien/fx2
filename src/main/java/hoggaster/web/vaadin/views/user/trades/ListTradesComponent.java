@@ -3,7 +3,7 @@ package hoggaster.web.vaadin.views.user.trades;
 import com.google.common.base.Preconditions;
 import com.vaadin.event.Action;
 import com.vaadin.event.Action.Handler;
-import com.vaadin.spring.annotation.ViewScope;
+import com.vaadin.spring.annotation.VaadinSessionScope;
 import com.vaadin.ui.*;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.depots.DbDepot;
@@ -17,6 +17,7 @@ import hoggaster.domain.trades.CloseTradeResponse;
 import hoggaster.domain.trades.Trade;
 import hoggaster.domain.trades.TradeService;
 import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.web.vaadin.AdminUI;
 import hoggaster.web.vaadin.GuiUtils;
 import hoggaster.web.vaadin.views.user.UserForm.FormUser;
 import hoggaster.web.vaadin.views.user.UserView;
@@ -47,6 +48,7 @@ import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
 import static hoggaster.domain.orders.OrderRequest.Builder.anOrderRequest;
 import static java.util.stream.Collectors.toList;
 import static reactor.bus.selector.Selectors.$;
+import static reactor.bus.selector.Selectors.matchAll;
 
 /**
  * Used to display a list of all active trades for a user. Listens to the depot eventbus and refreshes the list
@@ -56,7 +58,7 @@ import static reactor.bus.selector.Selectors.$;
  * Created by svante.kumlien on 01.03.16.
  */
 @Component
-@ViewScope
+@VaadinSessionScope
 public class ListTradesComponent implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListTradesComponent.class);
@@ -88,25 +90,35 @@ public class ListTradesComponent implements Serializable {
     Map<Long, Pusher> pushers = new ConcurrentHashMap<>();
 
     @Autowired
-    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus") EventBus depotEventBus) {
+    public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus") EventBus depotEventBus, AdminUI adminUI) {
         this.depotService = depotService;
         this.tradeService = tradeService;
         this.orderService = orderService;
         this.priceEventBus = priceEventBus;
         this.depotEventBus = depotEventBus;
+
+        depotEventBus.on(matchAll(), e -> { //How to detect a deleted depot?
+            DbDepot dbDepot = (DbDepot) e.getData();
+            if(user != null && dbDepot.userId.equals(user.getId())) {
+                LOG.info("Depot {} is updated, refresh list with trades", dbDepot);
+                if(adminUI.getUI() != null) {
+                    adminUI.getUI().access(() -> {
+                        populateTradeListFromDb();
+                        tradesTable.markAsDirtyRecursive();
+                        adminUI.getUI().push();
+                    });
+                } else {
+                    LOG.info("Unable to push since ui is null....");
+                }
+            }
+        });
     }
 
     //Create the tab with the (active) trades
     public MVerticalLayout setUp(FormUser user, UserView parentView) {
+        Preconditions.checkNotNull(user);
         this.user = user;
         userDepots = depotService.findByUserId(user.getId());
-
-        userDepots.forEach(d -> {
-            depotEventBus.on($(d.getId()), e -> {
-                LOG.info("Depot {} is updated, refresh list with trades", e.getData());
-                populateTradeListFromDb();
-            });
-        });
 
         MVerticalLayout tab = new MVerticalLayout();
         tradesTable = new MTable<>(UITrade.class)
@@ -160,7 +172,7 @@ public class ListTradesComponent implements Serializable {
                 if (action == CLOSE_TRADE_ACTION) {
                     handleCloseTrade(trade, parentView);
                 } else if (action == OPEN_TRADE_ACTION) {
-                    if(userDepots.isEmpty()) {
+                    if (userDepots.isEmpty()) {
                         Notification.show("You have no depot connected. It's not possible to open a trade without a connected depot", ERROR_MESSAGE);
                         return;
                     }
@@ -199,24 +211,24 @@ public class ListTradesComponent implements Serializable {
         Preconditions.checkArgument(trade.trade.getBrokerId() != null, "No brokerId set on the trade!");
         Pusher pusher = pushers.getOrDefault(trade.trade.getBrokerId(), new Pusher(trade.trade, parentView));
         pushers.put(trade.trade.getBrokerId(), pusher);
-        LOG.info("Number of pushers: {}", pushers.size());
+        LOG.info("Created pusher for trade {}, total number of pushers: {}", trade.getInstrument(), pushers.size());
         return pusher;
     }
 
-    private void handleCloseTrade(UITrade trade, UserView parentView) {
+    private void handleCloseTrade(UITrade uiTrade, UserView parentView) {
         ConfirmDialog.show(parentView.getUI(), "Really close trade?", "Are you really sure you want to close your trade?", "Yes", "No", dialog -> {
             if (dialog.isConfirmed()) {
                 try {
-                    CloseTradeResponse response = tradeService.closeTrade(trade.trade, trade.depot.getBrokerId());
-                    depotService.syncDepot(trade.depot);
+                    CloseTradeResponse response = tradeService.closeTrade(uiTrade.trade, uiTrade.depot.getBrokerId());
+                    depotService.syncDepot(uiTrade.depot);
                     populateTradeListFromDb();
                     String profitOrLoss = response.profit.compareTo(BigDecimal.ZERO) > 0 ? "profit" : "loss";
-                    deregister(trade.trade);
+                    deregister(uiTrade.trade);
                     Notification.show("Your trade was closed to a price of " + response.price + ". The " + profitOrLoss + " was " + response.profit, WARNING_MESSAGE);
                 } catch (TradingHaltedException e) {
                     Notification.show("Sorry, unable to close the position since the trading is currently halted", ERROR_MESSAGE);
                 } catch (Exception e) {
-                    LOG.warn("Exception when closing trade {}", trade, e);
+                    LOG.warn("Exception when closing trade {}", uiTrade, e);
                     Notification.show("Sorry, unable to close the position due to " + e.getMessage(), ERROR_MESSAGE);
                 }
             }
@@ -235,7 +247,7 @@ public class ListTradesComponent implements Serializable {
         OrderResponse orderResponse = orderService.sendOrder(request);
         UI.getCurrent().removeWindow(tradeFormWindow);
         if (orderResponse.tradeWasOpened()) {
-            final Trade trade = orderResponse.getOpenedTrade(null, null).get();
+            final Trade trade = orderResponse.getOpenedTrade(formTrade.getDepot().getId(), null).get();
             LOG.info("Trade received from oanda: {}", trade);
             UITrade newTrade = new UITrade(formTrade.getDepot(), trade);
             tradesTable.addBeans(newTrade);
@@ -253,7 +265,7 @@ public class ListTradesComponent implements Serializable {
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
             allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(toList()));
         }
-        allTrades.clear(); //not nice...
+        tradesTable.getContainerDataSource().removeAllItems(); //not nice
         allTrades.forEach(t -> {
             if (tradesTable.containsId(t)) {
                 LOG.info("The table already contains trade with id {}", t.getBrokerId());
@@ -291,7 +303,7 @@ public class ListTradesComponent implements Serializable {
         }
 
         Label createAskLabel() {
-            askLabel= createDefaultLabel();
+            askLabel = createDefaultLabel();
             return askLabel;
         }
 
@@ -329,7 +341,7 @@ public class ListTradesComponent implements Serializable {
                 });
             })
                     .subscribeOn(Schedulers.io())
-                    .sample(5000, TimeUnit.MILLISECONDS)
+                    .sample(MIN_TIME_BETWEEN_PUSH, TimeUnit.MILLISECONDS)
                     .subscribe(price -> {
                         Price tick = (Price) price;
                         Map<Label, Tuple3<Double, Double, Boolean>> values = new HashMap<>();
@@ -371,7 +383,7 @@ public class ListTradesComponent implements Serializable {
         }
 
         void stop() {
-            if(!registration.isCancelled()) {
+            if (!registration.isCancelled()) {
                 LOG.info("Stopping and cancel registration for trade {} ({})", trade.getBrokerId(), trade.instrument);
                 registration.cancel();
             }

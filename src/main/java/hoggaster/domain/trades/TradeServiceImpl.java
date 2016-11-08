@@ -109,8 +109,6 @@ public class TradeServiceImpl implements TradeService {
                 },
                 error -> {
                 });
-
-        depotService.syncDepotAsync(trade.depotId);//Should we do this here??
         return closeTradeResponse;
     }
 }
