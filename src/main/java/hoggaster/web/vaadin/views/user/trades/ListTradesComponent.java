@@ -253,6 +253,7 @@ public class ListTradesComponent implements Serializable {
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
             allTrades.addAll(depot.getOpenTrades().stream().map(t -> new UITrade(depot, t)).collect(toList()));
         }
+        allTrades.clear(); //not nice...
         allTrades.forEach(t -> {
             if (tradesTable.containsId(t)) {
                 LOG.info("The table already contains trade with id {}", t.getBrokerId());

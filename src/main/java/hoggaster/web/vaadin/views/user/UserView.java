@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.vaadin.viritin.label.Header;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import static com.vaadin.ui.themes.ValoTheme.TABSHEET_PADDED_TABBAR;
 
 /**
@@ -59,6 +62,15 @@ public class UserView extends MVerticalLayout implements View {
         this.listRobotsComponent = listRobotsComponent;
     }
 
+    @PreDestroy
+    public void cleanUp() {
+        LOG.info("Cleanup called!!");
+        listDepotsComponent.deregisterAll();
+        listPositionsComponent.deregisterAll();
+        listTradesComponent.deregisterAll();
+        listRobotsComponent.deregisterAll();
+    }
+
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
         LOG.info("Enter: " + event.getViewName());
@@ -96,8 +108,7 @@ public class UserView extends MVerticalLayout implements View {
 
         getUI().addDetachListener(e -> {
             LOG.info("Deregister since the ui is detached");
-            listPositionsComponent.deregisterAll();
-            listTradesComponent.deregisterAll();
+            cleanUp();
         });
     }
 

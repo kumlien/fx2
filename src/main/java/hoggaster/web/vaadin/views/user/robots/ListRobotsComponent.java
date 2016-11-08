@@ -24,6 +24,7 @@ import org.vaadin.viritin.fields.MTable;
 import org.vaadin.viritin.layouts.MHorizontalLayout;
 import org.vaadin.viritin.layouts.MVerticalLayout;
 
+import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,6 +76,11 @@ public class ListRobotsComponent implements Serializable {
     public ListRobotsComponent(DepotRepo depotRepo, RobotService robotService) {
         this.depotRepo = depotRepo;
         this.robotService = robotService;
+    }
+
+    @PostConstruct
+    public void deregisterAll() {
+
     }
 
     //Create the tab with the robot definitions

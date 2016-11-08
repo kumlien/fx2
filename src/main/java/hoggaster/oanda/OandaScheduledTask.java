@@ -60,8 +60,6 @@ public class OandaScheduledTask {
 
     private final CandleService candleService;
 
-    private boolean initComplete = false;
-
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
     private int cpsFetchedRequired;
@@ -148,7 +146,7 @@ public class OandaScheduledTask {
         }
         LOG.info("About to fetch one minute candles");
         try {
-            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(MINUTE);
+            List<Candle> candles = fetchAndBroadcastLastCandleForAllInstruments(MINUTE);
             LOG.info("Got {} one minute candles", candles.size());
         } catch (UnsupportedEncodingException e) {
             LOG.error("Error publishing last minute candle", e);
@@ -170,7 +168,7 @@ public class OandaScheduledTask {
         }
         LOG.info("About to fetch one day candles");
         try {
-            List<Candle> candles = fetchAndDispatchLastCandleForAllInstruments(END_OF_DAY);
+            List<Candle> candles = fetchAndBroadcastLastCandleForAllInstruments(END_OF_DAY);
             if(candles != null && !candles.isEmpty()) {
                 LOG.info("Done fetching one day candle, got {}", candles.get(0));
             }
@@ -183,7 +181,7 @@ public class OandaScheduledTask {
     /*
      * Call the oanda api to get candles and put them on the eventbus.
      */
-    private List<Candle> fetchAndDispatchLastCandleForAllInstruments(CandleStickGranularity granularity) throws UnsupportedEncodingException {
+    private List<Candle> fetchAndBroadcastLastCandleForAllInstruments(CandleStickGranularity granularity) throws UnsupportedEncodingException {
         RingBufferWorkProcessor<CurrencyPair> publisher = RingBufferWorkProcessor.create("Candle work processor", 32);
         Stream<CurrencyPair> instrumentStream = Streams.wrap(publisher);
         final List<Candle> allCandles = new ArrayList<>();

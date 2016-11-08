@@ -1,7 +1,7 @@
 package hoggaster.domain.depots;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.base.*;
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
+import java.util.Optional;
 
 @Document(collection = "depots")
 public class DbDepot {
@@ -485,6 +486,19 @@ public class DbDepot {
             }
         }
         return false;
+    }
+
+    @Override public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        DbDepot dbDepot = (DbDepot) o;
+        return com.google.common.base.Objects.equal(id, dbDepot.id);
+    }
+
+    @Override public int hashCode() {
+        return Objects.hashCode(id);
     }
 
     public enum Type {
