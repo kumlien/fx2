@@ -89,6 +89,8 @@ public class ListTradesComponent implements Serializable {
     //Map with pushers, one for each trade/row: tradeId/Pusher as key value
     Map<Long, Pusher> pushers = new ConcurrentHashMap<>();
 
+    private final Registration registration;
+
     @Autowired
     public ListTradesComponent(DepotService depotService, TradeService tradeService, OrderServiceImpl orderService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus") EventBus depotEventBus, AdminUI adminUI) {
         this.depotService = depotService;
@@ -97,11 +99,11 @@ public class ListTradesComponent implements Serializable {
         this.priceEventBus = priceEventBus;
         this.depotEventBus = depotEventBus;
 
-        depotEventBus.on(matchAll(), e -> { //How to detect a deleted depot?
+        registration = depotEventBus.on(matchAll(), e -> { //How to detect a deleted depot?
             DbDepot dbDepot = (DbDepot) e.getData();
-            if(user != null && dbDepot.userId.equals(user.getId())) {
+            if (user != null && dbDepot.userId.equals(user.getId())) {
                 LOG.info("Depot {} is updated, refresh list with trades", dbDepot);
-                if(adminUI.getUI() != null) {
+                if (adminUI.getUI() != null) {
                     adminUI.getUI().access(() -> {
                         populateTradeListFromDb();
                         tradesTable.markAsDirtyRecursive();
@@ -199,6 +201,7 @@ public class ListTradesComponent implements Serializable {
     public void deregisterAll() {
         pushers.values().forEach(Pusher::stop);
         pushers.clear();
+        registration.cancel();
     }
 
     private final void deregister(Trade trade) {

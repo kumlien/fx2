@@ -1,8 +1,32 @@
 package hoggaster.web.vaadin.views.user.positions;
 
-import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
-import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
-import static reactor.bus.selector.Selectors.$;
+import com.vaadin.event.Action;
+import com.vaadin.event.Action.Handler;
+import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
+import hoggaster.domain.CurrencyPair;
+import hoggaster.domain.depots.DbDepot;
+import hoggaster.domain.depots.DepotService;
+import hoggaster.domain.positions.ClosePositionResponse;
+import hoggaster.domain.prices.Price;
+import hoggaster.oanda.exceptions.TradingHaltedException;
+import hoggaster.web.vaadin.AdminUI;
+import hoggaster.web.vaadin.GuiUtils;
+import hoggaster.web.vaadin.views.user.UserForm.FormUser;
+import hoggaster.web.vaadin.views.user.UserView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.SessionScope;
+import org.vaadin.dialogs.ConfirmDialog;
+import org.vaadin.viritin.fields.MTable;
+import org.vaadin.viritin.layouts.MVerticalLayout;
+import reactor.bus.EventBus;
+import reactor.bus.registry.Registration;
+import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,40 +37,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import org.vaadin.dialogs.ConfirmDialog;
-import org.vaadin.viritin.fields.MTable;
-import org.vaadin.viritin.fields.MTable.SimpleColumnGenerator;
-import org.vaadin.viritin.layouts.MVerticalLayout;
-
-import reactor.Environment;
-import reactor.bus.EventBus;
-import reactor.bus.registry.Registration;
-import reactor.core.Dispatcher;
-import reactor.core.dispatch.WorkQueueDispatcher;
-import reactor.rx.broadcast.Broadcaster;
-import rx.Observable;
-import rx.schedulers.Schedulers;
-
-import com.vaadin.event.Action;
-import com.vaadin.event.Action.Handler;
-import com.vaadin.spring.annotation.ViewScope;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
-
-import hoggaster.domain.CurrencyPair;
-import hoggaster.domain.depots.DbDepot;
-import hoggaster.domain.depots.DepotService;
-import hoggaster.domain.positions.ClosePositionResponse;
-import hoggaster.domain.prices.Price;
-import hoggaster.oanda.exceptions.TradingHaltedException;
-import hoggaster.web.vaadin.GuiUtils;
-import hoggaster.web.vaadin.views.user.UserForm.FormUser;
-import hoggaster.web.vaadin.views.user.UserView;
+import static com.vaadin.ui.Notification.Type.ERROR_MESSAGE;
+import static com.vaadin.ui.Notification.Type.WARNING_MESSAGE;
+import static reactor.bus.selector.Selectors.$;
+import static reactor.bus.selector.Selectors.matchAll;
 
 /**
  * Used to display a list of all positions for a user.
@@ -54,7 +48,7 @@ import hoggaster.web.vaadin.views.user.UserView;
  * Created by svante.kumlien on 01.03.16.
  */
 @Component
-@ViewScope
+@SessionScope
 public class ListPositionsComponent implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ListPositionsComponent.class);
@@ -63,15 +57,30 @@ public class ListPositionsComponent implements Serializable {
     public final EventBus priceEventBus;
     private final DepotService depotService;
     private final Map<CurrencyPair, Registration> registrations = new ConcurrentHashMap<>();
-    //private final Dispatcher dispatcher = new RingBufferDispatcher("gui-push-dispatcher", 64);
-    private final Dispatcher dispatcher = new WorkQueueDispatcher("gui-push-dispatcher", 2, 64, e -> LOG.error("Error", e));
     private MTable<UIPosition> positionsTable;
     private FormUser user;
+    private final Registration registration;
 
     @Autowired
-    public ListPositionsComponent(DepotService depotService, @Qualifier("priceEventBus") EventBus priceEventBus) {
+    public ListPositionsComponent(DepotService depotService, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("depotEventBus") EventBus depotEventBus, AdminUI adminUI) {
         this.depotService = depotService;
         this.priceEventBus = priceEventBus;
+
+        registration = depotEventBus.on(matchAll(), e -> { //How to detect a deleted depot?
+            DbDepot dbDepot = (DbDepot) e.getData();
+            if (user != null && dbDepot.userId.equals(user.getId())) {
+                LOG.info("Depot {} is updated, refresh list with trades", dbDepot);
+                if (adminUI.getUI() != null) {
+                    adminUI.getUI().access(() -> {
+                        listEntities();
+                        positionsTable.markAsDirtyRecursive();
+                        adminUI.getUI().push();
+                    });
+                } else {
+                    LOG.info("Unable to push since ui is null....");
+                }
+            }
+        });
     }
 
     //Create the tab with the current open positions
@@ -80,42 +89,39 @@ public class ListPositionsComponent implements Serializable {
         final String defaultPriceLabel = "Fetching...";
         MVerticalLayout tab = new MVerticalLayout();
         positionsTable = new MTable<>(UIPosition.class)
-                //.withCaption("Your open positions:")
                 .withProperties("depotName", "currencyPair", "side", "quantity", "averagePricePerShare")
                 .withColumnHeaders("Depot", "Currency pair", "Side", "Quantity", "Average price")
-                .withGeneratedColumn("Current ask", new SimpleColumnGenerator<UIPosition>() {
-                    @Override
-                    public Object generate(UIPosition position) {
-                        Label label = new Label(defaultPriceLabel);
-                        label.addStyleName("pushbox");
+                .withGeneratedColumn("Current ask", position -> {
+                    Label label = new Label(defaultPriceLabel);
+                    label.addStyleName("pushbox");
 
-                        Observable.create(p -> {
-                            LOG.info("Creating new registration for position {}", position.getCurrencyPair());
-                            final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
-                                if (parentView.getUI() == null) { //Continue to push until gui is gone
-                                    deregisterAll();
-                                    return;
-                                }
-                                LOG.debug("Got a price, putting it in the stream: {}", e.getData());
-                                p.onNext((Price) e.getData());
-                            });
-                            deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
-                            registrations.put(position.getCurrencyPair(), registration);
-                        })
-                                .subscribeOn(Schedulers.io())
-                                .throttleFirst(5000, TimeUnit.MILLISECONDS)
-                                .subscribe(price -> {
-                            Double current = ((Price) price).ask.doubleValue();
-                            Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
-                            GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
-                            LOG.info("Pushed price update: {}", price);
+                    Observable.create(p -> {
+                        LOG.info("Creating new registration for position {}", position.getCurrencyPair());
+                        final Registration registration = priceEventBus.on($("prices." + position.getCurrencyPair()), e -> {
+                            if (parentView.getUI() == null) { //Continue to push until gui is gone
+                                deregisterAll();
+                                return;
+                            }
+                            LOG.debug("Got a price, putting it in the stream: {}", e.getData());
+                            p.onNext(e.getData());
                         });
-                        return label;
-                    }
+                        deregister(position.getCurrencyPair()); //cancel any existing registrations for this instrument
+                        registrations.put(position.getCurrencyPair(), registration);
+                    })
+                            .subscribeOn(Schedulers.io())
+                            .throttleFirst(5000, TimeUnit.MILLISECONDS)
+                            .subscribe(price -> {
+                        Double current = ((Price) price).ask.doubleValue();
+                        Double previous = Double.valueOf(label.getValue().equals(defaultPriceLabel) ? current.toString() : label.getValue());
+                        GuiUtils.setAndPushDoubleLabel(parentView.getUI(), label, current, previous);
+                        LOG.info("Pushed price update: {}", price);
+                    });
+                    return label;
                 })
                 .withFullWidth();
         positionsTable.expandFirstColumn();
         positionsTable.setSelectable(true);
+
         positionsTable.addActionHandler(new Handler() {
             @Override
             public Action[] getActions(Object target, Object sender) {
@@ -160,6 +166,7 @@ public class ListPositionsComponent implements Serializable {
         for (DbDepot depot : depotService.findByUserId(user.getId())) {
             allPositions.addAll(depot.getPositions().stream().map(p -> new UIPosition(depot, p)).collect(Collectors.toList()));
         }
+        positionsTable.getContainerDataSource().removeAllItems();
         positionsTable.setBeans(allPositions);
     }
 
