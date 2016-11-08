@@ -28,6 +28,7 @@ import java.util.Random;
 
 import static hoggaster.domain.CurrencyPair.AUD_JPY;
 import static hoggaster.domain.brokers.Broker.OANDA;
+import static hoggaster.domain.depots.DbDepot.Type.DEMO;
 import static hoggaster.domain.orders.OrderSide.buy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -62,7 +63,7 @@ public class DbDepotServiceTest {
         BrokerDepot brokerDepot = new BrokerDepot(brokerId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(brokerId))).thenReturn(brokerDepot);
         try {
-            DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", OANDA, brokerId, DbDepot.Type.DEMO);
+            DbDepot dbDepot = depotService.createDepot(user, "Pelles dbDepot", OANDA, brokerId, DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
         } catch (Exception e) {
             LOG.info("error...", e);
@@ -79,7 +80,7 @@ public class DbDepotServiceTest {
         BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake external depot", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
-            DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", OANDA, externalDepotId, DbDepot.Type.DEMO);
+            DbDepot dbDepot = depotService.createDepot(user, "DummyDepot", OANDA, externalDepotId, DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
             depotService.deleteDepot(dbDepot);
             assertNull(depotService.findDepotById(dbDepot.getId()));
@@ -99,7 +100,7 @@ public class DbDepotServiceTest {
         BrokerDepot brokerDepot = new BrokerDepot(externalDepotId, "fake positions", Currency.getInstance("USD"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
         when(brokerConnection.getDepot(eq(externalDepotId))).thenReturn(brokerDepot);
         try {
-            dbDepot = depotService.createDepot(user, "DummyDepot" + new Random().nextInt(), OANDA, externalDepotId, DbDepot.Type.DEMO);
+            dbDepot = depotService.createDepot(user, "DummyDepot" + new Random().nextInt(), OANDA, externalDepotId, DEMO);
             LOG.info("DbDepot created: {}", dbDepot);
             Trade trade = new Trade(dbDepot.getId(),"robotId", OANDA, 1L, new BigDecimal(17),  buy, currencyPair, Instant.now(), BigDecimal.TEN, null, null, null);
             dbDepot.tradeOpened(trade);

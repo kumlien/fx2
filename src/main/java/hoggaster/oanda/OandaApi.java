@@ -102,7 +102,7 @@ public class OandaApi implements BrokerConnection {
     public BrokerDepot getDepot(String depotId) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(resources.getAccount());
         String uri = builder.buildAndExpand(depotId).toUriString();
-        LOG.info("Get account from oanda with id {} using uri {}", depotId, uri);
+        LOG.info("Get account/depot from oanda with id {} using uri {}", depotId, uri);
         ResponseEntity<OandaAccount> account = oandaRetryTemplate
                 .execute(context -> {
                     context.setAttribute(HttpConfig.OANDA_CALL_CTX_ATTR, "getAccount");

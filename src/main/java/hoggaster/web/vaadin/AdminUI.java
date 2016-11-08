@@ -55,7 +55,7 @@ public class AdminUI extends UI {
     private final SpringViewProvider viewProvider;
 
     private final Button loginBtn = new MButton("login", e -> {
-        hoggaster.web.vaadin.views.login.LoginForm form = new LoginForm();
+        LoginForm form = new LoginForm();
         form.openInModalPopup();
         form.setSavedHandler(u -> login(u, form));
         form.setResetHandler(u -> form.closePopup());
@@ -91,6 +91,11 @@ public class AdminUI extends UI {
         MHorizontalLayout top = new MHorizontalLayout(header, loginBtn)
                 .withAlign(loginBtn, Alignment.MIDDLE_RIGHT)
                 .withFullWidth();
+
+        //In case of reloaded page
+        if(getUI().getSession().getAttribute(USER_SESSION_ATTR) != null) {
+            loginBtn.setVisible(false);
+        }
 
         final Panel viewContainer = new Panel();
         viewContainer.setSizeFull();
@@ -149,8 +154,8 @@ public class AdminUI extends UI {
             final UserDetails userDetails = userDetailsService.loadUserByUsername(credentials.getUsername());
             getSession().setAttribute(USER_SESSION_ATTR, userDetails);
             getUI().getNavigator().navigateTo(ListUserView.VIEW_NAME);
-            Notification.show("Welcome " + ((User) userDetails).getFirstName());
             loginForm.closePopup();
+            Notification.show("Welcome " + ((User) userDetails).getFirstName(), WARNING_MESSAGE);
             loginBtn.setVisible(false);
         } catch (AuthenticationException ae) {
             LOG.debug("Authentication failed...");

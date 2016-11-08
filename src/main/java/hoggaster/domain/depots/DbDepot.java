@@ -142,6 +142,9 @@ public class DbDepot {
 
 
     /**
+     *
+     * Create/connect a new depot. Used from {@link DepotService}
+     *
      * @param userId
      * @param name
      * @param broker

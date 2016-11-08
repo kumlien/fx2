@@ -85,8 +85,8 @@ public class ListRobotsComponent implements Serializable {
         setupTable();
 
         rePopulateTable();
-        HorizontalLayout horizontalLayout = new MHorizontalLayout(addBtn, editBtn, deleteBtn);
-        tab.addComponents(horizontalLayout,robotsTable);
+        HorizontalLayout buttons = new MHorizontalLayout(addBtn, editBtn, deleteBtn);
+        tab.addComponents(buttons,robotsTable);
         tab.expand(robotsTable);
         return tab;
     }

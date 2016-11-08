@@ -160,6 +160,10 @@ public class ListTradesComponent implements Serializable {
                 if (action == CLOSE_TRADE_ACTION) {
                     handleCloseTrade(trade, parentView);
                 } else if (action == OPEN_TRADE_ACTION) {
+                    if(userDepots.isEmpty()) {
+                        Notification.show("You have no depot connected. It's not possible to open a trade without a connected depot", ERROR_MESSAGE);
+                        return;
+                    }
                     TradeForm tradeForm = new TradeForm(priceEventBus, userDepots);
                     final Window tradeFormWindow = tradeForm.openInModalPopup();
                     tradeFormWindow.setCaption("Open new market trade");

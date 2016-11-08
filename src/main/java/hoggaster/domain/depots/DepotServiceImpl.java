@@ -50,6 +50,14 @@ public class DepotServiceImpl implements DepotService {
 
     @Override
     public DbDepot createDepot(User user, String name, Broker broker, String brokerId, DbDepot.Type type) {
+        return createDepot(user.getId(), name, broker, brokerId, type);
+    }
+
+
+    //TODO If type is simulation then we must not connect it to a broker depot.
+    @Override
+    public DbDepot createDepot(String userId, String name, Broker broker, String brokerId, DbDepot.Type type) {
+        Preconditions.checkArgument(type != DbDepot.Type.SIMULATION, "Sorry, we don't support simulation typ depots at the moment");
         Preconditions.checkArgument(broker == Broker.OANDA, "Sorry, we only support " + Broker.OANDA + " at the moment");
 
         Preconditions.checkArgument(!Strings.isNullOrEmpty(name), "The dbDepot must have a name");
@@ -60,7 +68,7 @@ public class DepotServiceImpl implements DepotService {
         BrokerDepot brokerDepot = brokerConnection.getDepot(brokerId);
         Preconditions.checkArgument(brokerDepot != null, "Unable to fetch a depot from " + broker + " with id '" + brokerId + "'");
 
-        DbDepot newDbDepot = new DbDepot(user.getId(), name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true, type);
+        DbDepot newDbDepot = new DbDepot(userId, name, broker, brokerDepot.name, brokerId, brokerDepot.marginRate, brokerDepot.currency, brokerDepot.balance, brokerDepot.unrealizedPl, brokerDepot.realizedPl, brokerDepot.marginUsed, brokerDepot.marginAvail, brokerDepot.openTrades, brokerDepot.openOrders, Instant.now(), true, type);
         newDbDepot = depotRepo.save(newDbDepot);
         return newDbDepot;
     }

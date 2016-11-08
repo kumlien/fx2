@@ -29,6 +29,7 @@ public interface DepotService {
      * @return The newly created dbDepot with synchronized values from the Broker
      */
     DbDepot createDepot(User user, String name, Broker broker, String brokerId, Type type);
+    DbDepot createDepot(String userId, String name, Broker broker, String brokerId, Type type);
 
     void deleteDepot(DbDepot dbDepot);
 

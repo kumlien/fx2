@@ -85,10 +85,8 @@ public class UserView extends MVerticalLayout implements View {
         tabSheet.addSelectedTabChangeListener(e -> {
             final Component selectedTab = e.getTabSheet().getSelectedTab();
             if (selectedTab != positionsTab) {
-                LOG.info("Positions tab is not selected...");
                 listPositionsComponent.deregisterAll();
             } else if(selectedTab != listTradesComponent) {
-                LOG.info("{} is selected tab", selectedTab);
                 listTradesComponent.deregisterAll();
             }
         });
