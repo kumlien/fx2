@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.1.RELEASE</version>
+        <version>1.4.2.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -28,12 +28,13 @@
         <reactor.spring.version>2.0.7.RELEASE</reactor.spring.version>
         <easyrules.version>2.1.0</easyrules.version>
         <metrics.version>3.1.2</metrics.version>
-        <vaadin.version>7.7.0</vaadin.version>
-        <vaadin.viritin.version>1.57</vaadin.viritin.version>
-        <guava.version>19.0</guava.version>
+        <vaadin.version>7.7.4</vaadin.version>
+        <vaadin.viritin.version>1.59</vaadin.viritin.version>
+        <guava.version>20.0</guava.version>
         <commons.lang.version>3.4</commons.lang.version>
         <spring.retry.version>1.1.2.RELEASE</spring.retry.version>
-        <rx-java.version>1.1.10</rx-java.version>
+        <rx-java.version>1.2.2</rx-java.version>
+        <rx-java2.version>2.0.1</rx-java2.version>
     </properties>
 
 
@@ -105,6 +106,18 @@
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
             <version>${rx-java.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>${rx-java2.version}</version>
         </dependency>
 
 

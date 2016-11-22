@@ -29,9 +29,6 @@ public interface BrokerConnection extends OrderService {
     // TODO remove Oanda x 2
     OandaPrices getPrices(Set<OandaInstrument> instrumentsForMainAccount) throws UnsupportedEncodingException;
 
-    @Timed
-    Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments);
-
     Broker getBrokerID();
 
     // TODO remove Oanda

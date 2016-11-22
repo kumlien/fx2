@@ -233,10 +233,13 @@ public class OandaApi implements BrokerConnection {
     /**
      * Fetch candles for the specified currencyPair.
      * <p>
-     * count: Optional The number of candles to return in the response. This parameter may be ignored by the server depending on the time range provided. If not specified, count will default to 500. The maximum acceptable value for count is 5000. count should not be specified if both the start and end parameters are
-     * also specified. start: Optional The start timestamp for the range of candles requested. The value specified must be in a valid datetime format. end: Optional The end timestamp for the range of candles requested. The value specified must be in a valid datetime format.
      *
-     * @see http://developer.oanda.com/rest-practice/rates/#retrieveInstrumentHistory
+     * @param count Optional The number of candles to return in the response. This parameter may be ignored by the server depending on the time range provided. If not specified, count will default to 500. The maximum acceptable value for count is 5000.
+     * @param start Optional The start timestamp for the range of candles requested. The value specified must be in a valid datetime format.
+     * @param end Optional The end timestamp for the range of candles requested. The value specified must be in a valid datetime format.
+     * @param includeFirst Optional A boolean field which may be set to “true” or “false”. If it is set to “true”, the candlestick covered by the start timestamp will be returned. If it is set to “false”, this candlestick will not be returned. This field exists so clients may easily ensure that they can poll for all candles more recent than their last received candle.
+     *
+     * @see http://developer.oanda.com/rest-live/rates/#retrieveInstrumentHistory
      */
     @Override
     @Timed
@@ -253,13 +256,13 @@ public class OandaApi implements BrokerConnection {
 
         try {
             if (start != null) {
-                String encoded = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
-                builder.queryParam("start", encoded);
-                builder.queryParam("includeFirst", includeFirst); //Only tradeOpened this param is start is specified
+                String encodedStartDate = URLEncoder.encode(start.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
+                builder.queryParam("start", encodedStartDate);
+                builder.queryParam("includeFirst", includeFirst);
             }
             if (end != null) {
-                String encoded = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
-                builder.queryParam("end", encoded);
+                String encodedEndDate = URLEncoder.encode(end.truncatedTo(ChronoUnit.SECONDS).toString(), "utf-8");
+                builder.queryParam("end", encodedEndDate);
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
@@ -304,13 +307,6 @@ public class OandaApi implements BrokerConnection {
         return prices.getBody();
     }
 
-
-
-    @Override
-    @Timed
-    public Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments) {
-        return Observable.defer(() -> Observable.just(getPrices(instruments))).subscribeOn(Schedulers.io());
-    }
 
     @Override
     @Timed

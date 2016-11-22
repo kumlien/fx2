@@ -62,11 +62,6 @@ public class BacktestingBrokerConnection implements BrokerConnection {
     }
 
     @Override
-    public Observable<OandaPrices> getPricesAsync(Set<OandaInstrument> instruments) {
-        return null;
-    }
-
-    @Override
     public Broker getBrokerID() {
         // TODO Auto-generated method stub
         return null;

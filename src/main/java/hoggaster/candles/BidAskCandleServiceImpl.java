@@ -95,7 +95,10 @@ public class BidAskCandleServiceImpl implements CandleService {
             lastCandle = candles.get(candles.size() - 1);
             repo.save(candles);
             LOG.info("Last candle received: {}", lastCandle);
-            if(!lastCandle.complete) break;
+            if(!lastCandle.complete) {
+                repo.delete(lastCandle);
+                break;
+            }
             candles = getFromBroker(currencyPair, granularity, lastCandle.time, null, 4999, false);
         }
 
