@@ -1,6 +1,7 @@
 package hoggaster.oanda;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.Lists;
 import com.mongodb.internal.validator.CollectibleDocumentFieldNameValidator;
 import hoggaster.candles.Candle;
 import hoggaster.candles.CandleService;
@@ -36,9 +37,7 @@ import java.util.*;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
-import static hoggaster.domain.CurrencyPair.MAJORS;
-import static hoggaster.domain.CurrencyPair.MINORS;
-import static hoggaster.domain.CurrencyPair.USD_SEK;
+import static hoggaster.domain.CurrencyPair.*;
 import static hoggaster.rules.indicators.candles.CandleStickGranularity.END_OF_DAY;
 import static hoggaster.rules.indicators.candles.CandleStickGranularity.MINUTE;
 import static java.util.Arrays.asList;
@@ -55,6 +54,7 @@ public class OandaScheduledTask {
     private static final Logger LOG = LoggerFactory.getLogger(OandaScheduledTask.class);
 
     static final long ONE_MINUTE = 60L * 1000;
+    public static final int MAX_CONCURRENCY = 4;
 
     private final BrokerConnection oanda;
 
@@ -68,8 +68,7 @@ public class OandaScheduledTask {
 
     private Set<OandaInstrument> instrumentsForMainAccount = new HashSet<OandaInstrument>();
 
-    private int cpsFetchedRequired;
-    private LongAdder cpsFetched = new LongAdder();
+    private boolean historyUpToDate = false;
 
     @Autowired
     public OandaScheduledTask(@Qualifier("OandaBrokerConnection") BrokerConnection oanda, @Qualifier("priceEventBus") EventBus priceEventBus, @Qualifier("candleEventBus") EventBus candleEventBus, OandaProperties oandaProps, CandleService candleService) {
@@ -85,56 +84,28 @@ public class OandaScheduledTask {
      * Fill the db with candles for the specified currencyPair and granularity.
      * Only needed at startup to get us up to date.
      */
-
-    void fetchAllHistoricData() {
-        if(true) return;
-        RingBufferWorkProcessor<Tuple2<CurrencyPair, CandleStickGranularity>> minuteSubscriber = RingBufferWorkProcessor.create("Minute candle work processor", 256);
-        Stream<Tuple2<CurrencyPair, CandleStickGranularity>> minuteStream = Streams.wrap(minuteSubscriber);
-
-        RingBufferWorkProcessor<Tuple2<CurrencyPair, CandleStickGranularity>> daySubscriber = RingBufferWorkProcessor.create("Day candle work processor", 256);
-        Stream<Tuple2<CurrencyPair, CandleStickGranularity>> dayStream = Streams.wrap(daySubscriber);
-
-        // Attach  consumers
-        minuteStream.consumeOn(new WorkQueueDispatcher("FetchMinuteCandlesDispatcher", 4, 16, e -> LOG.warn("Exception fetching historic candles", e)), t -> {
-            candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
-            cpsFetched.increment();
-            LOG.info("Cps fetched is now {}, required is {}", cpsFetched.intValue(), cpsFetchedRequired);
-        });
-
-        dayStream.consumeOn(new WorkQueueDispatcher("FetchDayCandlesDispatcher", 4, 16, e -> LOG.warn("Exception fetching historic candles", e)), t -> {
-            candleService.fetchAndSaveHistoricCandles(t.getT1(), t.getT2());
-            cpsFetched.increment();
-            LOG.info("Cps fetched is now {}, required is {}", cpsFetched.intValue(), cpsFetchedRequired);
-        });
-
-        cpsFetchedRequired = MAJORS.length * 2;
-        LOG.info("Need to fetch {} cp/candle types combos", cpsFetchedRequired);
-
-        Environment.timer().submit(time -> {
-            asList(MAJORS).forEach(currencyPair -> daySubscriber.onNext(Tuple.of(currencyPair, END_OF_DAY)));
-            daySubscriber.onComplete();
-        }, 10, SECONDS);
-
-        Environment.timer().submit(time -> {
-            asList(MAJORS).forEach(currencyPair -> minuteSubscriber.onNext(Tuple.of(currencyPair, MINUTE)));
-            minuteSubscriber.onComplete();
-        }, 11, SECONDS);
-    }
-
     @PostConstruct
     void fetchV2() {
-        Environment.timer().submit(time -> {
-            List<Pair<CurrencyPair, CandleStickGranularity>> pairs = Arrays.stream(MAJORS).map(cp -> Pair.of(cp, END_OF_DAY)).collect(toList());
-            pairs.addAll(Arrays.stream(MINORS).map(cp -> Pair.of(cp, MINUTE)).collect(toList()));
-            Pair<CurrencyPair, CandleStickGranularity>[] pairArray = new Pair[pairs.size()];
-            pairs.toArray(pairArray);
-            Flowable.just(Pair.of(USD_SEK, MINUTE))
-                    .map(pair -> candleService.fetchAndSaveHistoricCandles(pair.getLeft(), pair.getRight()))
-                    .observeOn(Schedulers.io())
-                    .doOnNext(numbersFetched -> LOG.info("Got {} candles back", numbersFetched))
-                    .doOnComplete(()->LOG.info("Done!!!"))
-                    .subscribe();
-        }, 10, SECONDS);
+        LOG.info("Starting to fetch historic candles...");
+        List<Pair<CurrencyPair, CandleStickGranularity>> pairs = Lists.newArrayList();
+        pairs.addAll(Arrays.stream(MAJORS).map(cp -> Pair.of(cp, END_OF_DAY)).collect(toList()));
+        pairs.addAll(Arrays.stream(MAJORS).map(cp -> Pair.of(cp, MINUTE)).collect(toList()));
+        pairs.addAll(Arrays.stream(MINORS).map(cp -> Pair.of(cp, END_OF_DAY)).collect(toList()));
+        pairs.addAll(Arrays.stream(MINORS).map(cp -> Pair.of(cp, MINUTE)).collect(toList()));
+        Pair<CurrencyPair, CandleStickGranularity>[] pairArray = new Pair[pairs.size()];
+        pairs.toArray(pairArray);
+
+        Flowable.fromArray(pairArray)
+                .flatMap(pair -> Flowable.just(pair)
+                                .subscribeOn(Schedulers.io())
+                                .map(pair2 -> candleService.fetchAndSaveHistoricCandles(pair2.getLeft(), pair2.getRight()))
+                        , MAX_CONCURRENCY
+                )
+                .doOnNext(numbersFetched -> LOG.info("Got {} candles back", numbersFetched))
+                .doOnComplete(() -> historyUpToDate = true)
+                .subscribeOn(Schedulers.computation())
+                .subscribe();
+
 
     }
 
@@ -174,10 +145,10 @@ public class OandaScheduledTask {
     /*
      * Get the one minute candles wtf is this method doing in this class??
      */
-    //@Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
+    @Scheduled(fixedRate = ONE_MINUTE, initialDelay = 6000)
     @Timed
     public void fetchMinuteCandles() {
-        if (cpsFetched.intValue() < cpsFetchedRequired) {
+        if (!historyUpToDate) {
             LOG.info("Skip fetching minute candles since warmup is not ready...");
             return;
         }
@@ -196,10 +167,10 @@ public class OandaScheduledTask {
      * 
      * TODO this one needs to take into account the different opening/closing times for different instruments (and possibly in combination with different brokers) for now we hard code it to open at 17:01:00 and close at 16:59:59 New York time, that is, we record the day candle at this point.
      */
-    //@Scheduled(cron = "0 1 17 * * MON-FRI", zone = "America/New_York")
+    @Scheduled(cron = "0 1 17 * * MON-FRI", zone = "America/New_York")
     @Timed
     public void fetchDayCandles() {
-        if (cpsFetched.intValue() < cpsFetchedRequired) {
+        if (!historyUpToDate) { //TODO Don't wait a full day here...
             LOG.info("Skip fetching end_of_day candles since warmup is not ready...");
             return;
         }
@@ -223,7 +194,7 @@ public class OandaScheduledTask {
         Stream<CurrencyPair> instrumentStream = Streams.wrap(publisher);
         final List<Candle> allCandles = new ArrayList<>();
 
-        // Consumer used to handle one currencyPair
+        // Consumer used to handle one currencyPair //TODO Rewrite RxJava2
         Consumer<CurrencyPair> ic = instrument -> {
             try {
                 List<Candle> candles = candleService.fetchAndSaveLatestCandlesFromBroker(instrument, granularity, 2);

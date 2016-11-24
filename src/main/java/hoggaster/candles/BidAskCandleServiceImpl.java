@@ -1,5 +1,6 @@
 package hoggaster.candles;
 
+import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
@@ -77,6 +78,7 @@ public class BidAskCandleServiceImpl implements CandleService {
      * TODO we should also delete the first candle from our db if it's not complete!
      */
     @Override
+    @Timed
     public int fetchAndSaveHistoricCandles(CurrencyPair currencyPair, CandleStickGranularity granularity) {
         Instant startDate = FIRST_CANDLE_DATE;
         List<Candle> existingCandles = repo.findByCurrencyPairAndGranularityOrderByTimeDesc(currencyPair, granularity, new PageRequest(0, 1));
