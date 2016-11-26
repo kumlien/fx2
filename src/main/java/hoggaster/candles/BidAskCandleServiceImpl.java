@@ -2,6 +2,8 @@ package hoggaster.candles;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import hoggaster.domain.CurrencyPair;
 import hoggaster.domain.brokers.Broker;
 import hoggaster.domain.brokers.BrokerConnection;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,15 +63,17 @@ public class BidAskCandleServiceImpl implements CandleService {
     }
 
     @Override
-    public List<Candle> fetchAndSaveLatestCandlesFromBroker(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer number) {
-        LOG.info("Fetch and save {} new candles for {}:{} ", number, currencyPair, granularity);
-        List<Candle> candles = getFromBroker(currencyPair, granularity, null, Instant.now(), number);
+    public Candle fetchAndSaveLastCompleteCandle(CurrencyPair currencyPair, CandleStickGranularity granularity) {
+        LOG.info("Fetch the {} latest candles for {}:{} ", 2, currencyPair, granularity);
+        List<Candle> candles = getFromBroker(currencyPair, granularity, null, Instant.now(),2); //+1 to include any current incomplete candle
         LOG.info("Got {} candles back", candles.size());
+        List<Candle> completeCandles = new ArrayList<>();
         if (!candles.isEmpty()) {
-            repo.save(candles);
-            LOG.info("{} candles saved to db", candles.size());
+            completeCandles = candles.stream().filter(c -> c.complete).collect(Collectors.toList());
+            repo.save(completeCandles);
+            LOG.info("{} complete candles saved to db", completeCandles.size());
         }
-        return candles;
+        return completeCandles.size() > 0 ? completeCandles.get(0) : null;
     }
 
 

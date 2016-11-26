@@ -19,14 +19,13 @@ public interface CandleService {
     List<Candle> getLatestCandles(CurrencyPair currencyPair, CandleStickGranularity granularity, int dataPointsNeeded);
 
     /**
-     * Fetch the specified number of candles from the broker
+     * Fetch the last candle from the broker
      *
      * @param currencyPair
      * @param granularity
-     * @param number
      * @return A {@link List} of fetched {@link Candle}s.
      */
-    List<Candle> fetchAndSaveLatestCandlesFromBroker(CurrencyPair currencyPair, CandleStickGranularity granularity, Integer number);
+    Candle fetchAndSaveLastCompleteCandle(CurrencyPair currencyPair, CandleStickGranularity granularity);
 
 
     /**
