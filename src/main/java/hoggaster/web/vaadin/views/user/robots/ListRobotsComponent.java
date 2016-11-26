@@ -54,6 +54,8 @@ public class ListRobotsComponent implements Serializable {
 
     private static final Action ADD_ENTER_TRADE_RULE_ACTION = new Action("Add rule for enter trade", FontAwesome.PENCIL);
 
+    private static final Action ADD_EXIT_TRADE_RULE_ACTION = new Action("Add rule for exit trade", FontAwesome.PENCIL);
+
     private static final Action ADD_ROBOT_ACTION = new Action("Add a new robot");
 
     private Button addBtn = new MButton(FontAwesome.PLUS, this::addRobot).withDescription("Add a new robot");
@@ -133,6 +135,10 @@ public class ListRobotsComponent implements Serializable {
                     editRobot((UIRobot) target);
                 }
                 if(action == ADD_ENTER_TRADE_RULE_ACTION) {
+                    RuleDetailsWindow window = new RuleDetailsWindow();
+                    UI.getCurrent().addWindow(window);
+                }
+                if(action == ADD_EXIT_TRADE_RULE_ACTION) {
                     RuleDetailsWindow window = new RuleDetailsWindow();
                     UI.getCurrent().addWindow(window);
                 }

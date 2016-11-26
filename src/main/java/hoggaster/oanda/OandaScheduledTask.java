@@ -174,6 +174,6 @@ public class OandaScheduledTask {
 
     private Flowable<Candle> fetchLatestCompletedCandle(CandleStickGranularity granularity, Collection<CurrencyPair> currencyPairs) {
         return Flowable.fromIterable(currencyPairs)
-                .flatMap(currencyPair -> Flowable.just(currencyPair).subscribeOn(Schedulers.io()), 2).map(cp -> candleService.fetchAndSaveLastCompleteCandle(cp, granularity));
+                .flatMap(currencyPair -> Flowable.just(currencyPair).subscribeOn(Schedulers.io()), MAX_CONCURRENCY).map(cp -> candleService.fetchAndSaveLastCompleteCandle(cp, granularity));
     }
 }
